@@ -17,5 +17,5 @@ list_of_packages <- c(
   'foreign'
 )
 
-lapply(list_of_packages, load_package)
+sapply(list_of_packages, load_package)
 

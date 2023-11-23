@@ -15,14 +15,17 @@ all_data_files <- list.files(
 
 
 hp <- list()
+
 for(i in seq_along(all_data_files$value)) {
   file <- all_data_files$value[i]
   record_type <- tolower(stringr::str_remove(basename(file), '\\.(txt|TXT)$'))
   hp[[record_type]] <- readr::read_delim(
-    file,
-    delim = '\t',
-    progress = F,
-    trim_ws = T,
-    show_col_types = F
-  )
+      file,
+      delim = '\t',
+      quote = "",
+      progress = F,
+      trim_ws = T,
+      show_col_types = F
+    ) |>
+    janitor::clean_names()
 }

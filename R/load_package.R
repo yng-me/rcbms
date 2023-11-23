@@ -2,7 +2,6 @@ load_package <- function(pkg, install_only = TRUE) {
 
   if(!install_only) {
 
-    # Install `crayon` package for progress indicator ------------------------------
     if(!('crayon' %in% installed.packages()[,'Package'])) install.packages('crayon')
     library(crayon)
   }
@@ -11,9 +10,16 @@ load_package <- function(pkg, install_only = TRUE) {
     install.packages(pkg)
   }
 
-  library(!!as.name(pkg))
+  library(
+    pkg,
+    character.only = T,
+    quietly = T,
+    warn.conflicts = F,
+    verbose = F
+  )
 
 }
+
 
 load_dependencies <- function() {
 
@@ -36,3 +42,5 @@ load_dependencies <- function() {
 
   library(tsg)
 }
+
+
