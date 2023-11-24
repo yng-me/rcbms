@@ -1,3 +1,15 @@
+#' Title
+#'
+#' @param gid
+#' @param sheet
+#' @param range
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 fetch_gsheet <- function(gid, sheet = NULL, range = NULL, ...) {
   ss <- paste0("https://docs.google.com/spreadsheets/d/", gid)
   if(!is.null(sheet)) sheet <- as.character(sheet)
@@ -12,6 +24,17 @@ fetch_gsheet <- function(gid, sheet = NULL, range = NULL, ...) {
 }
 
 
+
+#' Title
+#'
+#' @param .data
+#' @param required_cols
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 validate_gsheet <- function(.data, required_cols) {
   required_cols_which <- which(required_cols %in% names(.data))
 
@@ -23,6 +46,18 @@ validate_gsheet <- function(.data, required_cols) {
 }
 
 
+#' Title
+#'
+#' @param gid
+#' @param required_cols
+#' @param cbms_round
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_refs <- function(gid, required_cols, cbms_round = NULL, ...) {
 
   range <- paste0(LETTERS[1], ':', LETTERS[length(required_cols)])
@@ -31,6 +66,16 @@ load_refs <- function(gid, required_cols, cbms_round = NULL, ...) {
 
 }
 
+
+#' Title
+#'
+#' @param gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_area_name <- function(gid) {
   required_cols <- c(
     'region',
@@ -50,6 +95,17 @@ load_area_name <- function(gid) {
   load_refs(gid, required_cols, col_types = 'ccccccciciii')
 }
 
+
+#' Title
+#'
+#' @param gid
+#' @param cbms_round
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_data_dictionary <- function(gid, cbms_round = NULL) {
 
   required_cols <- c(
@@ -66,6 +122,16 @@ load_data_dictionary <- function(gid, cbms_round = NULL) {
   load_refs(gid, required_cols, cbms_round, col_types = 'cccccccicii')
 }
 
+
+#' Title
+#'
+#' @param gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_valueset <- function(gid) {
   required_cols <- c('list_name', 'value', 'label')
   load_refs(gid, required_cols, col_types = 'ccccccciciii')

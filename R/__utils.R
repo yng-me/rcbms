@@ -1,3 +1,11 @@
+#' Title
+#'
+#' @param name
+#'
+#' @return
+#' @export
+#'
+#' @examples
 create_new_folder <- function(name) {
   if(!dir.exists(name)){
     dir.create(name, recursive = T)
@@ -6,11 +14,27 @@ create_new_folder <- function(name) {
 }
 
 
+#' Title
+#'
+#' @param path
+#'
+#' @return
+#' @export
+#'
+#' @examples
 clean_path <- function(path) {
   stringr::str_replace_all(path, '/\\.?/', '/')
 }
 
 
+#' Title
+#'
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 join_path <- function(...) {
   if(Sys.info()[1] == 'Darwin' | Sys.info()[1] == 'darwin') {
     path <- stringr::str_c(..., collapse = '', sep = '/')
@@ -22,6 +46,12 @@ join_path <- function(...) {
 }
 
 
+#' Title
+#'
+#' @return
+#' @export
+#'
+#' @examples
 format_date <- function() {
   formatted_date <- paste0(
     stringr::str_pad(lubridate::day(lubridate::today()), width = 2, pad = '0'), ' ',
@@ -32,6 +62,16 @@ format_date <- function() {
 }
 
 
+#' Title
+#'
+#' @param .data
+#' @param convert_value
+#' @param pattern
+#'
+#' @return
+#' @export
+#'
+#' @examples
 convert_to_na <- function(.data, convert_value = '', pattern = NULL) {
 
   if(!is.null(pattern)) {
@@ -53,6 +93,15 @@ convert_to_na <- function(.data, convert_value = '', pattern = NULL) {
   return(.data)
 }
 
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
 clean_colnames <- function(.data) {
   str_to_replace <- '\\.|\\-|\\s|\\$\\>|\\<|\\|\\(|\\)|\\[|\\]'
   .data %>%

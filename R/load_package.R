@@ -1,3 +1,12 @@
+#' Title
+#'
+#' @param pkg
+#' @param install_only
+#'
+#' @return
+#' @export
+#'
+#' @examples
 load_package <- function(pkg, install_only = TRUE) {
 
   if(!install_only) {
@@ -21,6 +30,12 @@ load_package <- function(pkg, install_only = TRUE) {
 }
 
 
+#' Title
+#'
+#' @return
+#' @export
+#'
+#' @examples
 load_dependencies <- function() {
 
   if('tsg' %in% installed.packages()[,'Package']) {

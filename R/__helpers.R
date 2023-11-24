@@ -1,3 +1,16 @@
+#' Title
+#'
+#' @param ...
+#' @param code_ref
+#' @param input_data
+#' @param is_char
+#' @param ordered
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 add_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char = F, ordered = F) {
 
   if(is.null(code_ref) & !exists('refs')) {

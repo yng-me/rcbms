@@ -1,3 +1,12 @@
+#' Title
+#'
+#' @param config_file
+#' @param cwd
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_config <- function(config_file, cwd = NULL) {
 
   valid_type_ext <- c('yml', 'json')
