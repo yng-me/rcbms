@@ -7,19 +7,19 @@
 #' @export
 #'
 #' @examples
-get_config <- function(config_file, cwd = NULL) {
+set_config <- function(.config_file, .cwd = NULL) {
 
   valid_type_ext <- c('yml', 'json')
-  ext <- tools::file_ext(config_file)
+  ext <- tools::file_ext(.config_file)
 
   if(!(ext[1] %in% valid_type_ext)) {
     stop("Accepts valid file type only for the config. Use either '.yml' or '.json'.")
   }
 
-  if(is.null(cwd)) {
-    file <- clean_path(config_file)
+  if(is.null(.cwd)) {
+    file <- clean_path(.config_file)
   } else {
-    file <- clean_path(paste0(cwd, '/', config_file))
+    file <- clean_path(paste0(.cwd, '/', .config_file))
   }
 
   if(ext == 'yml') {

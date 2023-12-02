@@ -1,4 +1,4 @@
-#' Title
+#' Create new folder
 #'
 #' @param name
 #'
@@ -14,7 +14,7 @@ create_new_folder <- function(name) {
 }
 
 
-#' Title
+#' Clean file path
 #'
 #' @param path
 #'
@@ -27,7 +27,7 @@ clean_path <- function(path) {
 }
 
 
-#' Title
+#' Join file path
 #'
 #' @param ...
 #'
@@ -46,13 +46,13 @@ join_path <- function(...) {
 }
 
 
-#' Title
+#' Format current date
 #'
 #' @return
 #' @export
 #'
 #' @examples
-format_date <- function() {
+format_current_date <- function() {
   formatted_date <- paste0(
     stringr::str_pad(lubridate::day(lubridate::today()), width = 2, pad = '0'), ' ',
     lubridate::month(lubridate::today(), label = TRUE, abbr = FALSE), ' ',
@@ -62,39 +62,8 @@ format_date <- function() {
 }
 
 
-#' Title
-#'
-#' @param .data
-#' @param convert_value
-#' @param pattern
-#'
-#' @return
-#' @export
-#'
-#' @examples
-convert_to_na <- function(.data, convert_value = '', pattern = NULL) {
 
-  if(!is.null(pattern)) {
-    .data <- .data %>%
-      mutate_if(
-        is.character,
-        ~ str_replace_all(., pattern, convert_value)
-      )
-  }
-
-  suppressWarnings(
-    .data <- .data %>%
-      mutate_if(
-        is.character,
-        ~ if_else(. == convert_value, NA_character_, .)
-      )
-  )
-
-  return(.data)
-}
-
-
-#' Title
+#' Clean column names
 #'
 #' @param .data
 #'
@@ -108,5 +77,3 @@ clean_colnames <- function(.data) {
     dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, '_'))) %>%
     dplyr::rename_with(~ stringr::str_remove(., '^x\\.\\.\\.'))
 }
-
-

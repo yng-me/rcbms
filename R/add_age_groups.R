@@ -1,4 +1,4 @@
-#' Title
+#' Add age groups
 #'
 #' @param .data
 #' @param age

@@ -1,16 +1,15 @@
-set_config <- function(file) {
+set_config <- function(.config_file, .cwd = NULL) {
 
-  # Load global configuration ----------------------------------------------------
-  config <- set_config(paste0(cwd, '/config.yml'))
-  print_progress(cat('🛠', cyan(bold(paste0(' Setting configurations... '))), sep = ''))
-  base <- join_path(cwd, 'src', config$current_project)
 
-  # Load project config ----------------------------------------------------------
+  config <- get_config(.config_file, .cwd)
+  if(is.null(.cwd)) { .cwd <- './' }
+  base <- join_path(.cwd, 'src', config$cbms_round)
+
   project_config_path <- join_path(base, 'config.json')
-  check_if_available(
-    project_config_path,
-    cat(red(('Project configuration file is missing: config.json')))
-  )
+
+  if(!file.exists(project_config_path)) {
+    stop(cat(crayon::red(('Project configuration file is missing: config.json'))))
+  }
 
   config$project <- set_config(project_config_path)
 
@@ -21,9 +20,6 @@ set_config <- function(file) {
     input_data <- config$input_data
   }
 
-
-  # Set output options -----------------------------------------------------------
-  formatted_date <- create_formatted_date()
 
   mode_type_path <- join_path(cwd, 'core/modes/types', paste0(config$mode$type, '.R'))
   mode_type <- config$mode$type
@@ -52,6 +48,6 @@ set_config <- function(file) {
   aggregation$level <- aggregation$levels[n_level]
 
 
-  print_progress(cat('Done ✅ \n'))
+  options(rcbms_config = config)
 
 }

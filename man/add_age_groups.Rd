@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_age_groups.R
 \name{add_age_groups}
 \alias{add_age_groups}
-\title{Title}
+\title{Add age groups}
 \usage{
 add_age_groups(.data, age, prefix = "a07")
 }
@@ -10,5 +10,5 @@ add_age_groups(.data, age, prefix = "a07")
 \item{prefix}{}
 }
 \description{
-Title
+Add age groups
 }

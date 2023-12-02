@@ -1,4 +1,4 @@
-#' Title
+#' Convert to factor
 #'
 #' @param ...
 #' @param code_ref
@@ -11,7 +11,7 @@
 #'
 #' @examples
 #'
-add_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char = F, ordered = F) {
+convert_to_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char = F, ordered = F) {
 
   if(is.null(code_ref) & !exists('refs')) {
     stop('References code does not exist.')
@@ -39,4 +39,35 @@ add_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char = F, ord
     factor(..., ordered = ordered)
   }
 
+}
+
+#' Convert to NA
+#'
+#' @param .data
+#' @param convert_value
+#' @param pattern
+#'
+#' @return
+#' @export
+#'
+#' @examples
+convert_to_na <- function(.data, convert_value = '', pattern = NULL) {
+
+  if(!is.null(pattern)) {
+    .data <- .data %>%
+      mutate_if(
+        is.character,
+        ~ str_replace_all(., pattern, convert_value)
+      )
+  }
+
+  suppressWarnings(
+    .data <- .data %>%
+      mutate_if(
+        is.character,
+        ~ if_else(. == convert_value, NA_character_, .)
+      )
+  )
+
+  return(.data)
 }

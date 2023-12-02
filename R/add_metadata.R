@@ -1,4 +1,13 @@
-add_metadata <- function(.data, selected_input) {
+#' Add metadata
+#'
+#' @param .data
+#' @param selected_input
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_metadata <- function(.data, dictionary) {
 
   df_name <- names(.data)
 
@@ -6,7 +15,7 @@ add_metadata <- function(.data, selected_input) {
     mode_type <- 'validation'
   }
 
-  dcf <- refs[[selected_input]][['data_dictionary']] %>%
+  dcf <- dictionary %>%
     convert_to_na() %>%
     distinct(value, .keep_all = T) %>%
     mutate(mode = mode_type) %>%
