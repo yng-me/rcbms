@@ -20,7 +20,7 @@ read_cbms_data <- function(
 
     df <- readr::read_delim(
       .path,
-      delim = '\t',
+      delim = "\t",
       quote = "",
       progress = F,
       trim_ws = T,

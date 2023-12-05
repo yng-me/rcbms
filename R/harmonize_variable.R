@@ -37,9 +37,9 @@ convert_col_types <- function(.data, .dictionary) {
     dplyr::mutate(type = dplyr::if_else(is.na(type), '?', type))
 
   .data |>
-    readr::type_convert(
-      col_types = stringr::str_flatten(cols_with_type$type)
-    ) |>
+    # readr::type_convert(
+    #   col_types = paste0(cols_with_type$type, collapse = '')
+    # ) |>
     convert_col_numeric_character(.dictionary)
 
 }
@@ -85,12 +85,38 @@ convert_col_names <- function(.data, .dictionary) {
 }
 
 convert_col_numeric_character <- function(.data, .dictionary) {
-  nc <- .dictionary |>
-    dplyr::filter(type == 'nc')# |>
-    # dplyr::select(type, )
 
-  .data |>
+  as_nc <- .dictionary |>
+    dplyr::filter(
+      stringr::str_trim(type) == 'nc',
+      variable_name_new %in% names(.data)
+    ) |>
+    dplyr::mutate(length = as.integer(length)) |>
+    dplyr::select(name = variable_name_new, type, length)
+
+  as_int <- .dictionary |>
+    dplyr::filter(stringr::str_trim(type) == 'i') |>
+    dplyr::select(name = variable_name_new)
+
+  .data <- .data |>
     dplyr::mutate_at(
-      dplyr::any_of()
+      dplyr::vars(dplyr::any_of(as_int$name)),
+      as.integer
     )
+
+  print(as_nc$name)
+
+  for(i in seq_along(as_nc$name)) {
+    nc <- as_nc$name[i]
+    print(nc)
+    .data <- .data |>
+      dplyr::mutate(
+        !!as.name(nc) := stringr::str_pad(
+          as.integer(!!as.name(nc)),
+          pad = '0',
+          width = as_nc$length[as_nc$name == nc][1]
+        )
+      )
+  }
+  return(.data)
 }
