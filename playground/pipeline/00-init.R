@@ -18,4 +18,3 @@ list_of_packages <- c(
 )
 
 sapply(list_of_packages, load_package)
-

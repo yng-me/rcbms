@@ -4,10 +4,10 @@
 \alias{create_barangay_geo}
 \title{Create barangay geo ID}
 \usage{
-create_barangay_geo(.data, .len_add = 0)
+create_barangay_geo(.data, .add_length = 0)
 }
 \arguments{
-\item{.len_add}{}
+\item{.add_length}{}
 }
 \description{
 Create barangay geo ID

@@ -1,4 +1,4 @@
-#' Create new folder
+#' Title
 #'
 #' @param name
 #'
@@ -14,7 +14,7 @@ create_new_folder <- function(name) {
 }
 
 
-#' Clean file path
+#' Title
 #'
 #' @param path
 #'
@@ -27,7 +27,7 @@ clean_path <- function(path) {
 }
 
 
-#' Join file path
+#' Title
 #'
 #' @param ...
 #'
@@ -46,7 +46,7 @@ join_path <- function(...) {
 }
 
 
-#' Format current date
+#' Title
 #'
 #' @return
 #' @export
@@ -62,8 +62,7 @@ format_current_date <- function() {
 }
 
 
-
-#' Clean column names
+#' Title
 #'
 #' @param .data
 #'
@@ -73,7 +72,7 @@ format_current_date <- function() {
 #' @examples
 clean_colnames <- function(.data) {
   str_to_replace <- '\\.|\\-|\\s|\\$\\>|\\<|\\|\\(|\\)|\\[|\\]'
-  .data %>%
-    dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, '_'))) %>%
+  .data |>
+    dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, '_'))) |>
     dplyr::rename_with(~ stringr::str_remove(., '^x\\.\\.\\.'))
 }

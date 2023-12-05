@@ -4,7 +4,7 @@
 \alias{create_line_number_id}
 \title{Create line number ID}
 \usage{
-create_line_number_id(.data, join_with = NULL, ...)
+create_line_number_id(.data, .join_with = NULL, ...)
 }
 \arguments{
 \item{...}{}

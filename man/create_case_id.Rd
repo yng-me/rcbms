@@ -4,10 +4,10 @@
 \alias{create_case_id}
 \title{Create case ID}
 \usage{
-create_case_id(.data, filter_completed = T, .len_add = 0)
+create_case_id(.data, .filter_completed = T, .add_length = 0)
 }
 \arguments{
-\item{.len_add}{}
+\item{.add_length}{}
 }
 \description{
 Create case ID

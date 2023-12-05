@@ -4,10 +4,10 @@
 \alias{validate_gsheet}
 \title{Title}
 \usage{
-validate_gsheet(.data, required_cols)
+validate_gsheet(.data, .required_cols)
 }
 \arguments{
-\item{required_cols}{}
+\item{.required_cols}{}
 }
 \description{
 Title

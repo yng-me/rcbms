@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-set_config <- function(.config_file, .cwd = NULL) {
+get_config <- function(.config_file, .cwd = NULL) {
 
   valid_type_ext <- c('yml', 'json')
   ext <- tools::file_ext(.config_file)

@@ -4,7 +4,7 @@
 \alias{fetch_gsheet}
 \title{Title}
 \usage{
-fetch_gsheet(gid, sheet = NULL, range = NULL, ...)
+fetch_gsheet(.gid, .sheet = NULL, .range = NULL, ...)
 }
 \arguments{
 \item{...}{}

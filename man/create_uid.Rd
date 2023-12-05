@@ -4,10 +4,10 @@
 \alias{create_uid}
 \title{Create unique ID sequentially}
 \usage{
-create_uid(format)
+create_uid(.format)
 }
 \arguments{
-\item{format}{}
+\item{.format}{}
 }
 \description{
 Create unique ID sequentially

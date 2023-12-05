@@ -4,7 +4,7 @@
 \alias{load_refs}
 \title{Title}
 \usage{
-load_refs(gid, required_cols, cbms_round = NULL, ...)
+load_refs(.gid, .required_cols, .cbms_round = NULL, ...)
 }
 \arguments{
 \item{...}{}

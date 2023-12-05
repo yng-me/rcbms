@@ -1,4 +1,4 @@
-#' Convert to factor
+#' Title
 #'
 #' @param ...
 #' @param code_ref
@@ -10,8 +10,12 @@
 #' @export
 #'
 #' @examples
-#'
-convert_to_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char = F, ordered = F) {
+convert_to_factor <- function(
+  ..., code_ref = NULL,
+  input_data = 'hp',
+  is_char = F,
+  ordered = F
+) {
 
   if(is.null(code_ref) & !exists('refs')) {
     stop('References code does not exist.')
@@ -21,15 +25,15 @@ convert_to_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char =
 
     if(exists('refs')) {
       code_refs <- eval(as.name('refs'))
-      refs_vs <- code_refs[[input_data]]$valueset %>%
+      refs_vs <- code_refs[[input_data]]$valueset |>
         filter(list_name == code_ref)
     }
 
     if(is_char == T) {
-      code <- refs_vs %>%
+      code <- refs_vs |>
         mutate(level = str_trim(value))
     } else {
-      code <- refs_vs %>%
+      code <- refs_vs |>
         mutate(level = as.integer(value))
     }
 
@@ -41,33 +45,37 @@ convert_to_factor <- function(..., code_ref = NULL, input_data = 'hp', is_char =
 
 }
 
-#' Convert to NA
+#' Title
 #'
 #' @param .data
-#' @param convert_value
-#' @param pattern
+#' @param .convert_value
+#' @param .pattern
 #'
 #' @return
 #' @export
 #'
 #' @examples
-convert_to_na <- function(.data, convert_value = '', pattern = NULL) {
+convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
 
-  if(!is.null(pattern)) {
-    .data <- .data %>%
-      mutate_if(
+  if(!is.null(.pattern)) {
+    .data <- .data |>
+      dplyr::mutate_if(
         is.character,
-        ~ str_replace_all(., pattern, convert_value)
+        ~ stringr::str_replace_all(., .pattern, .convert_value)
       )
   }
 
   suppressWarnings(
-    .data <- .data %>%
-      mutate_if(
+    .data <- .data |>
+      dplyr::mutate_if(
         is.character,
-        ~ if_else(. == convert_value, NA_character_, .)
+        ~ dplyr::if_else(. == .convert_value, NA_character_, .)
       )
   )
 
   return(.data)
 }
+
+
+
+

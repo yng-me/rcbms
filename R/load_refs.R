@@ -61,7 +61,7 @@ validate_gsheet <- function(.data, .required_cols) {
 load_refs <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
 
   range <- paste0(LETTERS[1], ':', LETTERS[length(.required_cols)])
-  dd <- fetch_gsheet(.gid, .cbms_round, range = range, ...)
+  dd <- fetch_gsheet(.gid, .cbms_round, .range = range, ...)
   return(validate_gsheet(dd, .required_cols))
 
 }
@@ -79,7 +79,6 @@ load_refs <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
 #' @examples
 #'
 load_data_dictionary <- function(.gid, .cbms_round = NULL) {
-
 
   required_cols <- c(
     'variable_name',
