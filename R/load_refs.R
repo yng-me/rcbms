@@ -78,7 +78,7 @@ load_refs <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
 #'
 #' @examples
 #'
-load_data_dictionary <- function(.gid, .cbms_round = NULL) {
+load_data_dictionary <- function(.gid = get_env('DATA_DICTIONARY'), .cbms_round = NULL) {
 
   required_cols <- c(
     'variable_name',
@@ -106,7 +106,7 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
 #'
 #' @examples
 #'
-load_area_name <- function(.gid) {
+load_area_name <- function(.gid = get_env('AREA_NAME')) {
   required_cols <- c(
     'region',
     'province',
@@ -135,7 +135,7 @@ load_area_name <- function(.gid) {
 #'
 #' @examples
 #'
-load_valueset <- function(.gid) {
+load_valueset <- function(.gid = get_env('VALUESET')) {
   required_cols <- c('name', 'value', 'label')
   load_refs(.gid, required_cols, col_types = 'ccccccciciii')
 }

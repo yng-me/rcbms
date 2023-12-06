@@ -104,8 +104,6 @@ convert_col_numeric_character <- function(.data, .dictionary) {
       as.integer
     )
 
-  print(as_nc$name)
-
   for(i in seq_along(as_nc$name)) {
     nc <- as_nc$name[i]
     print(nc)

@@ -1,8 +1,2 @@
-cbms_round: 2022
+cbms_round: 2024
 input_data: hp
-refs:
-  area_name: "1seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
-  valueset: "1eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
-  validation: "1PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY"
-  tabulation: "1jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE"
-  data_dictionary: "1MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
