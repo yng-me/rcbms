@@ -4,10 +4,10 @@
 \alias{add_age_groups}
 \title{Add age groups}
 \usage{
-add_age_groups(.data, age, prefix = "a07")
+add_age_groups(.data, .age, .prefix = "a07")
 }
 \arguments{
-\item{prefix}{}
+\item{.prefix}{}
 }
 \description{
 Add age groups

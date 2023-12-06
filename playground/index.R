@@ -7,3 +7,5 @@ df <- read_cbms_data(
   .dictionary = ref_dcf,
   .valueset = ref_vs
   )
+
+df |> dplyr::select()
