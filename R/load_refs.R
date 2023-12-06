@@ -35,11 +35,11 @@ fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
 #'
 #' @examples
 #'
-validate_gsheet <- function(.data, .required_cols) {
+validate_required_cols <- function(.data, .required_cols) {
   required_cols_which <- which(.required_cols %in% names(.data))
 
   if(length(required_cols_which) < length(.required_cols)) {
-    stop('Invalid column names defined in the data dictionary.')
+    stop('Invalid column names specified.')
   }
 
   return(.data)
@@ -62,7 +62,7 @@ load_refs <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
 
   range <- paste0(LETTERS[1], ':', LETTERS[length(.required_cols)])
   dd <- fetch_gsheet(.gid, .cbms_round, .range = range, ...)
-  return(validate_gsheet(dd, .required_cols))
+  return(validate_required_cols(dd, .required_cols))
 
 }
 
@@ -136,6 +136,9 @@ load_area_name <- function(.gid = get_env('AREA_NAME')) {
 #' @examples
 #'
 load_valueset <- function(.gid = get_env('VALUESET')) {
-  required_cols <- c('name', 'value', 'label')
-  load_refs(.gid, required_cols, col_types = 'ccccccciciii')
+  load_refs(
+    .gid,
+    .required_cols = c('name', 'value', 'label'),
+    col_types = 'ccc'
+  )
 }

@@ -4,10 +4,10 @@
 \alias{convert_to_na}
 \title{Title}
 \usage{
-convert_to_na(.data, convert_value = "", pattern = NULL)
+convert_to_na(.data, .convert_value = "", .pattern = NULL)
 }
 \arguments{
-\item{pattern}{}
+\item{.pattern}{}
 }
 \description{
 Title

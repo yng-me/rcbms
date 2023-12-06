@@ -4,10 +4,10 @@
 \alias{add_metadata}
 \title{Add metadata}
 \usage{
-add_metadata(.data, dictionary)
+add_metadata(.data, .dictionary, .valueset)
 }
 \arguments{
-\item{selected_input}{}
+\item{.valueset}{}
 }
 \description{
 Add metadata

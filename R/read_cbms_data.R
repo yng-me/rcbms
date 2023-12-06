@@ -13,6 +13,7 @@ read_cbms_data <- function(
   .path,
   .input_data = 'hp',
   .dictionary = NULL,
+  .valueset = NULL,
   ...
 ) {
 
@@ -44,29 +45,12 @@ read_cbms_data <- function(
 
   }
 
-  if(!is.null(.dictionary)) {
+  df <- df |>
+    harmonize_variable(.dictionary) |>
+    add_metadata(.dictionary, .valueset)
 
-    required_cols <- c('variable_name_new', 'type', 'length')
-    valid_cols <- which(required_cols %in% names(.dictionary))
-
-    if(length(valid_cols) < length(required_cols)) {
-      stop('Invalid data dictionary.')
-    }
-
-    df <- df |> harmonize_variable(.dictionary)
-  }
+  class(df) <- c('rcbms_df', class(df))
 
   return(df)
+
 }
-
-
-
-
-
-
-
-
-
-
-
-

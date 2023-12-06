@@ -9,10 +9,10 @@
 #' read_dot_env()
 #'
 
-read_dot_env <- function(.path = '.env') {
+read_dot_env <- function(.path = getOption('rcbms_dotenv_path')) {
 
   if(!file.exists(.path)) {
-    stop('.env file does not exist.')
+    return(NULL)
   }
 
   env_file <- readr::read_file(.path)
@@ -20,7 +20,7 @@ read_dot_env <- function(.path = '.env') {
   env_values <- env_values[env_values != '']
 
   if(length(env_values) == 0) {
-    stop('.env file is empty.')
+    return(NULL)
   }
 
   env <- list()

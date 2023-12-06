@@ -10,6 +10,13 @@
 #'
 harmonize_variable <- function(.data, .dictionary) {
 
+  if(is.null(.dictionary)) return(.data)
+
+  validate_required_cols(
+    .dictionary,
+    c('variable_name_new', 'type', 'length')
+  )
+
   excluded <- .dictionary |>
     dplyr::filter(is_included != 1) |>
     dplyr::pull(variable_name)
@@ -37,10 +44,10 @@ convert_col_types <- function(.data, .dictionary) {
     dplyr::mutate(type = dplyr::if_else(is.na(type), '?', type))
 
   .data |>
-    # readr::type_convert(
-    #   col_types = paste0(cols_with_type$type, collapse = '')
-    # ) |>
-    convert_col_numeric_character(.dictionary)
+    readr::type_convert(
+      col_types = paste0(cols_with_type$type, collapse = '')
+    ) |>
+    convert_cols_from_dictionary(.dictionary)
 
 }
 
@@ -84,37 +91,77 @@ convert_col_names <- function(.data, .dictionary) {
 
 }
 
-convert_col_numeric_character <- function(.data, .dictionary) {
 
-  as_nc <- .dictionary |>
-    dplyr::filter(
-      stringr::str_trim(type) == 'nc',
-      variable_name_new %in% names(.data)
-    ) |>
-    dplyr::mutate(length = as.integer(length)) |>
-    dplyr::select(name = variable_name_new, type, length)
+convert_cols_from_dictionary <- function(.data, .dictionary) {
 
-  as_int <- .dictionary |>
-    dplyr::filter(stringr::str_trim(type) == 'i') |>
-    dplyr::select(name = variable_name_new)
 
-  .data <- .data |>
-    dplyr::mutate_at(
-      dplyr::vars(dplyr::any_of(as_int$name)),
-      as.integer
+  get_col_type <- function(.type) {
+    as_type <- .dictionary$name[.dictionary$type == .type]
+    nc_names <- as_type[as_type %in% names(.data)]
+    return(nc_names)
+  }
+
+  .dictionary <- .dictionary |>
+    dplyr::filter(!is.na(.dictionary$type)) |>
+    dplyr::mutate(
+      name = stringr::str_trim(variable_name),
+      type = stringr::str_trim(type),
+      length = as.integer(length)
     )
 
-  for(i in seq_along(as_nc$name)) {
-    nc <- as_nc$name[i]
-    print(nc)
+  # convert to integer
+  as_int <- get_col_type('i')
+  if(length(as_int) > 0) {
+
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_int)),
+        as.integer
+      )
+  }
+
+  # convert to numeric character
+  as_nc <- get_col_type('nc')
+  for(i in seq_along(as_nc)) {
+    nc <- as_nc[i]
     .data <- .data |>
       dplyr::mutate(
         !!as.name(nc) := stringr::str_pad(
           as.integer(!!as.name(nc)),
           pad = '0',
-          width = as_nc$length[as_nc$name == nc][1]
+          width = .dictionary$length[.dictionary$name == nc][1]
         )
       )
   }
+
+  # convert to ISO date
+  as_date_col <- get_col_type('D')
+  if(length(as_date_col) > 0) {
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_date_col)),
+        lubridate::ymd
+      )
+  }
+  # convert to year
+  as_year <- get_col_type('y')
+  if(length(as_year) > 0) {
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_year)),
+        ~ lubridate::year(as.Date(as.character(.), format = "%Y"))
+      )
+  }
+
+  # convert to month
+  as_month <- get_col_type('m')
+  if(length(as_month) > 0) {
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_month)),
+        ~ lubridate::month(as.Date(as.character(.), format = "%m"))
+      )
+  }
+
   return(.data)
 }

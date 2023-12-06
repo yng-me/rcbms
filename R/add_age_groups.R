@@ -70,7 +70,7 @@ add_age_groups <- function(.data, age, prefix = 'a07') {
         '_',
         stringr::str_remove(., '^add_')
       ),
-      starts_with('add_age_group_')
+      dplyr::starts_with('add_age_group_')
     )
 
   attr(.data[[paste0(prefix, '_age_group_five_year')]], 'valueset') <- data.frame(

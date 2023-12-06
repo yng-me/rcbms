@@ -4,7 +4,13 @@
 \alias{read_cbms_data}
 \title{Rear CBMS Data}
 \usage{
-read_cbms_data(.path, .input_data = "hp", .dictionary = NULL, ...)
+read_cbms_data(
+  .path,
+  .input_data = "hp",
+  .dictionary = NULL,
+  .valueset = NULL,
+  ...
+)
 }
 \arguments{
 \item{...}{}
