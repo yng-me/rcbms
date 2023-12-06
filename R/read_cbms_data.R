@@ -12,22 +12,23 @@
 read_cbms_data <- function(
   .path,
   .input_data = 'hp',
-  .dictionary = NULL,
-  .valueset = NULL,
   ...
 ) {
 
   if(.input_data == 'hp') {
 
-    df <- readr::read_delim(
+    df <- read.delim(
       .path,
-      delim = "\t",
       quote = "",
-      progress = F,
-      trim_ws = T,
-      show_col_types = F,
+      header = T,
+      strip.white = T,
+      tryLogical = F,
+      stringsAsFactors = F,
+      # progress = F,
+      # trim_ws = T,
+      # show_col_types = F,
       ...
-    )
+    ) |> dplyr::select(-dplyr::starts_with('aux'))
 
   } else if (.input_data == 'bp') {
 
@@ -44,10 +45,6 @@ read_cbms_data <- function(
     stop('Invalid input data.')
 
   }
-
-  df <- df |>
-    harmonize_variable(.dictionary) |>
-    add_metadata(.dictionary, .valueset)
 
   class(df) <- c('rcbms_df', class(df))
 

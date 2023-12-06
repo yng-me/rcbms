@@ -1,13 +1,13 @@
 #' Title
 #'
-#' @param config_file
-#' @param cwd
+#' @param .config_file
+#' @param .cwd
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_config <- function(.config_file, .cwd = NULL) {
+set_config <- function(.config_file, .cwd = NULL) {
 
   valid_type_ext <- c('yml', 'json')
   ext <- tools::file_ext(.config_file)
@@ -29,6 +29,8 @@ get_config <- function(.config_file, .cwd = NULL) {
   if(ext == 'json') {
     config <- jsonlite::fromJSON(file, simplifyVector = T)
   }
+
+  options(rcbms_config = config)
 
   return(config)
 }

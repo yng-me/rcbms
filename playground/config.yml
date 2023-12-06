@@ -1,2 +1,5 @@
-cbms_round: 2024
+cbms_round: 2022
 input_data: hp
+working_directory: './playground'
+input_file_first: cover_page
+convert_to_parquet: yes

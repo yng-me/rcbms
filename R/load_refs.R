@@ -1,5 +1,24 @@
 #' Title
 #'
+#' @param .env
+#'
+#' @return
+#' @export
+#'
+#' @examples
+load_refs <- function(.env, .config = getOption('rcbms_config')) {
+  refs <- list()
+  refs$data_dictionary <- load_data_dictionary(
+    .env$DATA_DICTIONARY,
+    .cbms_round = .config$cbms_round
+  )
+  refs$valueset <- load_valueset(.env$VALUESET)
+  refs$area_name <- load_area_name(.env$AREA_NAME)
+  return(refs)
+}
+
+#' Title
+#'
 #' @param .gid
 #' @param .sheet
 #' @param .range
@@ -58,7 +77,7 @@ validate_required_cols <- function(.data, .required_cols) {
 #'
 #' @examples
 #'
-load_refs <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
+load_refs_from_gsheet <- function(.gid, .required_cols, .cbms_round = NULL, ...) {
 
   range <- paste0(LETTERS[1], ':', LETTERS[length(.required_cols)])
   dd <- fetch_gsheet(.gid, .cbms_round, .range = range, ...)
@@ -93,7 +112,7 @@ load_data_dictionary <- function(.gid = get_env('DATA_DICTIONARY'), .cbms_round 
     'privacy_level'
   )
 
-  load_refs(.gid, required_cols, .cbms_round, col_types = 'ccccccciii')
+  load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciii')
 }
 
 
@@ -122,7 +141,7 @@ load_area_name <- function(.gid = get_env('AREA_NAME')) {
     'funding_source'
   )
 
-  load_refs(.gid, required_cols, col_types = 'ccccccciciii')
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciciii')
 }
 
 
@@ -136,7 +155,7 @@ load_area_name <- function(.gid = get_env('AREA_NAME')) {
 #' @examples
 #'
 load_valueset <- function(.gid = get_env('VALUESET')) {
-  load_refs(
+  load_refs_from_gsheet(
     .gid,
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
