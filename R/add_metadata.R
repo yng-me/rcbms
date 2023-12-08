@@ -48,9 +48,9 @@ add_metadata <- function(.data, .dictionary, .valueset) {
     for(j in seq_along(.dictionary$variable)) {
 
       vs <- .valueset |>
+        dplyr::collect() |>
         dplyr::filter(name == .dictionary$valueset[j]) |>
-        dplyr::select(-name) |>
-        dplyr::collect()
+        dplyr::select(-name)
 
       if(nrow(vs) > 0) {
 

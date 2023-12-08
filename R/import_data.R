@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-import_data <- function(.input_data = 'hp', ...) {
+import_data <- function(.input_data = 'hp', .dictionary = NULL, .valueset = NULL) {
 
   config = getOption('rcbms_config')
 
@@ -25,14 +25,14 @@ import_data <- function(.input_data = 'hp', ...) {
       suppressWarnings(
         read_cbms_data(x, .input_data = .input_data) |>
           clean_colnames() |>
-          harmonize_variable(...)
+          harmonize_variable(.dictionary)
       )
     })
 
     p_name <- stringr::str_remove(tolower(p), '\\.(TXT|txt)$')
     df_temp <- do.call('rbind', df_list) |>
       dplyr::tibble() |>
-      add_metadata(...)
+      add_metadata(.dictionary, .valueset)
 
     pq_folder <- create_new_folder(get_data_path('parquet'))
     pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))

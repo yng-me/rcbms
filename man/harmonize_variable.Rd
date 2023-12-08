@@ -4,7 +4,7 @@
 \alias{harmonize_variable}
 \title{Harmonize variable}
 \usage{
-harmonize_variable(.data, .dictionary, .valueset)
+harmonize_variable(.data, .dictionary)
 }
 \arguments{
 \item{.dictionary}{}
