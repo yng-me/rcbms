@@ -9,7 +9,7 @@
 #' read_dot_env()
 #'
 
-read_dot_env <- function(.path = getOption('rcbms_dotenv_path')) {
+set_dot_env <- function(.path = getOption('rcbms_dotenv_path')) {
 
   if(!file.exists(.path)) {
     return(NULL)

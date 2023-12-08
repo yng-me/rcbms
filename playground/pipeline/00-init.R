@@ -1,3 +1,5 @@
+# Load/install required packages ----------
+library(rcbms)
 list_of_packages <- c(
   'arrow',
   'dplyr',
@@ -17,3 +19,6 @@ list_of_packages <- c(
 )
 
 sapply(list_of_packages, load_package)
+set_config('playground/config.yml')
+
+refs <- load_refs()

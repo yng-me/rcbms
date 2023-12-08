@@ -21,6 +21,7 @@ add_metadata <- function(.data, .dictionary, .valueset) {
   df_name <- names(.data)
 
   .dictionary <- .dictionary |>
+    dplyr::collect() |>
     convert_to_na() |>
     dplyr::distinct(variable_name, .keep_all = T) |>
     dplyr::mutate(
@@ -48,7 +49,8 @@ add_metadata <- function(.data, .dictionary, .valueset) {
 
       vs <- .valueset |>
         dplyr::filter(name == .dictionary$valueset[j]) |>
-        dplyr::select(-name)
+        dplyr::select(-name) |>
+        dplyr::collect()
 
       if(nrow(vs) > 0) {
 

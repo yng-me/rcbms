@@ -22,9 +22,11 @@ import_data <- function(.input_data = 'hp', ...) {
       dplyr::pull(value)
 
     df_list <- lapply(df_src_files, function(x) {
-      read_cbms_data(x, .input_data = .input_data) |>
-        clean_colnames() |>
-        harmonize_variable(...)
+      suppressWarnings(
+        read_cbms_data(x, .input_data = .input_data) |>
+          clean_colnames() |>
+          harmonize_variable(...)
+      )
     })
 
     p_name <- stringr::str_remove(tolower(p), '\\.(TXT|txt)$')

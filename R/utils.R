@@ -13,6 +13,23 @@ create_new_folder <- function(name) {
   return(name)
 }
 
+#' Title
+#'
+#' @param .site
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+is_online <- function(.site = "http://google.com/") {
+  tryCatch({
+    readLines(.site, n = 1)
+    TRUE
+  },
+  warning = function(w) invokeRestart("muffleWarning"),
+  error = function(e) FALSE)
+}
 
 #' Title
 #'
@@ -23,7 +40,7 @@ create_new_folder <- function(name) {
 #'
 #' @examples
 clean_path <- function(path) {
-  stringr::str_replace_all(path, '/\\.?/', '/')
+  stringr::str_replace_all(stringr::str_replace_all(path, '/\\.?/', '/'), '\\/+', '/')
 }
 
 
@@ -75,4 +92,29 @@ clean_colnames <- function(.data) {
   .data |>
     dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, '_'))) |>
     dplyr::rename_with(~ stringr::str_remove(., '^x\\.\\.\\.'))
+}
+
+
+#' Set current working directory relative to the project path
+#'
+#' @param .base_wd
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_rwd <- function(..., .base_wd = getOption('rcbms_config')) {
+
+  if(!is.null(.base_wd)) {
+    if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {
+      wd <- .base_wd
+    } else if (!is.null(.base_wd$working_directory)) {
+      wd <- .base_wd$working_directory
+    }
+  } else {
+    wd <- './'
+  }
+
+  join_path(paste0(wd, '/', ...))
 }

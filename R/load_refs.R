@@ -1,19 +1,52 @@
 #' Title
 #'
-#' @param .env
+#' @param .config
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_refs <- function(.env, .config = getOption('rcbms_config')) {
+load_refs <- function(.config = getOption('rcbms_config')) {
+
+  if(is.null(.config)) {
+    stop('Config not found.')
+  }
+
   refs <- list()
-  refs$data_dictionary <- load_data_dictionary(
-    .env$DATA_DICTIONARY,
-    .cbms_round = .config$cbms_round
-  )
-  refs$valueset <- load_valueset(.env$VALUESET)
-  refs$area_name <- load_area_name(.env$AREA_NAME)
+
+  wd <- .config$working_directory
+  if(is.null(wd)) wd <- ''
+
+  wd_project <- create_new_folder(paste0(wd, '/src/', .config$cbms_round, '/references'))
+
+  pq_dcf <- paste0(wd_project, '/ref_data_dictionary.parquet')
+  pq_vs <- paste0(wd_project, '/ref_valueset.parquet')
+  pq_anm <- paste0(wd_project, '/ref_area_name.parquet')
+
+  refs_exist <- file.exists(pq_dcf) & file.exists(pq_vs) & file.exists(pq_anm)
+
+  if(!refs_exist & is_online()) {
+
+    googlesheets4::gs4_deauth()
+    refs$data_dictionary <- suppressWarnings(load_data_dictionary(
+      .gid = .config$env$DATA_DICTIONARY,
+      .cbms_round = .config$cbms_round
+    ))
+    arrow::write_parquet(refs$data_dictionary, pq_dcf)
+
+    refs$valueset <- suppressWarnings(load_valueset(.config$env$VALUESET))
+    arrow::write_parquet(refs$valueset, pq_vs)
+
+    refs$area_name <- suppressWarnings(load_area_name(.config$env$AREA_NAME))
+    arrow::write_parquet(refs$area_name, pq_anm)
+  }
+
+  if(refs_exist) {
+    refs$data_dictionary <- arrow::open_dataset(pq_dcf)
+    refs$valueset <- arrow::open_dataset(pq_vs)
+    refs$area_name <- arrow::open_dataset(pq_anm)
+  }
+
   return(refs)
 }
 
@@ -141,7 +174,7 @@ load_area_name <- function(.gid = get_env('AREA_NAME')) {
     'funding_source'
   )
 
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciciii')
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciciii')
 }
 
 

@@ -17,16 +17,13 @@ read_cbms_data <- function(
 
   if(.input_data == 'hp') {
 
-    df <- read.delim(
+    df <- readr::read_delim(
       .path,
+      delim = "\t",
       quote = "",
-      header = T,
-      strip.white = T,
-      tryLogical = F,
-      stringsAsFactors = F,
-      # progress = F,
-      # trim_ws = T,
-      # show_col_types = F,
+      progress = F,
+      trim_ws = T,
+      show_col_types = F,
       ...
     ) |> dplyr::select(-dplyr::starts_with('aux'))
 

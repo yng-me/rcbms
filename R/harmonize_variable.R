@@ -8,7 +8,7 @@
 #'
 #' @examples
 #'
-harmonize_variable <- function(.data, .dictionary, .valueset) {
+harmonize_variable <- function(.data, .dictionary) {
 
   if(is.null(.dictionary)) return(.data)
 
@@ -18,6 +18,7 @@ harmonize_variable <- function(.data, .dictionary, .valueset) {
   )
 
   .dictionary <- .dictionary |>
+    dplyr::collect() |>
     dplyr::mutate(
       variable_name = tolower(stringr::str_trim(variable_name)),
       type = stringr::str_trim(type),

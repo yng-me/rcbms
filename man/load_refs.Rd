@@ -4,10 +4,10 @@
 \alias{load_refs}
 \title{Title}
 \usage{
-load_refs(.env, .config = getOption("rcbms_config"))
+load_refs(.config = getOption("rcbms_config"))
 }
 \arguments{
-\item{.env}{}
+\item{.config}{}
 }
 \description{
 Title
