@@ -22,10 +22,16 @@ load_refs <- function(.config = getOption('rcbms_config')) {
   pq_dcf <- paste0(wd_project, '/ref_data_dictionary.parquet')
   pq_vs <- paste0(wd_project, '/ref_valueset.parquet')
   pq_anm <- paste0(wd_project, '/ref_area_name.parquet')
+  pq_cv <- paste0(wd_project, '/ref_validation.parquet')
+  pq_ts <- paste0(wd_project, '/ref_tabulation.parquet')
 
-  refs_exist <- file.exists(pq_dcf) & file.exists(pq_vs) & file.exists(pq_anm)
+  refs_exist <- file.exists(pq_dcf) &
+    file.exists(pq_vs) &
+    file.exists(pq_anm) &
+    file.exists(pq_cv) &
+    file.exists(pq_ts)
 
-  if(!refs_exist & is_online()) {
+  if((!refs_exist | .config$reload_refs) & is_online()) {
 
     googlesheets4::gs4_deauth()
     refs$data_dictionary <- suppressWarnings(load_data_dictionary(
@@ -39,13 +45,20 @@ load_refs <- function(.config = getOption('rcbms_config')) {
 
     refs$area_name <- suppressWarnings(load_area_name(.config$env$AREA_NAME))
     arrow::write_parquet(refs$area_name, pq_anm)
+
+    refs$validation <- suppressWarnings(load_validation_refs(.config$env$VALIDATION))
+    arrow::write_parquet(refs$area_name, pq_cv)
+
+    refs$tabulation <- suppressWarnings(load_tabulation_refs(.config$env$TABULATION))
+    arrow::write_parquet(refs$area_name, pq_ts)
+
   }
 
-  if(refs_exist) {
-    refs$data_dictionary <- arrow::open_dataset(pq_dcf)
-    refs$valueset <- arrow::open_dataset(pq_vs)
-    refs$area_name <- arrow::open_dataset(pq_anm)
-  }
+  refs$data_dictionary <- arrow::open_dataset(pq_dcf)
+  refs$valueset <- arrow::open_dataset(pq_vs)
+  refs$area_name <- arrow::open_dataset(pq_anm)
+  refs$validation <- arrow::open_dataset(pq_cv)
+  refs$tabulation <- arrow::open_dataset(pq_ts)
 
   return(refs)
 }
@@ -194,3 +207,38 @@ load_valueset <- function(.gid = get_env('VALUESET')) {
     col_types = 'ccc'
   )
 }
+
+
+load_validation_refs <- function(.gid = get_env('VALIDATION')) {
+  required_cols <- c(
+    'validation_id',
+    'title',
+    'description',
+    'primary_data_item',
+    'section',
+    'priority_level'
+  )
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccc')
+}
+
+load_tabulation_refs <- function(.gid = get_env('TABULATION')) {
+  required_cols <- c(
+    'tabulation_id',
+    'tab_name',
+    'table_number',
+    'title',
+    'subtitle',
+    'description',
+    'is_included',
+    'precision',
+    'col_decimal_format',
+    'col_width_all',
+    'col_width_first',
+    'col_width_last',
+    'row_height_header',
+    'row_reset_last'
+  )
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciiciiici')
+}
+
+

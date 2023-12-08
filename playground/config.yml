@@ -1,19 +1,18 @@
 cbms_round: 2022
 working_directory: './playground'
 input_file_first: summary_of_visit
-read_from_parquet: yes
+read_from_parquet: no
 aggregation_level: 1
 input_data: hp
+reload_refs: no
 file_format:
   hp: txt
   bp: csv
-
 mode:
   type: validation
   generate_output: no
   stage: 1
   options: ~
-
 
 2021:
   reference_period: ""

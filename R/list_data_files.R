@@ -43,6 +43,7 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
   )
 }
 
+
 check_input_data <- function(.input_data = 'hp') {
   .input_data <- .input_data[.input_data %in% c('hp', 'bp')]
   valid_input <- .input_data %in% c('hp', 'bp')
@@ -55,6 +56,7 @@ check_input_data <- function(.input_data = 'hp') {
   return(.input_data)
 }
 
+
 get_file_format <- function(.config, .input_data) {
   if(!is.null(.config$file_format[[.input_data]])) {
     file_format <- .config$file_format[[.input_data]]
@@ -64,6 +66,7 @@ get_file_format <- function(.config, .input_data) {
   }
   return(file_format)
 }
+
 
 get_data_path <- function(.type, .input_data = 'hp', .config = getOption('rcbms_config')) {
   wd <- .config$working_directory
