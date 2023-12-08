@@ -1,57 +1,46 @@
-set_config <- function(file) {
+#' Title
+#'
+#' @param .config_file
+#' @param .cwd
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_config <- function(.config_file) {
 
-  # Load global configuration ----------------------------------------------------
-  config <- set_config(paste0(cwd, '/config.yml'))
-  print_progress(cat('🛠', cyan(bold(paste0(' Setting configurations... '))), sep = ''))
-  base <- join_path(cwd, 'src', config$current_project)
+  valid_type_ext <- c('yml', 'json')
+  ext <- tools::file_ext(.config_file)
 
-  # Load project config ----------------------------------------------------------
-  project_config_path <- join_path(base, 'config.json')
-  check_if_available(
-    project_config_path,
-    cat(red(('Project configuration file is missing: config.json')))
-  )
-
-  config$project <- set_config(project_config_path)
-
-  # Define input data ------------------------------------------------------------
-  if(config$input_data == 'all') {
-    input_data <- config$project$data_files[[1]]
-  } else {
-    input_data <- config$input_data
+  if(!(ext[1] %in% valid_type_ext)) {
+    stop("Accepts valid file type only for the config. Use either '.yml' or '.json'.")
   }
 
+  if(ext == 'yml') {
+    config <- yaml::read_yaml(.config_file, readLines.warn = F)
+  }
 
-  # Set output options -----------------------------------------------------------
-  formatted_date <- create_formatted_date()
+  if(ext == 'json') {
+    config <- jsonlite::fromJSON(.config_file, simplifyVector = T)
+  }
 
-  mode_type_path <- join_path(cwd, 'core/modes/types', paste0(config$mode$type, '.R'))
-  mode_type <- config$mode$type
+  # VERSION
+  wd <- config$working_directory
+  current_version <- NULL
+  if(is.null(wd)) wd <- './'
+  version_dir <- join_path(paste0(wd, '/.version.json'))
+  if(file.exists(version_dir)) {
+    current_version <- jsonlite::read_json(version_dir)
+  }
 
-  mode_folder_keys <- c('tabulation', 'validation', 'mpi', 'eda', 'presentation', 'signature-validation')
-  mode_folder_names <- c('Tables', 'Inconsistencies', 'MPI', 'Others', 'Presentation', 'Signature')
+  config$version <- current_version
 
-  output_path <- join_path(cwd, config$project$output_path)
+  # ENV
+  wd <- stringr::str_remove(.config_file, 'config\\.(YML|yml|JSON|json)$')
 
-  tb_output_dir <- join_path(
-    output_path,
-    mode_folder_names[which(mode_folder_keys == mode_type)]
-  )
+  config$env <- set_dot_env(join_path(wd, '.env'))
 
-  tb_output_path <- join_path(tb_output_dir, formatted_date)
+  options(rcbms_config = config)
 
-
-  create_new_folder(name = output_path)
-  create_new_folder(name = tb_output_dir)
-  create_new_folder(name = tb_output_path)
-
-  aggregation <- config$project$aggregation
-  n_level <- aggregation$level
-  agg_record <- aggregation$src$record
-  aggregation$label <- aggregation$labels[n_level]
-  aggregation$level <- aggregation$levels[n_level]
-
-
-  print_progress(cat('Done ✅ \n'))
-
+  return(config)
 }

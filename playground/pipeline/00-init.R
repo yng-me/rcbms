@@ -1,3 +1,5 @@
+# Load/install required packages ----------
+library(rcbms)
 list_of_packages <- c(
   'arrow',
   'dplyr',
@@ -13,9 +15,10 @@ list_of_packages <- c(
   'readr',
   'quarto',
   'devtools',
-  'googlesheets4',
-  'foreign'
+  'googlesheets4'
 )
 
 sapply(list_of_packages, load_package)
+set_config('playground/config.yml')
 
+refs <- load_refs()

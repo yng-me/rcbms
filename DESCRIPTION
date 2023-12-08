@@ -1,7 +1,8 @@
 Package: rcbms
 Type: Package
-Title: What the Package Does (Title Case)
 Version: 0.1.0
+Title: RCBMS
+Description: R Package for the Philippine Statistics Authority-led Community-Based Monitoring System.
 Authors@R: c(
     person(
       "Bhas", 
@@ -13,17 +14,17 @@ Authors@R: c(
   )
 Author: Bhas Abdulsamad [aut, cre, cph] (<https://orcid.org/0009-0002-5891-8124>)
 Maintainer: Bhas Abdulsamad <aeabdulsamad@gmail.com>
-Description: A set of easy-to-use functions for computing the Multidimensional Poverty Index (MPI).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Suggests: 
-  rlang,
+Import:
   dplyr,
   tidyr,
-  tibble,
   stringr,
   jsonlite,
+  yaml
+Suggests: 
+  tibble,
   openxlsx,
   testthat (>= 3.0.0),
   knitr,
@@ -32,8 +33,7 @@ Suggests:
   gt
 Config/testthat/edition: 3
 RoxygenNote: 7.2.3
-BugReports: https://github.com/yng-me/mpindex/issues
-URL: https://github.com/yng-me/mpindex, https://mpindex.r-lib.org, https://yng-me.github.io/mpindex/
+BugReports: https://github.com/yng-me/rcbms/issues
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)

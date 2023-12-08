@@ -1,63 +1,70 @@
-add_metadata <- function(.data, selected_input) {
+#' Add metadata
+#'
+#' @param .data
+#' @param .dictionary
+#' @param .valueset
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+add_metadata <- function(.data, .dictionary, .valueset) {
+
+  if(is.null(.dictionary) & is.null(.valueset)) return(.data)
+  validate_required_cols(
+    .dictionary,
+    c('variable_name', 'variable_name_new', 'valueset', 'label')
+  )
+  validate_required_cols(.valueset, c('name', 'value', 'label'))
 
   df_name <- names(.data)
 
-  if(!exists('mode_type')) {
-    mode_type <- 'validation'
-  }
-
-  dcf <- refs[[selected_input]][['data_dictionary']] %>%
-    convert_to_na() %>%
-    distinct(value, .keep_all = T) %>%
-    mutate(mode = mode_type) %>%
-    mutate(
-      variable = if_else(
-        is.na(new_variable_name),
-        str_trim(value),
-        str_trim(new_variable_name)
-      ),
-      variable = if_else(
-        mode == 'validation',
-        value,
-        variable
+  .dictionary <- .dictionary |>
+    dplyr::collect() |>
+    convert_to_na() |>
+    dplyr::distinct(variable_name, .keep_all = T) |>
+    dplyr::mutate(
+      variable = dplyr::if_else(
+        is.na(variable_name_new),
+        stringr::str_trim(variable_name),
+        stringr::str_trim(variable_name_new)
       )
-    ) %>%
-    mutate(label = if_else(is.na(item), label, paste0(item, ' - ', label))) %>%
-    select(variable, label, any_of('valueset')) %>%
-    distinct(.keep_all = T)  %>%
-    filter(variable %in% df_name, !is.na(label))
+    ) |>
+    dplyr::select(variable, label, valueset) |>
+    dplyr::distinct(.keep_all = T)  |>
+    dplyr::filter(variable %in% df_name, !is.na(label))
 
-  for(i in seq_along(dcf$variable)) {
-
-    attr(.data[[dcf$variable[i]]], 'label') <- dcf$label[i]
+  for(i in seq_along(.dictionary$variable)) {
+    attr(.data[[.dictionary$variable[i]]], 'label') <- as.character(.dictionary$label[i])
   }
 
   if('barangay_geo' %in% df_name) {
     attr(.data$barangay_geo, 'label') <- 'Barangay Geo ID'
   }
 
-  if('valueset' %in% names(dcf)) {
+  if('valueset' %in% names(.dictionary)) {
 
-    for(j in seq_along(dcf$variable)) {
+    for(j in seq_along(.dictionary$variable)) {
 
-      vs <- refs[[selected_input]][['valueset']] %>%
-        filter(list_name == dcf$valueset[j]) %>%
-        select(-list_name)
+      vs <- .valueset |>
+        dplyr::collect() |>
+        dplyr::filter(name == .dictionary$valueset[j]) |>
+        dplyr::select(-name)
 
       if(nrow(vs) > 0) {
 
         if(grepl('\\d+', vs$value[1])) {
-          vs <- vs %>%
-            mutate(value = as.integer(value))
+          vs <- vs |>
+            dplyr::mutate(value = as.integer(value))
         }
 
-        attr(.data[[dcf$variable[j]]], 'valueset') <- vs %>%
-          mutate(label = paste0(value, ' - ', label))
+        attr(.data[[.dictionary$variable[j]]], 'valueset') <- vs
 
       }
     }
   }
 
-  return(.data %>% select(-contains(c('aux', 'lnoctr'))))
+  return(.data)
 
 }

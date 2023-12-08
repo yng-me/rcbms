@@ -2,13 +2,13 @@
 % Please edit documentation in R/load_refs.R
 \name{load_area_name}
 \alias{load_area_name}
-\title{Title}
+\title{Load area name}
 \usage{
-load_area_name(gid)
+load_area_name(.gid = get_env("AREA_NAME"))
 }
 \arguments{
-\item{gid}{}
+\item{.gid}{}
 }
 \description{
-Title
+Load area name
 }

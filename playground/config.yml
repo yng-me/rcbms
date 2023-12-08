@@ -1,8 +1,30 @@
 cbms_round: 2022
-refs:
+working_directory: './playground'
+input_file_first: summary_of_visit
+input_data: hp
+convert_to_parquet: yes
+aggregation_level: 1
+
+mode:
+  type: validation
+  generate_output: no
+  stage: 1
+  options: ~
+
+
+2021:
+  reference_period: ""
+  line_number_variable: ""
+  add_length: 0
+
+2022:
+  reference_period: ""
+  line_number_variable:
+  add_length: 0
   hp:
-    data_dictionary: "1MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
-    area_name: "1seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
-    valueset: "1eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
-    validation: ""
-    tabulation: ""
+    input_file_first: summary_of_visit
+
+2024:
+  add_length: 1
+  hp:
+    input_file_first: cover_page

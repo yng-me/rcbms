@@ -2,13 +2,13 @@
 % Please edit documentation in R/load_refs.R
 \name{load_valueset}
 \alias{load_valueset}
-\title{Title}
+\title{Load valueset}
 \usage{
-load_valueset(gid)
+load_valueset(.gid = get_env("VALUESET"))
 }
 \arguments{
-\item{gid}{}
+\item{.gid}{}
 }
 \description{
-Title
+Load valueset
 }
