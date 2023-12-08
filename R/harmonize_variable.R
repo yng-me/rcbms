@@ -36,23 +36,6 @@ harmonize_variable <- function(.data, .dictionary) {
 }
 
 
-convert_col_types <- function(.data, .dictionary) {
-
-  cols_with_type <- .data |>
-    join_data_with_dictionary(.dictionary) |>
-    dplyr::select(type, length) |>
-    convert_to_na() |>
-    dplyr::mutate(type = dplyr::if_else(type %in% c('t', 'nc'), 'c', type)) |>
-    dplyr::mutate(type = dplyr::if_else(is.na(type), '?', type))
-
-  .data |>
-    readr::type_convert(
-      col_types = paste0(cols_with_type$type, collapse = '')
-    ) |>
-    convert_cols_from_dictionary(.dictionary)
-
-}
-
 join_data_with_dictionary <- function(.data, .dictionary) {
 
   dplyr::as_tibble(names(.data)) |>

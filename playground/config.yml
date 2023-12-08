@@ -1,9 +1,12 @@
 cbms_round: 2022
 working_directory: './playground'
 input_file_first: summary_of_visit
-input_data: hp
-convert_to_parquet: yes
+read_from_parquet: yes
 aggregation_level: 1
+input_data: hp
+file_format:
+  hp: txt
+  bp: csv
 
 mode:
   type: validation
@@ -23,6 +26,7 @@ mode:
   add_length: 0
   hp:
     input_file_first: summary_of_visit
+
 
 2024:
   add_length: 1

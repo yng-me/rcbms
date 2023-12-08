@@ -1,11 +1,9 @@
-list_data_files <- function(.config = getOption('rcbms_config')) {
+list_data_files <- function(.config = getOption('rcbms_config'), .input_data = 'hp') {
 
   if(is.null(.config)) stop('.config not defined.')
 
-  file_format <- '\\.(TXT|txt)$'
-  input_data <- .config$input_data
-
-  input_data_path <- get_data_path('raw')
+  file_format <- get_file_format(.config, .input_data)
+  input_data_path <- get_data_path('raw', .input_data)
 
   all_data_files <- list.files(
       input_data_path,
@@ -18,7 +16,7 @@ list_data_files <- function(.config = getOption('rcbms_config')) {
     dplyr::mutate(file.info(value))
 
   if(nrow(all_data_files) == 0) {
-    stop(paste0('No input data files found for ', input_data))
+    stop(paste0('No input data files found for ', .input_data))
   }
 
   input_file_first <- .config$input_file_first
@@ -45,7 +43,29 @@ list_data_files <- function(.config = getOption('rcbms_config')) {
   )
 }
 
-get_data_path <- function(.type, .config = getOption('rcbms_config')) {
+check_input_data <- function(.input_data = 'hp') {
+  .input_data <- .input_data[.input_data %in% c('hp', 'bp')]
+  valid_input <- .input_data %in% c('hp', 'bp')
+  match_input <- length(which(valid_input))
+  if(match_input > 2) {
+    .input_data <- .input_data[valid_input]
+  } else if (match_input == 0) {
+    .input_data <- 'hp'
+  }
+  return(.input_data)
+}
+
+get_file_format <- function(.config, .input_data) {
+  if(!is.null(.config$file_format[[.input_data]])) {
+    file_format <- .config$file_format[[.input_data]]
+    file_format <- paste0('\\.(', toupper(file_format), '|', tolower(file_format), ')$')
+  } else {
+    file_format <- '\\.(TXT|txt)$'
+  }
+  return(file_format)
+}
+
+get_data_path <- function(.type, .input_data = 'hp', .config = getOption('rcbms_config')) {
   wd <- .config$working_directory
   if(is.null(wd)) wd <- '.'
   full_path <- file.path(
@@ -54,7 +74,7 @@ get_data_path <- function(.type, .config = getOption('rcbms_config')) {
     .config$cbms_round,
     'data',
     .type,
-    .config$input_data
+    .input_data
   )
   return(full_path)
 }

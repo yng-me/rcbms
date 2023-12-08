@@ -1,5 +1,5 @@
 library(rcbms)
-list_of_packages <- c(
+required_packages <- c(
   'arrow',
   'dplyr',
   'tidyr',
@@ -17,8 +17,8 @@ list_of_packages <- c(
   'googlesheets4'
 )
 
-sapply(list_of_packages, load_package)
-rm(list_of_packages)
+sapply(required_packages, load_package)
+rm(required_packages)
 
 set_config('playground/config.yml')
 refs <- load_refs()
