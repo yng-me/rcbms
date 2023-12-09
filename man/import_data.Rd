@@ -4,10 +4,14 @@
 \alias{import_data}
 \title{Title}
 \usage{
-import_data(.input_data = "hp", ...)
+import_data(
+  .input_data = getOption("rcbms_config")$input_data,
+  .dictionary = NULL,
+  .valueset = NULL
+)
 }
 \arguments{
-\item{...}{}
+\item{.input_data}{}
 }
 \description{
 Title

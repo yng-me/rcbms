@@ -4,7 +4,7 @@
 \alias{load_data_dictionary}
 \title{Load data dictionary}
 \usage{
-load_data_dictionary(.gid = get_env("DATA_DICTIONARY"), .cbms_round = NULL)
+load_data_dictionary(.gid, .cbms_round = NULL)
 }
 \arguments{
 \item{.cbms_round}{}

@@ -4,7 +4,7 @@
 \alias{load_valueset}
 \title{Load valueset}
 \usage{
-load_valueset(.gid = get_env("VALUESET"))
+load_valueset(.gid)
 }
 \arguments{
 \item{.gid}{}

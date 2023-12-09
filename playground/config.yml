@@ -1,7 +1,7 @@
 cbms_round: 2022
 working_directory: './playground'
 input_file_first: summary_of_visit
-read_from_parquet: no
+read_from_parquet: yes
 aggregation_level: 1
 input_data: hp
 reload_refs: no
@@ -15,19 +15,16 @@ mode:
   options: ~
 
 2021:
-  reference_period: ""
-  line_number_variable: ""
+  reference_period: ~
   add_length: 0
+  hp_input_file_first: summary_of_visit
 
 2022:
-  reference_period: ""
-  line_number_variable:
+  reference_period: ~
   add_length: 0
-  hp:
-    input_file_first: summary_of_visit
-
+  hp_input_file_first: summary_of_visit
 
 2024:
+  reference_period: ~
   add_length: 1
-  hp:
-    input_file_first: cover_page
+  hp_input_file_first: cover_page

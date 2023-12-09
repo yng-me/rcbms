@@ -4,7 +4,7 @@
 \alias{load_area_name}
 \title{Load area name}
 \usage{
-load_area_name(.gid = get_env("AREA_NAME"))
+load_area_name(.gid)
 }
 \arguments{
 \item{.gid}{}

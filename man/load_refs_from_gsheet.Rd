@@ -4,7 +4,7 @@
 \alias{load_refs_from_gsheet}
 \title{Title}
 \usage{
-load_refs_from_gsheet(.gid, .required_cols, .cbms_round = NULL, ...)
+load_refs_from_gsheet(.gid, .required_cols, .sheet = NULL, .start_at = 1, ...)
 }
 \arguments{
 \item{...}{}
