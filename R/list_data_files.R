@@ -19,10 +19,10 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
     stop(paste0('No input data files found for ', .input_data))
   }
 
-  input_file_first <- .config$input_file_first
+  summary_record <- get_summary_record(.input_data)
 
-  if(is.null(input_file_first) | is.na(input_file_first)) {
-    input_file_first <- ''
+  if(is.null(summary_record) | is.na(summary_record)) {
+    summary_record <- ''
   }
 
   data_files <- dplyr::as_tibble(basename(all_data_files$value)) %>%
@@ -31,7 +31,7 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
     dplyr::mutate(
       name = tolower(stringr::str_remove(value, file_format)),
       n = seq(1:dplyr::n()),
-      n = dplyr::if_else(grepl(paste0('^', input_file_first), name), 0L, n)
+      n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
     ) %>%
     dplyr::arrange(n)
 
@@ -43,6 +43,13 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
   )
 }
 
+get_summary_record <- function(.input_data) {
+  .config <- getOption('rcbms_config')
+  round <- as.character(.config$cbms_round)
+  record <- .config[[round]][[.input_data]][['summary_record']]
+
+  return(record)
+}
 
 check_input_data <- function(.input_data = 'hp') {
   .input_data <- .input_data[.input_data %in% c('hp', 'bp')]

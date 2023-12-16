@@ -2,14 +2,12 @@
 #'
 #' @param .dictionary
 #' @param .valueset
-#' @param .input_data
 #'
 #' @return
 #' @export
 #'
 #' @examples
 import_data <- function(
-  .input_data = getOption('rcbms_config')$input_data,
   .dictionary = NULL,
   .valueset = NULL
 ) {

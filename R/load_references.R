@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples
-load_refs <- function(.config = getOption('rcbms_config')) {
+load_references <- function(.config = getOption('rcbms_config')) {
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -141,7 +141,6 @@ load_refs_from_gsheet <- function(.gid, .required_cols, .sheet = NULL, .start_at
 }
 
 
-
 #' Load data dictionary
 #'
 #' @param .gid
@@ -167,7 +166,11 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
     'privacy_level'
   )
 
-  load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciii')
+  df <- load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciii')
+
+  class(df) <- c('rcbms_dcf', 'rcbms_ref', class(df))
+
+  return(df)
 }
 
 
@@ -197,16 +200,20 @@ load_area_name <- function(.gid) {
     'funding_source'
   )
 
-  load_refs_from_gsheet(
-    .gid,
-    .required_cols = required_cols,
-    .start_at = 2,
-    col_types = 'ccciiciciii'
-  ) |>
-  dplyr::mutate(
-    barangay_geo_new = stringr::str_pad(stringr::str_extract(barangay_geo_new, '\\d+'), width = 10, pad = '0'),
-    barangay_geo = stringr::str_pad(stringr::str_extract(barangay_geo, '\\d+'), width = 9, pad = '0')
-  )
+  df <- load_refs_from_gsheet(
+      .gid,
+      .required_cols = required_cols,
+      .start_at = 2,
+      col_types = 'ccciiciciii'
+    ) |>
+    dplyr::mutate(
+      barangay_geo_new = stringr::str_pad(stringr::str_extract(barangay_geo_new, '\\d+'), width = 10, pad = '0'),
+      barangay_geo = stringr::str_pad(stringr::str_extract(barangay_geo, '\\d+'), width = 9, pad = '0')
+    )
+
+  class(df) <- c('rcbms_anm', 'rcbms_ref', class(df))
+
+  return(df)
 }
 
 #' Load valueset
@@ -219,11 +226,13 @@ load_area_name <- function(.gid) {
 #' @examples
 #'
 load_valueset <- function(.gid) {
-  load_refs_from_gsheet(
+  df <- load_refs_from_gsheet(
     .gid,
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
   )
+  class(df) <- c('rcbms_vs', 'rcbms_ref', class(df))
+  return(df)
 }
 
 
@@ -236,7 +245,17 @@ load_validation_refs <- function(.gid) {
     'section',
     'priority_level'
   )
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccc')
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccc')
+
+  attr(df$validation_id, 'label') <- 'Validation ID'
+  attr(df$title, 'label') <- 'Title'
+  attr(df$description, 'label') <- 'Description'
+  attr(df$primary_data_item, 'label') <- 'Primary Data Item'
+  attr(df$section, 'label') <- 'Section'
+  attr(df$priority_level, 'label') <- 'Priority Level'
+
+  class(df) <- c('rcbms_cv', 'rcbms_ref', class(df))
+  return(df)
 }
 
 load_tabulation_refs <- function(.gid) {
@@ -256,7 +275,10 @@ load_tabulation_refs <- function(.gid) {
     'row_height_header',
     'row_reset_last'
   )
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciiciiici')
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciiciiici')
+
+  class(df) <- c('rcbms_ts', 'rcbms_ref' , class(df))
+  return(df)
 }
 
 
@@ -289,7 +311,7 @@ transform_area_name <- function(.data, .add_length = 0) {
       )
   }
 
-  .data |>
+  .data <- .data |>
     dplyr::collect() |>
     dplyr::mutate(add_length = .add_length) |>
     dplyr::mutate(
@@ -337,5 +359,12 @@ transform_area_name <- function(.data, .add_length = 0) {
       dplyr::everything()
     ) |>
     dplyr::select(-add_length, -barangay_geo_new)
+
+  attr(df$region, 'label') <- 'Region'
+  attr(df$province, 'label') <- 'Province'
+  attr(df$city_mun, 'label') <- 'City/Municipality'
+  attr(df$barangay, 'label') <- 'Barangay'
+
+  return(.data)
 }
 

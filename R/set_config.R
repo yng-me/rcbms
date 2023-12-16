@@ -35,6 +35,7 @@ set_config <- function(.config_file) {
   }
 
   config$version <- current_version
+  config$base <- join_path(wd, 'src', config$cbms_round)
 
   # ENV
   wd <- stringr::str_remove(.config_file, 'config\\.(YML|yml|JSON|json)$')
