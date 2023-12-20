@@ -1,4 +1,4 @@
-tidy_cbms_data_temp <- function(.data, ...) {
+tidy_cbms_data_temp <- function(.data) {
 
   .data |>
     mutate(
@@ -71,10 +71,10 @@ tidy_cbms_data_temp <- function(.data, ...) {
       ),
       e10_industry_group = as.integer(str_sub(e10_industry_group, 1, 2))
     ) |>
+    filter(!is.na(a05_sex), !is.na(a07_age)) |>
     convert_to_na() |>
     add_age_groups(a07_age, .prefix = 'a07') |>
     add_ip_group(a10_ethnicity, .prefix = 'a10') |>
     add_wgss(.prefix = 'a17') |>
-    mutate_line_number() |>
-    select_and_sort_columns(...)
+    mutate_line_number()
 }

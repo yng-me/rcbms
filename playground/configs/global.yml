@@ -1,10 +1,12 @@
-cbms_round: 2021
+cbms_round: 2022
 working_directory: './playground'
-read_from_parquet: yes
-reload_refs: no
+read_from_parquet: no
+reload_refs: yes
+verbose: yes
+complete_cases: yes
 aggregation:
-  level: 2
-  areas: "013315"
+  level: 5
+  areas: all
 input_data: hp
 mode:
   type: portal

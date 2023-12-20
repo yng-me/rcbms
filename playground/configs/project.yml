@@ -8,7 +8,7 @@
     summary_record: interview_record
     roster_record: section_a_to_e
     variable:
-      line_number: line_no
+      line_number: lineno
       age: a07_age
       sex: a05_sex
 

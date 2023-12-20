@@ -41,7 +41,9 @@ execute_script <- function(
         complete_cases <- get_complete_cases(
           .parquet,
           .aggregation,
-          !is.na(!!as.name(sex_variable)) & !!as.name(age_variable) >= 0,
+          !is.na(!!as.name(sex_variable)),
+          !is.na(!!as.name(age_variable)),
+          !!as.name(age_variable) >= 0,
           .input_data = input_df,
           .current_area = unique_area
         )

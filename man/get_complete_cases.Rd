@@ -8,6 +8,7 @@ get_complete_cases(
   .parquet,
   .aggregation,
   ...,
+  .config = getOption("rcbms_config"),
   .input_data = "hp",
   .excluded_cases = NULL,
   .current_area = NULL,

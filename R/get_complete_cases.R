@@ -3,6 +3,8 @@
 #' @param .parquet
 #' @param .aggregation
 #' @param ...
+#' @param .config
+#' @param .input_data
 #' @param .excluded_cases
 #' @param .current_area
 #' @param .filter_by_area
@@ -17,6 +19,7 @@ get_complete_cases <- function(
   .parquet,
   .aggregation,
   ...,
+  .config = getOption('rcbms_config'),
   .input_data = 'hp',
   .excluded_cases = NULL,
   .current_area = NULL,
@@ -30,13 +33,20 @@ get_complete_cases <- function(
 
   complete_cases_from_rov <- summary_df |>
     dplyr::collect() |>
-    dplyr::filter(result_of_visit == 1) |>
+    dplyr::filter(
+      as.integer(hsn) < as.integer(paste(rep(7, 4 + config$project$add_length), collapse = '')),
+      result_of_visit == 1
+    ) |>
     create_case_id()
 
   if(!is.null(.current_area)) {
 
     areas <- .aggregation$areas_all |>
-      dplyr::mutate(region_geo = region_code) |>
+      dplyr::mutate(
+        region_geo = region_code,
+        all_area_geo = '',
+        all_area_agg = 'All Areas'
+      ) |>
       dplyr::select(barangay_geo, dplyr::any_of(paste0(.aggregation$value, '_geo')))
 
     complete_cases_from_rov <- complete_cases_from_rov |>
@@ -47,6 +57,7 @@ get_complete_cases <- function(
   }
 
   complete_cases_from_rov <- complete_cases_from_rov |>
+    dplyr::distinct(case_id) |>
     dplyr::pull(case_id)
 
   roster_record <- get_summary_record(.input_data, 'roster_record')
@@ -57,12 +68,10 @@ get_complete_cases <- function(
     complete_cases <- roster_df |>
       dplyr::collect() |>
       create_case_id() |>
-      dplyr::filter(
-        as.integer(hsn) < 7777,
-        case_id %in% complete_cases_from_rov,
-        ...
-      ) |>
+      dplyr::filter(case_id %in% complete_cases_from_rov, ...) |>
+      dplyr::distinct(case_id) |>
       dplyr::pull(case_id)
+
   } else {
     complete_cases <- complete_cases_from_rov
   }

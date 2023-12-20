@@ -25,8 +25,10 @@ set_aggregation <- function(
 
   agg <- list()
   agg_level <- .config$aggregation$level
-  if(.config$aggregation$level > 4) agg_level <- 4
-  agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'country')
+  if(.config$aggregation$level > 5) agg_level <- 5
+  if(.config$aggregation$level < 1) agg_level <- 1
+
+  agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'all_area')
   agg$labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
 
   agg$value <- agg$levels[agg_level]
@@ -50,6 +52,11 @@ set_aggregation <- function(
   geo_name <- paste0(agg$value, '_geo')
   geo_agg <- paste0(agg$value, '_agg')
   agg$areas_unique <- agg$areas_all |>
+    dplyr::mutate(
+      region_geo = region_code,
+      all_area_geo = '',
+      all_area_agg = 'All Areas'
+    ) |>
     dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
     dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
     dplyr::rename(
