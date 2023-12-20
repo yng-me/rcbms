@@ -4,11 +4,11 @@ load_required_packages(.load_dependencies = F)
 
 config <- set_config('playground/configs/global.yml')
 refs <- load_references(config)
-parquet <- read_cbms_data(refs)
+parquet <- read_cbms_data(refs, config)
 
-refs$aggregation <- set_aggregation(parquet, refs)
+complete_cases <- get_complete_cases(parquet, config)
 
 result <- list()
-sapply(refs$script_files$file, source)
-execute_script(parquet, refs)
+lapply(get_script_files(), source)
+
 generate_output(result, refs)

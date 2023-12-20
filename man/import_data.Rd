@@ -2,13 +2,13 @@
 % Please edit documentation in R/import_data.R
 \name{import_data}
 \alias{import_data}
-\title{Title}
+\title{Rear CBMS Data}
 \usage{
-import_data(.dictionary = NULL, .valueset = NULL)
+import_data(.path, .input_data = "hp", ...)
 }
 \arguments{
-\item{.valueset}{}
+\item{...}{}
 }
 \description{
-Title
+Rear CBMS Data
 }

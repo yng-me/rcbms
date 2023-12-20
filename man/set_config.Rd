@@ -4,10 +4,10 @@
 \alias{set_config}
 \title{Title}
 \usage{
-set_config(.config_file)
+set_config(.config_file, .include_env = TRUE, .save_as_options = TRUE)
 }
 \arguments{
-\item{.cwd}{}
+\item{.save_as_options}{}
 }
 \description{
 Title

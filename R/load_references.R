@@ -70,6 +70,9 @@ load_references <- function(.config = getOption('rcbms_config')) {
   refs$tabulation <- arrow::open_dataset(pq_ts)
   refs$area_name <- arrow::open_dataset(pq_anm)
 
+  script_files <- lapply(.config$input_data, \(x) get_script_files(.input_data = x))
+  refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
+
   return(refs)
 }
 
@@ -163,10 +166,12 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
     'type',
     'length',
     'is_included',
-    'privacy_level'
+    'privacy_level',
+    'is_included_for_portal',
+    'is_derived'
   )
 
-  df <- load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciii')
+  df <- load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciiiii')
 
   class(df) <- c('rcbms_dcf', 'rcbms_ref', class(df))
 
@@ -291,25 +296,23 @@ load_tabulation_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-transform_area_name <- function(.data, .add_length = 0) {
+transform_area_name <- function(.data, .refs, .add_length = 0) {
 
-  if(exists('refs')) {
-    regions <- refs$valueset |>
-      dplyr::filter(name == 'area_name_region') |>
-      dplyr::collect() |>
-      dplyr::transmute(
-        region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-        region = label
-      )
+  regions <- .refs$valueset |>
+    dplyr::filter(name == 'area_name_region') |>
+    dplyr::collect() |>
+    dplyr::transmute(
+      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
+      region = label
+    )
 
-    regions_long <- refs$valueset |>
-      dplyr::filter(name == 'area_name_region_long') |>
-      dplyr::collect() |>
-      dplyr::transmute(
-        region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-        region_long = label
-      )
-  }
+  regions_long <- .refs$valueset |>
+    dplyr::filter(name == 'area_name_region_long') |>
+    dplyr::collect() |>
+    dplyr::transmute(
+      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
+      region_long = label
+    )
 
   .data <- .data |>
     dplyr::collect() |>
@@ -360,10 +363,10 @@ transform_area_name <- function(.data, .add_length = 0) {
     ) |>
     dplyr::select(-add_length, -barangay_geo_new)
 
-  attr(df$region, 'label') <- 'Region'
-  attr(df$province, 'label') <- 'Province'
-  attr(df$city_mun, 'label') <- 'City/Municipality'
-  attr(df$barangay, 'label') <- 'Barangay'
+  attr(.data$region, 'label') <- 'Region'
+  attr(.data$province, 'label') <- 'Province'
+  attr(.data$city_mun, 'label') <- 'City/Municipality'
+  attr(.data$barangay, 'label') <- 'Barangay'
 
   return(.data)
 }

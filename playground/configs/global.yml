@@ -1,0 +1,22 @@
+cbms_round: 2021
+working_directory: './playground'
+read_from_parquet: yes
+reload_refs: no
+aggregation:
+  level: 2
+  areas: all
+input_data: hp
+mode:
+  type: portal
+  edit: 1
+  source: 2
+  stage: dev
+  output:
+    generate: no
+    type: json
+  options:
+    detailed_output: no
+    include_household_info: no
+    add_uuid: no
+    save_as_excel: no
+    save_as_json: no

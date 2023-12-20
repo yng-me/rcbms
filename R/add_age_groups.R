@@ -8,6 +8,8 @@
 #' @export
 #'
 #' @examples
+#'
+
 add_age_groups <- function(.data, .age, .prefix = 'a07') {
   .data <- .data |>
     dplyr::mutate(
@@ -66,15 +68,15 @@ add_age_groups <- function(.data, .age, .prefix = 'a07') {
     ) |>
     dplyr::rename_with(
       ~ paste0(
-        prefix,
+        .prefix,
         '_age_',
         stringr::str_remove(., '^add_age_')
       ),
       dplyr::starts_with('add_age_group_')
     )
 
-  attr(.data[[paste0(prefix, '_age_group_five_year')]], 'label') <- 'Five-year age group'
-  attr(.data[[paste0(prefix, '_age_group_five_year')]], 'valueset') <- data.frame(
+  attr(.data[[paste0(.prefix, '_age_group_five_year')]], 'label') <- 'Five-year age group'
+  attr(.data[[paste0(.prefix, '_age_group_five_year')]], 'valueset') <- data.frame(
     value = 1L:21L,
     label = c(
       '< 5',
@@ -101,8 +103,8 @@ add_age_groups <- function(.data, .age, .prefix = 'a07') {
     )
   )
 
-  attr(.data[[paste0(prefix, '_age_group_hh_head')]], 'label') <- 'Age group'
-  attr(.data[[paste0(prefix, '_age_group_hh_head')]], 'valueset') <- data.frame(
+  attr(.data[[paste0(.prefix, '_age_group_hh_head')]], 'label') <- 'Age group'
+  attr(.data[[paste0(.prefix, '_age_group_hh_head')]], 'valueset') <- data.frame(
     value = 1L:7L,
     label = c(
       'Less than 15',
@@ -115,8 +117,8 @@ add_age_groups <- function(.data, .age, .prefix = 'a07') {
     )
   )
 
-  attr(.data[[paste0(prefix, '_age_group_fertility')]], 'label') <- 'Age group'
-  attr(.data[[paste0(prefix, '_age_group_fertility')]], 'valueset') <- data.frame(
+  attr(.data[[paste0(.prefix, '_age_group_fertility')]], 'label') <- 'Age group'
+  attr(.data[[paste0(.prefix, '_age_group_fertility')]], 'valueset') <- data.frame(
     value = 1L:9L,
     label = c(
       'Less than 15',
@@ -131,8 +133,8 @@ add_age_groups <- function(.data, .age, .prefix = 'a07') {
     )
   )
 
-  attr(.data[[paste0(prefix, '_age_group_schooling')]], 'label') <- 'Age group'
-  attr(.data[[paste0(prefix, '_age_group_schooling')]], 'valueset') <- data.frame(
+  attr(.data[[paste0(.prefix, '_age_group_schooling')]], 'label') <- 'Age group'
+  attr(.data[[paste0(.prefix, '_age_group_schooling')]], 'valueset') <- data.frame(
     value = 1L:7L,
     label = c(
       '3-4 years old',

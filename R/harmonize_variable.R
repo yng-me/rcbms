@@ -150,3 +150,34 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
 
   return(.data)
 }
+
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+normalize_variable <- function(.data) {
+  .data |>
+    rename_with(~ str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
+}
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+normalise_variable <- function(.data) {
+  .data |>
+    rename_with(~ str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
+}

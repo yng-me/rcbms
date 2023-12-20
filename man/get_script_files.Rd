@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_script_files.R
 \name{get_script_files}
 \alias{get_script_files}
-\title{Title}
+\title{Get script files}
 \usage{
 get_script_files(.config = getOption("rcbms_config"), .input_data = "hp")
 }
@@ -10,5 +10,5 @@ get_script_files(.config = getOption("rcbms_config"), .input_data = "hp")
 \item{.input_data}{}
 }
 \description{
-Title
+Get script files
 }

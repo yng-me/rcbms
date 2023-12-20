@@ -4,7 +4,7 @@
 \alias{set_rwd}
 \title{Set current working directory relative to the project path}
 \usage{
-set_rwd(..., .base_wd = getOption("rcbms_config"))
+set_rwd(..., .base_wd = getOption("rcbms_config")$working_directory)
 }
 \arguments{
 \item{...}{}

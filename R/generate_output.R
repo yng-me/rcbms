@@ -11,12 +11,15 @@
 #'
 generate_output <- function(
   .result,
+  .refs,
   .config = getOption('rcbms_config'),
   ...
 ) {
 
-  if(!exists('refs') & length(.result) == 0) {
-    stop('No results and/or validation reference found.')
+  if(!config$mode$output$generate) return(invisible(NULL))
+
+  if(length(.result) == 0) {
+    stop('No results found.')
   }
 
   mode_type <- tolower(.config$mode$type)
@@ -34,4 +37,5 @@ generate_output <- function(
     stop('Mode defined in the config is not yet currently supported or maybe mispelled.')
 
   }
+
 }

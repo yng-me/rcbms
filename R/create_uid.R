@@ -141,3 +141,21 @@ create_uid <- function(.format) {
   return(paste0("paste0(", concat, ")"))
 
 }
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+add_uuid <- function(.data) {
+
+  uid <- uuid::UUIDgenerate(n = nrow(.data))
+  .data |> add_column(uuid = uid, .before = 1)
+
+}

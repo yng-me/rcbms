@@ -22,13 +22,16 @@ Import:
   tidyr,
   stringr,
   jsonlite,
-  yaml
-Suggests: 
+  yaml,
+  DBI,
+  RMySQL,
+  odbc,
+  purrr,
   tibble,
-  openxlsx,
+  openxlsx
+Suggests: 
   testthat (>= 3.0.0),
   knitr,
-  purrr,
   rmarkdown,
   gt
 Config/testthat/edition: 3

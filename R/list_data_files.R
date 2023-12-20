@@ -21,10 +21,6 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
 
   summary_record <- get_summary_record(.input_data)
 
-  if(is.null(summary_record) | is.na(summary_record)) {
-    summary_record <- ''
-  }
-
   data_files <- dplyr::as_tibble(basename(all_data_files$value)) %>%
     dplyr::filter(grepl(file_format, value, ignore.case = T)) %>%
     dplyr::distinct() %>%
@@ -43,10 +39,11 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
   )
 }
 
-get_summary_record <- function(.input_data) {
+get_summary_record <- function(.input_data, .type = 'summary_record') {
   .config <- getOption('rcbms_config')
-  round <- as.character(.config$cbms_round)
-  record <- .config[[round]][[.input_data]][['summary_record']]
+  record <- .config$project[[.input_data]][[.type]]
+
+  if(is.null(record) | is.na(record)) record <- ''
 
   return(record)
 }
@@ -65,8 +62,8 @@ check_input_data <- function(.input_data = 'hp') {
 
 
 get_file_format <- function(.config, .input_data) {
-  if(!is.null(.config$file_format[[.input_data]])) {
-    file_format <- .config$file_format[[.input_data]]
+  if(!is.null(.config$project[[.input_data]][['file_format']])) {
+    file_format <- .config$project[[.input_data]][['file_format']]
     file_format <- paste0('\\.(', toupper(file_format), '|', tolower(file_format), ')$')
   } else {
     file_format <- '\\.(TXT|txt)$'

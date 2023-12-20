@@ -6,6 +6,9 @@
 \usage{
 load_required_packages(.load_dependencies = T)
 }
+\arguments{
+\item{.load_dependencies}{}
+}
 \description{
 Load required packages
 }

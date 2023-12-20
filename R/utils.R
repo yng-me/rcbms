@@ -104,13 +104,13 @@ clean_colnames <- function(.data) {
 #' @export
 #'
 #' @examples
-set_rwd <- function(..., .base_wd = getOption('rcbms_config')) {
+set_rwd <- function(..., .base_wd = getOption('rcbms_config')$working_directory) {
 
   if(!is.null(.base_wd)) {
     if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {
       wd <- .base_wd
-    } else if (!is.null(.base_wd$working_directory)) {
-      wd <- .base_wd$working_directory
+    } else if (!is.null(.base_wd$base)) {
+      wd <- .base_wd
     }
   } else {
     wd <- './'
