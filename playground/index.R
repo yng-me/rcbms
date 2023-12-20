@@ -3,12 +3,10 @@ library(rcbms)
 load_required_packages(.load_dependencies = F)
 
 config <- set_config('playground/configs/global.yml')
-refs <- load_references(config)
-parquet <- read_cbms_data(refs)
+references <- load_references(config)
+parquet <- read_cbms_data(references)
 
-refs$aggregation <- set_aggregation(parquet, refs)
+aggregation <- set_aggregation(parquet, references)
 
-result <- list()
-sapply(refs$script_files$file, source)
-execute_script(parquet, refs)
-generate_output(result, refs)
+result <- execute_script(parquet, references, aggregation)
+generate_output(result, references, aggregation)

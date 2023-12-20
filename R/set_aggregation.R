@@ -25,22 +25,19 @@ set_aggregation <- function(
 
   agg <- list()
   agg_level <- .config$aggregation$level
-  agg_levels <- c('barangay', 'city_mun', 'province', 'region', 'country')
-  agg_labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
+  if(.config$aggregation$level > 4) agg_level <- 4
+  agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'country')
+  agg$labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
 
-  agg$level <- agg_levels[agg_level]
-  if(agg_levels[agg_level] > 4) agg$level <- 4
+  agg$value <- agg$levels[agg_level]
+  agg$label <- agg$labels[agg_level]
 
-  agg$areas <- .parquet[[input_data]][[agg_record]] |>
+  agg$areas_all <- .parquet[[input_data]][[agg_record]] |>
     dplyr::collect() |>
     create_barangay_geo() |>
     dplyr::select(-contains('_code')) |>
     dplyr::left_join(
-      transform_area_name(
-        dplyr::collect(.refs$area_name),
-        .refs = refs,
-        .add_length = .config$project$add_length
-      ),
+      transform_area_name(.refs, .config$project$add_length),
       by = 'barangay_geo'
     ) |>
     dplyr::select(
@@ -50,10 +47,32 @@ set_aggregation <- function(
     dplyr::distinct() |>
     tidyr::drop_na()
 
-  agg$areas_unique <- agg$areas |>
-    dplyr::select(dplyr::any_of(paste0(agg$level, '_geo'))) |>
-    dplyr::distinct() |>
-    dplyr::pull()
+  geo_name <- paste0(agg$value, '_geo')
+  geo_agg <- paste0(agg$value, '_agg')
+  agg$areas_unique <- agg$areas_all |>
+    dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
+    dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
+    dplyr::rename(
+      code = !!as.name(geo_name),
+      label = !!as.name(geo_agg)
+    )
+
+  if(tolower(config$aggregation$areas[1]) != 'all') {
+
+    if(grepl('\\d+', .config$aggregation$areas)) {
+
+      agg$areas_unique <- agg$areas_unique |>
+        dplyr::filter(code %in% .config$aggregation$areas)
+
+    } else {
+
+      agg$areas_unique <- agg$areas_unique |>
+        dplyr::filter(label %in% .config$aggregation$areas)
+    }
+  }
+
+  # .config$aggregation <- c(.config$aggregation, agg)
+  # options(rcbms_config = .config)
 
   return(agg)
 

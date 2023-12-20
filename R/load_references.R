@@ -289,14 +289,16 @@ load_tabulation_refs <- function(.gid) {
 
 #' Title
 #'
-#' @param .data
+#' @param .refs
 #' @param .add_length
 #'
 #' @return
 #' @export
 #'
 #' @examples
-transform_area_name <- function(.data, .refs, .add_length = 0) {
+#'
+
+transform_area_name <- function(.refs, .add_length = 0) {
 
   regions <- .refs$valueset |>
     dplyr::filter(name == 'area_name_region') |>
@@ -314,7 +316,7 @@ transform_area_name <- function(.data, .refs, .add_length = 0) {
       region_long = label
     )
 
-  .data <- .data |>
+  .data <- .refs$area_name |>
     dplyr::collect() |>
     dplyr::mutate(add_length = .add_length) |>
     dplyr::mutate(

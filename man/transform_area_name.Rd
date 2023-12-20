@@ -4,7 +4,7 @@
 \alias{transform_area_name}
 \title{Title}
 \usage{
-transform_area_name(.data, .add_length = 0)
+transform_area_name(.refs, .add_length = 0)
 }
 \arguments{
 \item{.add_length}{}

@@ -6,14 +6,16 @@
 \usage{
 get_complete_cases(
   .parquet,
+  .aggregation,
   ...,
-  .config = getOption("rcbms_config"),
+  .input_data = "hp",
   .excluded_cases = NULL,
+  .current_area = NULL,
   .filter_by_area = FALSE
 )
 }
 \arguments{
-\item{.excluded_cases}{}
+\item{.filter_by_area}{}
 }
 \description{
 Title

@@ -7,12 +7,13 @@
 execute_script(
   .parquet,
   .refs,
+  .aggregation,
   .config = getOption("rcbms_config"),
   .filter_complete_cases = T
 )
 }
 \arguments{
-\item{.config}{}
+\item{.filter_complete_cases}{}
 }
 \description{
 Title

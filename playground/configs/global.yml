@@ -4,7 +4,7 @@ read_from_parquet: yes
 reload_refs: no
 aggregation:
   level: 2
-  areas: all
+  areas: "013315"
 input_data: hp
 mode:
   type: portal

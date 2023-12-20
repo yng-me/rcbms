@@ -1,25 +1,30 @@
 #' Title
 #'
 #' @param .parquet
-#' @param .config
+#' @param .aggregation
 #' @param ...
 #' @param .excluded_cases
+#' @param .current_area
+#' @param .filter_by_area
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 
 get_complete_cases <- function(
   .parquet,
+  .aggregation,
   ...,
-  .config = getOption('rcbms_config'),
+  .input_data = 'hp',
   .excluded_cases = NULL,
+  .current_area = NULL,
   .filter_by_area = FALSE
 ) {
 
-  summary_record <- get_summary_record('hp')
-  summary_df <- .parquet$hp[[summary_record]]
+  summary_record <- get_summary_record(.input_data)
+  summary_df <- .parquet[[.input_data]][[summary_record]]
 
   if(is.null(summary_df)) return(NULL)
 
@@ -28,14 +33,23 @@ get_complete_cases <- function(
     dplyr::filter(result_of_visit == 1) |>
     create_case_id()
 
-  if(.filter_by_area) {
+  if(!is.null(.current_area)) {
+
+    areas <- .aggregation$areas_all |>
+      dplyr::mutate(region_geo = region_code) |>
+      dplyr::select(barangay_geo, dplyr::any_of(paste0(.aggregation$value, '_geo')))
+
     complete_cases_from_rov <- complete_cases_from_rov |>
-      dplyr::filter(agg_area %in% .config$agg_area)
+      create_barangay_geo() |>
+      dplyr::left_join(areas, by = 'barangay_geo') |>
+      dplyr::filter(!!as.name(paste0(.aggregation$value, '_geo')) == .current_area) |>
+      dplyr::select(-dplyr::any_of('barangay_geo'), -dplyr::ends_with('_geo'))
   }
 
-  complete_cases_from_rov <- complete_cases_from_rov |> dplyr::pull(case_id)
+  complete_cases_from_rov <- complete_cases_from_rov |>
+    dplyr::pull(case_id)
 
-  roster_record <- get_summary_record('hp', 'roster_record')
+  roster_record <- get_summary_record(.input_data, 'roster_record')
   roster_df <- .parquet$hp[[roster_record]]
 
   if(!is.null(roster_record)) {
