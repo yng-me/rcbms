@@ -1,5 +1,5 @@
-df_temp <- df_temp %>% 
-  rename(line_number = d08_line_number) %>%
-  filter(!is.na(line_number)) %>% 
-  select_with_geo(line_number, sort(names(.))) %>% 
-  select(-any_of('regular_hh_completed'))
+tidy_cbms_data_temp <- function(.data) {
+  .data |>
+    rename(line_number = d08_line_number) |>
+    filter(!is.na(line_number))
+}

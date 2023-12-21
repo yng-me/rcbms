@@ -1,4 +1,4 @@
-tidy_cbms_data_temp <- function(.data, ...) {
+tidy_cbms_data_temp <- function(.data) {
 
   .data |>
     mutate(
@@ -7,7 +7,6 @@ tidy_cbms_data_temp <- function(.data, ...) {
       a03_nuclear_family = as.integer(a03_nuclear_family),
       a04_relation_to_nuclear_family_head = as.integer(a04_relation_to_nuclear_family_head),
       a07_age = as.integer(a07_age),
-      # age = convert_age(mdy(a06_birthday), to = config$project$ref_period),
       a10_ethnicity_other = as.character(a10_ethnicity_other),
       a11_religion_other = as.character(a11_religion_other),
       a16_lgu_id_number = as.character(a16_lgu_id_number),
@@ -19,8 +18,10 @@ tidy_cbms_data_temp <- function(.data, ...) {
         a12_phil_id == 8 | a14_phil_id_step_2 == 8 ~ 8L
       )
     ) |>
-    filter(a07_age >= 0) |>
+    filter(!is.na(a05_sex), !is.na(a07_age)) |>
+    convert_to_na() |>
     add_age_groups(a07_age, .prefix = 'a07') |>
+    add_ip_group(a10_ethnicity, .prefix = 'a10') |>
     add_wgss(.prefix = 'a20') |>
     mutate(
       b01_migrant_life_time = if_else(b01_mother_resided > 1, 1L, 2L, NA_integer_),
@@ -28,21 +29,6 @@ tidy_cbms_data_temp <- function(.data, ...) {
       b04_migrant_6_months = if_else(b04_resided_6_months_ago > 1, 1L, 2L, NA_integer_)
     ) |>
     create_case_id() |>
-    # add_migration(
-    #   'b01_migrant_type_life_time',
-    #   b01_mother_resided,
-    #   b01_mother_resided_within_country
-    # ) |>
-    # add_migration(
-    #   'b01_migrant_type_5_years',
-    #   b02_resided_5_years_ago,
-    #   b02_resided_5_years_ago_within_the_country
-    # ) |>
-    # add_migration(
-    #   'b01_migrant_type_6_months',
-    #   b04_resided_6_months_ago,
-    #   b04_resided_6_months_ago_within_the_country
-    # ) |>
     mutate(
       c02_hgc_group = case_when(
         c02_hgc <= 2000 ~ 1L, # no grade completed / early childhood education,
@@ -146,14 +132,12 @@ tidy_cbms_data_temp <- function(.data, ...) {
     select(-any_of(c(
       'section_a_to_e_line_number',
       'regular_hh_completed',
-      'case_id',
       'e01_nilf_1',
       'e01_nilf_2',
       'e01_nilf_3',
       'e01_nilf_emp',
       'e01_nilf_ofi',
       'e10_industry'
-    ))) |>
-    select_and_sort_columns(...)
+    )))
 }
 

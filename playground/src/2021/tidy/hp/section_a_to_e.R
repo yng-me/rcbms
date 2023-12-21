@@ -76,5 +76,12 @@ tidy_cbms_data_temp <- function(.data) {
     add_age_groups(a07_age, .prefix = 'a07') |>
     add_ip_group(a10_ethnicity, .prefix = 'a10') |>
     add_wgss(.prefix = 'a17') |>
-    mutate_line_number()
+    mutate_line_number() |>
+    select(-any_of(c(
+      'e01_nilf_1',
+      'e01_nilf_2',
+      'e01_nilf_3',
+      'e01_nilf_emp',
+      'e01_nilf_ofi'
+    )))
 }

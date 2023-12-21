@@ -1,6 +1,6 @@
-cbms_round: 2022
+cbms_round: 2021
 working_directory: './playground'
-read_from_parquet: no
+read_from_parquet: yes
 reload_refs: yes
 verbose: yes
 complete_cases: yes

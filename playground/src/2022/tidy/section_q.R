@@ -1,8 +1,6 @@
-tidy_cbms_data_temp <- function(.data, ...) {
+tidy_cbms_data_temp <- function(.data) {
 
   .data |>
-    filter_and_select_regular_hh(prefix = 'q') |>
-    mutate_at(vars(matches('_(other|specified)$')), as.character) |>
     mutate(
       q02_main_water_distance_range = case_when(
         q01_main_water_other %in% c(1, 9, 10) | q02_main_water_distance == 0 ~ 1L,
@@ -83,6 +81,5 @@ tidy_cbms_data_temp <- function(.data, ...) {
         ~ 2L,
         TRUE ~ 3L
       )
-    ) |>
-    select_and_sort_columns(...)
+    )
 }

@@ -1,15 +1,6 @@
-tidy_cbms_data_temp <- function(.data, ...) {
+tidy_cbms_data_temp <- function(.data) {
 
   .data |>
-    filter_and_select_regular_hh(prefix = 'r') |>
-    mutate_at(
-      vars(
-        matches('^r\\d{2}'),
-        -matches('_(other|specified)$'),
-        -matches('^r17_tv_subscription$')
-      ),
-      as.integer) |>
-    mutate_at(vars(matches('other|specified)$')), as.character) |>
     mutate(
       r07_floor_area_range = case_when(
         r07_floor_area < 10 ~ 1L,
@@ -42,6 +33,5 @@ tidy_cbms_data_temp <- function(.data, ...) {
         9L,
         as.integer(r15_fuel_for_cooking)
       )
-    ) |>
-    select_and_sort_columns(...)
+    )
 }

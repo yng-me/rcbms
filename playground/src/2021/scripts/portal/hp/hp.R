@@ -17,11 +17,12 @@ tidy_data_temp <- function(.record, .remove_geo_cols = T) {
 
 
 
-result$hh_roster <- tidy_data_temp('section_a_to_e')
-
-result$hh_record <- tidy_data_temp('section_f', FALSE) |>
-  left_join(tidy_data_temp('section_k'), by = 'case_id') |>
-  left_join(tidy_data_temp('section_n'), by = 'case_id') |>
-  left_join(tidy_data_temp('section_m'), by = 'case_id') |>
-  left_join(tidy_data_temp('section_q'), by = 'case_id') |>
-  left_join(tidy_data_temp('section_r'), by = 'case_id')
+result$hh_roster <- tidy_data_temp('section_a_to_e') |>
+  db_migrate(.name = '2021_household_roster')
+#
+# result$hh_record <- tidy_data_temp('section_f', FALSE) |>
+#   left_join(tidy_data_temp('section_k'), by = 'case_id') |>
+#   left_join(tidy_data_temp('section_n'), by = 'case_id') |>
+#   left_join(tidy_data_temp('section_m'), by = 'case_id') |>
+#   left_join(tidy_data_temp('section_q'), by = 'case_id') |>
+#   left_join(tidy_data_temp('section_r'), by = 'case_id')
