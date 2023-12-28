@@ -6,18 +6,15 @@
 #' @export
 #'
 #' @examples
-#' read_dot_env()
+#' set_dot_env()
 #'
 
-set_dot_env <- function(.path = getOption('rcbms_dotenv_path')) {
-
-  if(!file.exists(.path)) {
-    return(NULL)
-  }
+set_dot_env <- function(.path) {
 
   env_file <- readr::read_file(.path)
   env_values <- unlist(stringr::str_split(env_file, '\n')[[1]])
   env_values <- env_values[env_values != '']
+  env_values <- env_values[!grepl('^#', env_values)]
 
   if(length(env_values) == 0) {
     return(NULL)
@@ -39,7 +36,7 @@ set_dot_env <- function(.path = getOption('rcbms_dotenv_path')) {
 
 get_env <- function(.key) {
   .key <- as.character(substitute(.key))
-  env <- read_dot_env()
+  env <- set_dot_env()
   if(!(.key %in% names(env))) {
     stop(paste0(.key, ' is not defined in the .env.'))
   }

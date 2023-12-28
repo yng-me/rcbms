@@ -4,7 +4,7 @@
 \alias{set_dot_env}
 \title{Read Environment Variable}
 \usage{
-set_dot_env(.path = getOption("rcbms_dotenv_path"))
+set_dot_env(.path)
 }
 \arguments{
 \item{.path}{}
@@ -16,6 +16,6 @@ List of environment variables defined
 Read Environment Variable
 }
 \examples{
-read_dot_env()
+set_dot_env()
 
 }

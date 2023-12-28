@@ -2,13 +2,13 @@
 % Please edit documentation in R/read_cbms_data.R
 \name{read_cbms_data}
 \alias{read_cbms_data}
-\title{Rear CBMS Data}
+\title{Title}
 \usage{
-read_cbms_data(.path, .input_data = "hp", ...)
+read_cbms_data(.refs, .config = getOption("rcbms_config"))
 }
 \arguments{
-\item{...}{}
+\item{.valueset}{}
 }
 \description{
-Rear CBMS Data
+Title
 }

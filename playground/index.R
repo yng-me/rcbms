@@ -1,4 +1,9 @@
-source('./playground/pipeline/00-init.R')
-source('./playground/pipeline/01-extract.R')
-source('./playground/pipeline/02-transform.R')
-source('./playground/pipeline/03-load.R')
+library(rcbms)
+
+load_required_packages(.load_dependencies = F)
+config <- set_config('playground/configs/global.yml')
+references <- load_references(config)
+parquet <- read_cbms_data(references)
+aggregation <- set_aggregation(parquet, references)
+result <- execute_script(parquet, references, aggregation)
+generate_output(result, references, aggregation)

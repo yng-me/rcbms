@@ -1,45 +1,52 @@
-#' Title
+#' Rear CBMS Data
 #'
+#' @param .path
 #' @param .input_data
+#' @param .dictionary
 #' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-import_data <- function(.input_data = 'hp', .dictionary = NULL, .valueset = NULL) {
+#'
+import_data <- function(
+  .path,
+  .input_data = 'hp',
+  ...
+) {
 
-  config = getOption('rcbms_config')
+  if(.input_data == 'hp') {
 
-  df <- list()
-  d <- list_data_files(config)
+    df <- readr::read_delim(
+      .path,
+      delim = "\t",
+      quote = "",
+      progress = F,
+      trim_ws = T,
+      show_col_types = F,
+      ...
+    ) |> dplyr::select(-dplyr::starts_with('aux'))
 
-  for(i in seq_along(d$unique$value)) {
-    p <- d$unique$value[i]
+  } else if (.input_data == 'bp') {
 
-    df_src_files <- dplyr::as_tibble(d$all$value) %>%
-      dplyr::filter(grepl(paste0(p, '$'), value)) %>%
-      dplyr::pull(value)
+    df <- readr::read_csv(
+      .path,
+      progress = F,
+      trim_ws = T,
+      show_col_types = F,
+      ...
+    )
 
-    df_list <- lapply(df_src_files, function(x) {
-      suppressWarnings(
-        read_cbms_data(x, .input_data = .input_data) |>
-          clean_colnames() |>
-          harmonize_variable(.dictionary)
-      )
-    })
+  } else {
 
-    p_name <- stringr::str_remove(tolower(p), '\\.(TXT|txt)$')
-    df_temp <- do.call('rbind', df_list) |>
-      dplyr::tibble() |>
-      add_metadata(.dictionary, .valueset)
-
-    pq_folder <- create_new_folder(get_data_path('parquet'))
-    pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
-    arrow::write_parquet(df_temp, pq_path)
-    df[[.input_data]][[p_name]] <- arrow::open_dataset(pq_path)
+    stop('Invalid input data.')
 
   }
 
+  class(df) <- c('rcbms_df', class(df))
+
   return(df)
+
 }
+

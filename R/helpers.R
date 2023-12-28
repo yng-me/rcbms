@@ -77,5 +77,61 @@ convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
 }
 
 
+#' Title
+#'
+#' @param .from
+#' @param .to
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+convert_age <- function(.from, .to) {
+
+  from_lt = as.POSIXlt(.from)
+  to_lt = as.POSIXlt(.to)
+
+  age <- to_lt$year - from_lt$year
+
+  if_else(
+    to_lt$mon < from_lt$mon |
+      (to_lt$mon == from_lt$mon & to_lt$mday < from_lt$mday),
+    age - 1L,
+    age
+  )
+}
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+mutate_line_number <- function(.data) {
+
+  ln <- .data |> group_by(case_id) |> count()
+  max <- max(ln$n, na.rm = T)
+
+  if(max > 0) {
+
+    for(i in seq_along(max)) {
+      .data <- .data |>
+        mutate(line_number = if_else(
+          case_id == lag(case_id) & is.na(line_number),
+          as.integer(lag(line_number)) + 1L,
+          line_number
+        )
+        )
+    }
+  }
+
+  return(.data)
+}
 
 

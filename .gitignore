@@ -4,5 +4,8 @@
 .RData
 .Ruserdata
 .DS_Store
+\.parquet$
 
+playground/src/*/references/*
+playground/references/*
 playground/src/*/data/*

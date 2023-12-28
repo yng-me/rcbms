@@ -1,50 +1,126 @@
-#' Rear CBMS Data
+#' Title
 #'
-#' @param .path
-#' @param .input_data
 #' @param .dictionary
-#' @param ...
+#' @param .valueset
 #'
 #' @return
 #' @export
 #'
 #' @examples
-read_cbms_data <- function(
-  .path,
-  .input_data = 'hp',
-  ...
-) {
+#'
 
-  if(.input_data == 'hp') {
+read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
 
-    df <- readr::read_delim(
-      .path,
-      delim = "\t",
-      quote = "",
-      progress = F,
-      trim_ws = T,
-      show_col_types = F,
-      ...
-    ) |> dplyr::select(-dplyr::starts_with('aux'))
+  .input_data <- check_input_data(.config$input_data)
+  mode <- tolower(.config$mode$type)
 
-  } else if (.input_data == 'bp') {
+  read_from_parquet <- FALSE
+  if(!is.null(.config$read_from_parquet)) {
+    read_from_parquet <- .config$read_from_parquet
+  }
 
-    df <- readr::read_csv(
-      .path,
-      progress = F,
-      trim_ws = T,
-      show_col_types = F,
-      ...
-    )
+  df <- list()
 
-  } else {
+  for(i in seq_along(.input_data)) {
 
-    stop('Invalid input data.')
+    df_input <- .input_data[i]
+    df_files <- list_data_files(.config, df_input)
+
+    for(j in seq_along(df_files$unique$value)) {
+
+      p <- df_files$unique$value[j]
+      file_format <- get_file_format(.config, df_input)
+      p_name <- stringr::str_remove(tolower(p), file_format)
+      pq_folder <- create_new_folder(get_data_path('parquet', df_input))
+      pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
+
+      if(!read_from_parquet) {
+
+        df_src_files <- dplyr::as_tibble(df_files$all$value) |>
+          dplyr::filter(grepl(paste0(p, '$'), value)) |>
+          dplyr::pull(value)
+
+        df_list <- lapply(df_src_files, function(x) {
+          suppressWarnings(
+            import_data(x, .input_data = df_input) |>
+              clean_colnames() |>
+              harmonize_variable(.refs$data_dictionary)
+          )
+        })
+
+        # if(mode == 'portal' | mode == 'tabulation') {
+        #
+        #   src_file <- join_path(.config$base, 'tidy', df_input, paste0(p_name, '.R'))
+        #
+        #   df_temp <- df_temp |>
+        #     tidy_data_frame(src_file) |>
+        #     select_and_sort_columns(mode)
+        # }
+
+        df_temp <- do.call('rbind', df_list) |>
+          dplyr::tibble() |>
+          add_metadata(.refs$data_dictionary, .refs$valueset)
+
+        arrow::write_parquet(df_temp, pq_path)
+
+      }
+
+      df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
+
+    }
 
   }
 
-  class(df) <- c('rcbms_df', class(df))
-
   return(df)
+}
+
+
+
+
+#' Title
+#'
+#' @param .parquet
+#' @param .record
+#' @param .input_data
+#' @param ...
+#' @param .config
+#' @param .complete_cases
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+tidy_cbms_data <- function(
+  .parquet,
+  .record,
+  .input_data,
+  ...,
+  .config = getOption('rcbms_config'),
+  .complete_cases = NULL
+) {
+
+  if(exists('tidy_cbms_data_temp')) {
+    suppressWarnings(rm(list = 'tidy_cbms_data_temp'))
+  }
+
+  df <- .parquet[[.record]] |>
+    dplyr::collect() |>
+    create_case_id()
+
+  if(!is.null(.complete_cases)) {
+    df <- df |> dplyr::filter(case_id %in% .complete_cases)
+  }
+
+  src_file <- join_path(.config$base, 'tidy', .input_data, paste0(.record, '.R'))
+
+  if(!file.exists(src_file)) return(df)
+  source(src_file)
+
+  if(!exists('tidy_cbms_data_temp')) return(df)
+
+  df |> tidy_cbms_data_temp(...)
 
 }
+

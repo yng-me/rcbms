@@ -1,0 +1,25 @@
+cbms_round: 2024
+read_from_parquet: yes
+reload_refs: no
+working_directory: './playground'
+complete_cases: yes
+aggregation:
+  level: 5
+  areas: all
+input_data: hp
+mode:
+  type: validation
+  edit: 1
+  source: 2
+  stage: dev
+  output:
+    generate: no
+    type: json
+  options:
+    detailed_output: no
+    include_household_info: no
+    add_uuid: no
+    save_as_excel: no
+    save_as_json: no
+verbose: yes
+show_error_code: no

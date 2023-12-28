@@ -1,13 +1,15 @@
 #' Title
 #'
 #' @param .config_file
-#' @param .cwd
+#' @param .include_env
+#' @param .save_as_options
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_config <- function(.config_file) {
+#'
+set_config <- function(.config_file, .include_env = TRUE, .save_as_options = TRUE) {
 
   valid_type_ext <- c('yml', 'json')
   ext <- tools::file_ext(.config_file)
@@ -28,19 +30,37 @@ set_config <- function(.config_file) {
   wd <- config$working_directory
   current_version <- NULL
   if(is.null(wd)) wd <- './'
-  version_dir <- join_path(paste0(wd, '/.version.json'))
+  version_dir <- join_path(paste0(wd, '/version.json'))
   if(file.exists(version_dir)) {
     current_version <- jsonlite::read_json(version_dir)
   }
 
   config$version <- current_version
+  config$base <- join_path(wd, 'src', config$cbms_round)
+
+  rel_wd <- stringr::str_remove(.config_file, '(config|global)\\.(YML|yml|JSON|json)$')
+
+  project <- NULL
+  if(file.exists(join_path(rel_wd, 'project.yml'))) {
+    project <- yaml::read_yaml(join_path(rel_wd, 'project.yml'), readLines.warn = F)
+  } else if (file.exists(join_path(rel_wd, 'project.json'))) {
+    project <- jsonlite::fromJSON(join_path(rel_wd, 'project.json'), simplifyVector = T)
+  }
+
+  config$project <- project[[as.character(config$cbms_round)]]
+
+  if(is.null(config$mode$output$generate)) {
+    config$mode$output$generate <- FALSE
+  }
 
   # ENV
-  wd <- stringr::str_remove(.config_file, 'config\\.(YML|yml|JSON|json)$')
+  if(.include_env) {
+    config$env <- set_dot_env(join_path(rel_wd, '.env'))
+  }
 
-  config$env <- set_dot_env(join_path(wd, '.env'))
-
-  options(rcbms_config = config)
+  if(.save_as_options) {
+    options(rcbms_config = config)
+  }
 
   return(config)
 }
