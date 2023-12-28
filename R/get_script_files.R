@@ -1,14 +1,14 @@
 #' Get script files
 #'
-#' @param .config
 #' @param .input_data
+#' @param .config
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-get_script_files <- function(.config = getOption('rcbms_config'), .input_data = 'hp') {
+get_script_files <- function(.input_data, .config = getOption('rcbms_config')) {
 
   script_files <- list.files(
     join_path(.config$base, 'scripts', .config$mode$type, .input_data),

@@ -22,6 +22,26 @@ execute_script <- function(
 
   assign('result', list(), envir = globalenv())
 
+  if(length(.refs$script_files) == 0) {
+    if(is.null(.config$verbose)) .config$verbose <- TRUE
+    if(.config$verbose) {
+      warning(
+        cat(
+          'SCRIPT WAS NOT EXECUTED:\n| Scripts for',
+          crayon::red(crayon::italic(crayon::bold(tolower(.config$mode$type)))),
+          'not found.\n| Check your config if the',
+          crayon::red(crayon::italic(crayon::bold('mode'))),
+          'is correct.\n'
+        )
+      )
+    }
+    return(invisible(NULL))
+  }
+
+  script_files <- .refs$script_files |>
+    dplyr::filter(input_data == input_df) |>
+    dplyr::pull(file)
+
   unique_areas <- .aggregation$areas_unique
 
   for(i in seq_along(unique_areas$code)) {
@@ -52,10 +72,6 @@ execute_script <- function(
       }
 
       assign('complete_cases', complete_cases, envir = globalenv())
-
-      script_files <- .refs$script_files |>
-        dplyr::filter(input_data == input_df) |>
-        dplyr::pull(file)
 
       lapply(script_files, source)
 

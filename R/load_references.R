@@ -70,8 +70,14 @@ load_references <- function(.config = getOption('rcbms_config')) {
   refs$tabulation <- arrow::open_dataset(pq_ts)
   refs$area_name <- arrow::open_dataset(pq_anm)
 
-  script_files <- lapply(.config$input_data, \(x) get_script_files(.input_data = x))
-  refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
+  refs$script_files <- NULL
+
+  script_files <- lapply(.config$input_data, get_script_files) |>
+    purrr::discard(is.null)
+
+  if(length(script_files) > 0) {
+    refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
+  }
 
   return(refs)
 }

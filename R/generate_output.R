@@ -16,6 +16,21 @@ generate_output <- function(
   ...
 ) {
 
+  if(is.null(.result)) {
+    if(is.null(.config$verbose)) .config$verbose <- TRUE
+    if(.config$verbose) {
+      warning(
+        cat(
+          'OUTPUT WAS NOT GENERATED:',
+          crayon::red(crayon::italic(crayon::bold('`result`'))),
+          'object is',
+          crayon::red(crayon::italic(crayon::bold('`NULL`'))),
+          '\n'
+        )
+      )
+    }
+    return(invisible(NULL))
+  }
   if(!config$mode$output$generate) return(invisible(NULL))
 
   if(length(.result) == 0) {

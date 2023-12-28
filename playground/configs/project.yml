@@ -23,6 +23,7 @@
     roster_record: section_a_to_e
     variable:
       line_number: lno
+      result_of_visit: result_of_visit
       age: a07_age
       sex: a05_sex
 
@@ -37,5 +38,6 @@
     roster_record: section_a_to_f
     variable:
       line_number: line_no
+      result_of_visit: result_of_final_visit
       age: a04_age
       sex: a03_sex

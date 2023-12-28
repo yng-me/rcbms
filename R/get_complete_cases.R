@@ -31,11 +31,14 @@ get_complete_cases <- function(
 
   if(is.null(summary_df)) return(NULL)
 
+  result_of_vist <- .config$project[[.input_data]]$variable$result_of_visit
+  if(is.null(result_of_vist)) result_of_vist <- "result_of_vist"
+
   complete_cases_from_rov <- summary_df |>
     dplyr::collect() |>
     dplyr::filter(
       as.integer(hsn) < as.integer(paste(rep(7, 4 + config$project$add_length), collapse = '')),
-      result_of_visit == 1
+      as.integer(!!as.name(result_of_vist)) == 1
     ) |>
     create_case_id()
 
