@@ -9,14 +9,11 @@ get_complete_cases(
   .aggregation,
   ...,
   .config = getOption("rcbms_config"),
-  .input_data = "hp",
-  .excluded_cases = NULL,
-  .current_area = NULL,
-  .filter_by_area = FALSE
+  .excluded_cases = NULL
 )
 }
 \arguments{
-\item{.filter_by_area}{}
+\item{.excluded_cases}{}
 }
 \description{
 Title

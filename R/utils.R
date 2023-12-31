@@ -6,6 +6,8 @@
 #' @export
 #'
 #' @examples
+#'
+
 create_new_folder <- function(name) {
   if(!dir.exists(name)){
     dir.create(name, recursive = T)
@@ -22,6 +24,7 @@ create_new_folder <- function(name) {
 #'
 #' @examples
 #'
+
 is_online <- function(.site = "http://google.com/") {
   tryCatch({
     readLines(.site, n = 1)
@@ -39,6 +42,8 @@ is_online <- function(.site = "http://google.com/") {
 #' @export
 #'
 #' @examples
+#'
+
 clean_path <- function(path) {
   stringr::str_replace_all(stringr::str_replace_all(path, '/\\.?/', '/'), '\\/+', '/')
 }
@@ -52,6 +57,8 @@ clean_path <- function(path) {
 #' @export
 #'
 #' @examples
+#'
+
 join_path <- function(...) {
   if(Sys.info()[1] == 'Darwin' | Sys.info()[1] == 'darwin') {
     path <- stringr::str_c(..., collapse = '', sep = '/')
@@ -69,6 +76,8 @@ join_path <- function(...) {
 #' @export
 #'
 #' @examples
+#'
+
 format_current_date <- function() {
   formatted_date <- paste0(
     stringr::str_pad(lubridate::day(lubridate::today()), width = 2, pad = '0'), ' ',
@@ -87,6 +96,8 @@ format_current_date <- function() {
 #' @export
 #'
 #' @examples
+#'
+
 clean_colnames <- function(.data) {
   str_to_replace <- '\\.|\\-|\\s|\\$\\>|\\<|\\|\\(|\\)|\\[|\\]'
   .data |>
@@ -104,6 +115,8 @@ clean_colnames <- function(.data) {
 #' @export
 #'
 #' @examples
+#'
+
 set_rwd <- function(..., .base_wd = getOption('rcbms_config')$working_directory) {
 
   if(!is.null(.base_wd)) {

@@ -1,10 +1,10 @@
-cbms_round: 2024
+cbms_round: 2022
 read_from_parquet: yes
-reload_refs: no
+reload_references: no
 working_directory: './playground'
 complete_cases: yes
 aggregation:
-  level: 5
+  level: 1
   areas: all
 input_data: hp
 mode:
@@ -16,6 +16,7 @@ mode:
     generate: no
     type: json
   options:
+    eda: yes
     detailed_output: no
     include_household_info: no
     add_uuid: no

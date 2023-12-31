@@ -6,10 +6,11 @@
 \usage{
 execute_script(
   .parquet,
-  .refs,
+  .references,
   .aggregation,
   .config = getOption("rcbms_config"),
-  .filter_complete_cases = T
+  .filter_complete_cases = TRUE,
+  .filter_by_area = TRUE
 )
 }
 \arguments{

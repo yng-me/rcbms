@@ -5,5 +5,5 @@ config <- set_config('playground/configs/global.yml')
 references <- load_references(config)
 parquet <- read_cbms_data(references)
 aggregation <- set_aggregation(parquet, references)
-result <- execute_script(parquet, references, aggregation)
-generate_output(result, references, aggregation)
+
+execute_script(parquet, references, aggregation)

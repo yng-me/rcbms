@@ -4,7 +4,13 @@
 \alias{set_aggregation}
 \title{Title}
 \usage{
-set_aggregation(.parquet, .refs, ..., .config = getOption("rcbms_config"))
+set_aggregation(
+  .parquet,
+  .refs,
+  ...,
+  .config = getOption("rcbms_config"),
+  .input_data = "hp"
+)
 }
 \arguments{
 \item{.config}{}

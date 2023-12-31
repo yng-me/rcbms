@@ -7,6 +7,8 @@
     file_format: txt
     summary_record: interview_record
     roster_record: section_a_to_e
+    unfiltered_records:
+      - interview_record
     variable:
       line_number: lineno
       age: a07_age
@@ -16,11 +18,14 @@
   reference_period: 2022-06-30
   add_length: 0
   bp:
-    file_format: csv
+    file_format: xlsx
   hp:
     file_format: txt
     summary_record: summary_of_visit
     roster_record: section_a_to_e
+    unfiltered_records:
+      - summary_of_visit
+      - geo_info
     variable:
       line_number: lno
       result_of_visit: result_of_visit
@@ -35,7 +40,10 @@
   hp:
     file_format: txt
     summary_record: cover_page
-    roster_record: section_a_to_f
+    roster_record: section_a_f
+    unfiltered_records:
+      - cover_page
+      - interview_record
     variable:
       line_number: line_no
       result_of_visit: result_of_final_visit

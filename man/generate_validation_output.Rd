@@ -6,6 +6,7 @@
 \usage{
 generate_validation_output(
   .result,
+  ...,
   .config = getOption("rcbms_config"),
   .detailed_output = F,
   .include_household_info = F,

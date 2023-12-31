@@ -1,64 +1,87 @@
+#' Title
+#'
+#' @param .data
+#' @param .aggregation
+#' @param ...
+#' @param .config
+#' @param .input_data
+#' @param .retain_agg_cols
+#' @param .minimized
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
 join_and_filter_area <- function(
   .data,
-  .retain_agg = F,
-  .filter_completed = T,
-  .minimized = T
+  .aggregation,
+  .current_area,
+  ...,
+  .config = getOption("rcbms_config"),
+  .input_data = "hp",
+  .retain_agg_cols = FALSE,
+  .minimized = TRUE
 ) {
 
-  area <- refs$area_name |>
-    dplyr::collect() |>
-    dplyr::select(-dplyr::ends_with('code'))
+  if(!("case_id" %in% names(.data)) & .input_data == "hp") {
+    .data <- .data |> create_case_id()
+  }
 
-  if(minimized == T) {
-    area <- area |>
+  .data <- .data |>
+    join_area(.aggregation) |>
+    filter_area(.current_area, .aggregation, .config)
+
+  if(!.retain_agg_cols) {
+    .data <- .data |> dplyr::select(-dplyr::ends_with("_agg"))
+  }
+
+  if(.minimized) {
+    .data <- .data |>
       dplyr::select(
-        -dplyr::any_of(
-          c(
-          'x2015_popn',
-          'x2020_popn',
-          'funding_source',
-          'psu_weight',
-          'sample_psu'
-        )
+        -dplyr::any_of(c("funding_source", "psu_weight", "sample_psu")),
+        -dplyr::ends_with("_popn"),
+        -dplyr::ends_with("_geo")
       )
-    )
   }
 
-  df <- .data |>
-    left_join(area, by = 'barangay_geo') |>
-    mutate(aggregate_level = !!as.name(paste0(aggregation$levels[n_level], '_agg'))) |>
-    filter(!is.na(aggregate_level))
+  attr(.data$aggregate_level, "label") <- "Aggregate level"
 
-  if(retain_agg == F) {
-    df <- df |>
-      select(-ends_with('_agg'))
+  .data |>
+    dplyr::select(
+    dplyr::any_of("case_id"),
+    dplyr::starts_with("region"),
+    dplyr::starts_with("province"),
+    dplyr::starts_with("city_mun"),
+    dplyr::starts_with("barangay"),
+    dplyr::any_of(c("aggregate_level", "is_huc")),
+    dplyr::everything()
+  )
+}
+
+
+join_area <- function(.data, .aggregation) {
+
+  area_name <- .aggregation$areas_all |>
+    dplyr::select(-dplyr::ends_with("code"))
+
+  .data <- .data |>
+    create_barangay_geo() |>
+    dplyr::left_join(area_name, by = 'barangay_geo') |>
+    dplyr::mutate(aggregate_level = !!as.name(paste0(.aggregation$value, "_agg"))) |>
+    dplyr::filter(!is.na(aggregate_level))
+}
+
+
+filter_area <- function(.data, .current_area, .aggregation, .config) {
+
+  if(.config$aggregation$level < length(.aggregation$levels)) {
+    current_area_filter <- paste0(.aggregation$levels[.config$aggregation$level + 1], '_geo')
+    .data <- .data |>
+      dplyr::filter(!!as.name(current_area_filter) == .current_area)
   }
 
-  if(!exists('selected_input')) {
-    selected_input <- input_data[1]
-  }
+  return(.data)
 
-  if(!('case_id' %in% names(.data)) & selected_input == 'hp') {
-    df <- df |>
-      create_case_id(filter_completed)
-  }
-
-  if(exists('completed_cases') & filter_completed) {
-    df <- df |> filter(case_id %in% completed_cases)
-  }
-
-  if(exists('incomplete_cases') & filter_completed) {
-    df <- df |> filter(!(case_id %in% incomplete_cases))
-  }
-
-  if(n_level < length(aggregation$levels)) {
-    df <- df |>
-      filter(!!as.name(paste0(aggregation$levels[n_level + 1], '_geo')) == agg_area_code)
-  }
-
-  if(exclude_specify_field == T) {
-    df <- df |>
-      select(-ends_with('other_specified'), -ends_with('_specified'))
-  }
-  return(df)
 }
