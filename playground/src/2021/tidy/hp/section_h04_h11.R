@@ -1,7 +1,7 @@
-df_temp <- df_temp %>% 
-  filter(regular_hh_completed == 1) %>%
-  select(-regular_hh_completed) %>%
-  filter_at(vars(matches('^h\\d{2}')), any_vars(!is.na(.))) %>% 
+df_temp <- df_temp |> 
+  filter(regular_hh_completed == 1) |>
+  select(-regular_hh_completed) |>
+  filter_at(vars(matches('^h\\d{2}')), any_vars(!is.na(.))) |> 
   mutate(
     h04_major_industry_code = if_else(
       h04_major_industry_code == '0' | str_trim(h04_major_industry_details) == 'CROP FARMING',
@@ -18,7 +18,7 @@ df_temp <- df_temp %>%
       'J',
       h04_major_industry_code
     )
-  ) %>% 
+  ) |> 
   mutate(
     h04_major_industry_group = case_when(
       h04_major_industry_code %in% LETTERS[1:5] ~ 1L,
@@ -46,7 +46,7 @@ df_temp <- df_temp %>%
     h10_a_number_of_working_owners = if_else(is.na(h10_a_number_of_working_owners), 0L, h10_a_number_of_working_owners),
     h10_b_number_of_paid_employees = if_else(is.na(h10_b_number_of_paid_employees), 0L, h10_b_number_of_paid_employees),
     h10_c_total_employees = h10_a_number_of_working_owners + h10_b_number_of_paid_employees
-  ) %>% 
+  ) |> 
   mutate(
     h04_major_industry_group_fct = add_factor(h04_major_industry_group, code_ref = 'h03_major'),
     h04_major_industry_fct = add_factor(h04_major_industry_code, code_ref = 'h03_short_letter', is_char = T),

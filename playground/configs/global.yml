@@ -1,5 +1,5 @@
 cbms_round: 2022
-read_from_parquet: yes
+read_from_parquet: no
 reload_references: no
 working_directory: './playground'
 complete_cases: yes
@@ -8,7 +8,7 @@ aggregation:
   areas: all
 input_data: hp
 mode:
-  type: validation
+  type: tabulation
   edit: 1
   source: 2
   stage: dev

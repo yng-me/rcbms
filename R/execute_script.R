@@ -19,13 +19,6 @@ execute_script <- function(
   .excluded_cases = NULL
 ) {
 
-  if(.config$mode$type == "validation") {
-    result_object <- "cv"
-  } else {
-    result_object <- "ts"
-  }
-  assign(result_object, list(), envir = globalenv())
-
   if(length(.references$script_files) == 0) {
     if(is.null(.config$verbose)) .config$verbose <- TRUE
     if(.config$verbose) {

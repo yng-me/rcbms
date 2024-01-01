@@ -4,7 +4,7 @@
 \alias{add_ip_group}
 \title{Title}
 \usage{
-add_ip_group(.data, .ethnicity, .prefix = "a10")
+add_ip_group(.data, .ethnicity, .prefix)
 }
 \arguments{
 \item{.prefix}{}

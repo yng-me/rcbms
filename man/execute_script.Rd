@@ -9,12 +9,11 @@ execute_script(
   .references,
   .aggregation,
   .config = getOption("rcbms_config"),
-  .filter_complete_cases = TRUE,
-  .filter_by_area = TRUE
+  .excluded_cases = NULL
 )
 }
 \arguments{
-\item{.filter_complete_cases}{}
+\item{.config}{}
 }
 \description{
 Title

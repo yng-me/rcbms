@@ -21,14 +21,14 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
 
   summary_record <- get_summary_record(.input_data)
 
-  data_files <- dplyr::as_tibble(basename(all_data_files$value)) %>%
-    dplyr::filter(grepl(file_format, value, ignore.case = T)) %>%
-    dplyr::distinct() %>%
+  data_files <- dplyr::as_tibble(basename(all_data_files$value)) |>
+    dplyr::filter(grepl(file_format, value, ignore.case = T)) |>
+    dplyr::distinct() |>
     dplyr::mutate(
       name = tolower(stringr::str_remove(value, file_format)),
       n = seq(1:dplyr::n()),
       n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
-    ) %>%
+    ) |>
     dplyr::arrange(n)
 
   return(

@@ -34,6 +34,8 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
       pq_folder <- create_new_folder(get_data_path('parquet', df_input))
       pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
 
+      print(p_name)
+
       if(!read_from_parquet) {
 
         df_src_files <- dplyr::as_tibble(df_files$all$value) |>
@@ -48,17 +50,16 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
           )
         })
 
-        # if(mode == 'portal' | mode == 'tabulation') {
-        #
-        #   src_file <- join_path(.config$base, 'tidy', df_input, paste0(p_name, '.R'))
-        #
-        #   df_temp <- df_temp |>
-        #     tidy_data_frame(src_file) |>
-        #     select_and_sort_columns(mode)
-        # }
+        df_temp <- do.call('rbind', df_list) |> dplyr::tibble()
 
-        df_temp <- do.call('rbind', df_list) |>
-          dplyr::tibble() |>
+        assign("df_temp", df_temp, envir = globalenv())
+
+        if(mode == 'portal' | mode == 'tabulation') {
+          src_file <- join_path(.config$base, 'tidy', .input_data, paste0(p_name, '.R'))
+          if(file.exists(src_file)) source(src_file)
+        }
+
+        df_temp <- df_temp |>
           add_metadata(.refs$data_dictionary, .refs$valueset)
 
         arrow::write_parquet(df_temp, pq_path)
@@ -75,6 +76,18 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
 }
 
 
+tidy_data_frame <- function(.data, .base, .input_data, .record, ...) {
+
+  src_file <- join_path(.base, 'tidy', .input_data, paste0(.record, '.R'))
+
+  if(!file.exists(src_file)) return(.data)
+  source(src_file)
+
+  if(!exists('tidy_cbms_data_temp')) return(.data)
+
+  .data |> tidy_cbms_data_temp(...)
+
+}
 
 
 #' Title
@@ -113,14 +126,7 @@ tidy_cbms_data <- function(
     df <- df |> dplyr::filter(case_id %in% .complete_cases)
   }
 
-  src_file <- join_path(.config$base, 'tidy', .input_data, paste0(.record, '.R'))
-
-  if(!file.exists(src_file)) return(df)
-  source(src_file)
-
-  if(!exists('tidy_cbms_data_temp')) return(df)
-
-  df |> tidy_cbms_data_temp(...)
+  df |> tidy_data_frame(.config$base, .record, .input_data, ...)
 
 }
 

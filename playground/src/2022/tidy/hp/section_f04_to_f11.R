@@ -1,6 +1,7 @@
 tidy_cbms_data_temp <- function(.data) {
 
   .data |>
+    mutate_at(vars(matches("^f10_")), as.integer) |>
     mutate(
       f05_entrep_psic = as.integer(f05_entrep_psic),
       f05_industry_group = case_when(
