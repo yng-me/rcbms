@@ -5,9 +5,9 @@
 \title{Title}
 \usage{
 execute_script(
-  .parquet,
-  .references,
-  .aggregation,
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
+  .aggregation = get_config("aggregation"),
   .config = getOption("rcbms_config"),
   .excluded_cases = NULL
 )

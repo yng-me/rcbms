@@ -3,13 +3,19 @@
 #' @param .config_file
 #' @param .include_env
 #' @param .save_as_options
+#' @param .assign_name
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-set_config <- function(.config_file, .include_env = TRUE, .save_as_options = TRUE) {
+set_config <- function(
+  .config_file,
+  .include_env = TRUE,
+  .save_as_options = TRUE,
+  .assign_name = "config"
+) {
 
   valid_type_ext <- c('yml', 'json')
   ext <- tools::file_ext(.config_file)
@@ -62,5 +68,28 @@ set_config <- function(.config_file, .include_env = TRUE, .save_as_options = TRU
     options(rcbms_config = config)
   }
 
+  if(!is.null(.assign_name)) {
+    assign(.assign_name, config, envir = globalenv())
+  }
+
   return(config)
 }
+
+
+get_config <- function(.key) {
+  config <- getOption("rcbms_config")
+  obj <- config$links[[.key]]
+
+  if(!is.null(obj)) {
+    if(exists(obj)) {
+      eval(as.name(obj))
+    } else {
+      return(NULL)
+    }
+  } else {
+    return(NULL)
+  }
+
+}
+
+

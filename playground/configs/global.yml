@@ -1,5 +1,5 @@
-cbms_round: 2022
-read_from_parquet: no
+cbms_round: 2024
+read_from_parquet: yes
 reload_references: no
 working_directory: './playground'
 complete_cases: yes

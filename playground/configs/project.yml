@@ -47,5 +47,5 @@
     variable:
       line_number: line_no
       result_of_visit: result_of_final_visit
-      age: a04_age
+      age: a05_age
       sex: a03_sex

@@ -1,7 +1,8 @@
 #' Title
 #'
-#' @param .dictionary
-#' @param .valueset
+#' @param .references
+#' @param .config
+#' @param .assign_name
 #'
 #' @return
 #' @export
@@ -9,7 +10,11 @@
 #' @examples
 #'
 
-read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
+read_cbms_data <- function(
+  .references = get_config("references"),
+  .config = getOption('rcbms_config'),
+  .assign_name = "parquet"
+) {
 
   .input_data <- check_input_data(.config$input_data)
   mode <- tolower(.config$mode$type)
@@ -46,7 +51,7 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
           suppressWarnings(
             import_data(x, .input_data = df_input) |>
               clean_colnames() |>
-              harmonize_variable(.refs$data_dictionary)
+              harmonize_variable(.references$data_dictionary)
           )
         })
 
@@ -60,7 +65,7 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
         }
 
         df_temp <- df_temp |>
-          add_metadata(.refs$data_dictionary, .refs$valueset)
+          add_metadata(.references$data_dictionary, .references$valueset)
 
         arrow::write_parquet(df_temp, pq_path)
 
@@ -70,6 +75,16 @@ read_cbms_data <- function(.refs, .config = getOption('rcbms_config')) {
 
     }
 
+  }
+
+  suppressWarnings(rm(list = 'df_temp', envir = globalenv()))
+
+  if(!is.null(.assign_name)) {
+
+    .config$links$parquet <- .assign_name
+    options(rcbms_config = .config)
+
+    assign(.assign_name, df, envir = globalenv())
   }
 
   return(df)

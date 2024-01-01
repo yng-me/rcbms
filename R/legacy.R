@@ -111,7 +111,7 @@ filter_and_select_regular_hh <- function(
 select_cv <- function(.data, ..., .join_hh_info = TRUE, .join_with = NULL) {
 
   config <- getOption('rcbms_config')
-  add_length <- config[[as.character(config$cbms_round)]]$add_length
+  add_length <- config$project$add_length
 
   .data <- .data |>
     dplyr::mutate(

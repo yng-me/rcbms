@@ -5,11 +5,13 @@
 \title{Title}
 \usage{
 set_aggregation(
-  .parquet,
-  .refs,
   ...,
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
   .config = getOption("rcbms_config"),
-  .input_data = "hp"
+  .input_data = "hp",
+  .update_config = TRUE,
+  .config_key = "aggregation"
 )
 }
 \arguments{

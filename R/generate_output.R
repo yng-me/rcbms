@@ -1,7 +1,7 @@
 #' Generate output
 #'
 #' @param .result
-#' @param .refs
+#' @param .references
 #' @param .aggregation
 #' @param ...
 #' @param .config
@@ -14,7 +14,7 @@
 
 generate_output <- function(
   .result,
-  .refs,
+  .references,
   .aggregation,
   ...,
   .config = getOption('rcbms_config')
@@ -38,7 +38,7 @@ generate_output <- function(
 
   if(!config$mode$output$generate) return(invisible(NULL))
 
-  if(length(.result) == 0) stop('No results found.')
+  if(length(.result) == 0) stop('No results to output.')
 
   mode_type <- tolower(.config$mode$type)
 

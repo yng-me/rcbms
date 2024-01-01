@@ -6,7 +6,7 @@
 \usage{
 generate_output(
   .result,
-  .refs,
+  .references,
   .aggregation,
   ...,
   .config = getOption("rcbms_config")

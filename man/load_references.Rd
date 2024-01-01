@@ -4,10 +4,14 @@
 \alias{load_references}
 \title{Title}
 \usage{
-load_references(.config = getOption("rcbms_config"))
+load_references(
+  .config = getOption("rcbms_config"),
+  .update_config = TRUE,
+  .config_key = "references"
+)
 }
 \arguments{
-\item{.config}{}
+\item{.config_key}{}
 }
 \description{
 Title

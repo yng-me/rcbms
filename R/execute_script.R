@@ -12,12 +12,15 @@
 #'
 
 execute_script <- function(
-  .parquet,
-  .references,
-  .aggregation,
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
+  .aggregation = get_config("aggregation"),
   .config = getOption("rcbms_config"),
   .excluded_cases = NULL
 ) {
+
+  if(is.null(.references)) stop("References in missing")
+  if(is.null(.aggregation)) stop("References in missing")
 
   if(length(.references$script_files) == 0) {
     if(is.null(.config$verbose)) .config$verbose <- TRUE
@@ -35,15 +38,17 @@ execute_script <- function(
     return(invisible(NULL))
   }
 
-  script_files <- .references$script_files |>
-    dplyr::filter(input_data == input_df) |>
-    dplyr::pull(file)
 
   unique_areas <- .aggregation$areas_unique
 
   for(i in seq_along(.config$input_data)) {
 
     input_df <- .config$input_data[i]
+
+    script_files <- .references$script_files |>
+      dplyr::filter(input_data == input_df) |>
+      dplyr::pull(file)
+
     complete_cases_df <- NULL
 
     if(input_df == "hp") {
@@ -55,7 +60,7 @@ execute_script <- function(
         .aggregation,
         !is.na(!!as.name(filter_var$age)) &
           !is.na(!!as.name(filter_var$sex)) &
-          !!as.name(age_variable) >= 0,
+          !!as.name(filter_var$age) >= 0,
         .excluded_cases = .excluded_cases
       )
     }

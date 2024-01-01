@@ -4,10 +4,15 @@
 \alias{set_config}
 \title{Title}
 \usage{
-set_config(.config_file, .include_env = TRUE, .save_as_options = TRUE)
+set_config(
+  .config_file,
+  .include_env = TRUE,
+  .save_as_options = TRUE,
+  .assign_name = "config"
+)
 }
 \arguments{
-\item{.save_as_options}{}
+\item{.assign_name}{}
 }
 \description{
 Title

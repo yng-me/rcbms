@@ -1,12 +1,18 @@
 #' Title
 #'
 #' @param .config
+#' @param .update_config
+#' @param .config_key
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_references <- function(.config = getOption('rcbms_config')) {
+load_references <- function(
+  .config = getOption('rcbms_config'),
+  .update_config = TRUE,
+  .config_key = "references"
+) {
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -70,6 +76,12 @@ load_references <- function(.config = getOption('rcbms_config')) {
   refs$tabulation <- arrow::open_dataset(pq_ts)
   refs$area_name <- arrow::open_dataset(pq_anm)
 
+  class(refs$data_dictionary) <- c("rcbms_dcf_df", class(refs$data_dictionary))
+  class(refs$valueset) <- c("rcbms_vs_df", class(refs$valueset))
+  class(refs$validation) <- c("rcbms_cv_df", class(refs$validation))
+  class(refs$tabulation) <- c("rcbms_ts_df", class(refs$tabulation))
+  class(refs$area_name) <- c("rcbms_anm_df", class(refs$area_name))
+
   refs$script_files <- NULL
 
   script_files <- lapply(.config$input_data, get_script_files) |>
@@ -78,6 +90,16 @@ load_references <- function(.config = getOption('rcbms_config')) {
   if(length(script_files) > 0) {
     refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
   }
+
+
+  if(!is.null(.config_key) & .update_config) {
+    .config$links$references <- .config_key
+    options(rcbms_config = .config)
+
+    assign("config", .config, envir = globalenv())
+  }
+
+  assign(.config_key, refs, envir = globalenv())
 
   return(refs)
 }

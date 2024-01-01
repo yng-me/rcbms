@@ -1,7 +1,7 @@
 #' Title
 #'
 #' @param .parquet
-#' @param .refs
+#' @param .references
 #' @param ...
 #' @param .config
 #'
@@ -12,11 +12,13 @@
 #'
 
 set_aggregation <- function(
-  .parquet,
-  .refs,
   ...,
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
   .config = getOption("rcbms_config"),
-  .input_data = "hp"
+  .input_data = "hp",
+  .update_config = TRUE,
+  .config_key = "aggregation"
 ) {
 
   agg_record <- get_summary_record(.input_data)
@@ -39,7 +41,7 @@ set_aggregation <- function(
     create_barangay_geo() |>
     dplyr::select(-contains('_code')) |>
     dplyr::left_join(
-      transform_area_name(.refs, .config$project$add_length),
+      transform_area_name(.references, .config$project$add_length),
       by = 'barangay_geo'
     ) |>
     dplyr::select(
@@ -80,9 +82,20 @@ set_aggregation <- function(
     }
   }
 
-  # .config$aggregation <- c(.config$aggregation, agg)
-  # options(rcbms_config = .config)
+  if(!is.null(.config_key) & .update_config) {
+    .config$links$aggregation <- .config_key
+    options(rcbms_config = .config)
+
+    assign("config", .config, envir = globalenv())
+  }
+
+  assign(.config_key, agg, envir = globalenv())
 
   return(agg)
 
 }
+
+
+
+
+
