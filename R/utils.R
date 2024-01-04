@@ -8,11 +8,11 @@
 #' @examples
 #'
 
-create_new_folder <- function(name) {
-  if(!dir.exists(name)){
-    dir.create(name, recursive = T)
+create_new_folder <- function(.name) {
+  if(!dir.exists(.name)){
+    dir.create(.name, recursive = T)
   }
-  return(name)
+  return(.name)
 }
 
 #' Title
@@ -45,7 +45,9 @@ is_online <- function(.site = "http://google.com/") {
 #'
 
 clean_path <- function(path) {
-  stringr::str_replace_all(stringr::str_replace_all(path, '/\\.?/', '/'), '\\/+', '/')
+  stringr::str_replace_all(
+    stringr::str_replace_all(path, '/\\.?/', '/'), '\\/+', '/'
+  )
 }
 
 

@@ -39,7 +39,7 @@ set_aggregation <- function(
   agg$areas_all <- .parquet[[.input_data]][[agg_record]] |>
     dplyr::collect() |>
     create_barangay_geo() |>
-    dplyr::select(-contains('_code')) |>
+    dplyr::select(-dplyr::contains('_code')) |>
     dplyr::left_join(
       transform_area_name(.references, .config$project$add_length),
       by = 'barangay_geo'
@@ -91,7 +91,7 @@ set_aggregation <- function(
 
   assign(.config_key, agg, envir = globalenv())
 
-  return(agg)
+  return(invisible(agg))
 
 }
 

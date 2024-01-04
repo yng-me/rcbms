@@ -1,3 +1,28 @@
+#' Execute script
+#'
+#' @param .config_file
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+execute_script <- function(.config_file, ...) {
+
+  load_required_packages(...)
+
+  set_config(.config_file)
+  compare_version()
+  load_references()
+  read_cbms_data()
+  set_aggregation()
+  execute()
+
+}
+
+
 #' Title
 #'
 #' @param .parquet
@@ -11,7 +36,7 @@
 #' @examples
 #'
 
-execute_script <- function(
+execute <- function(
   .parquet = get_config("parquet"),
   .references = get_config("references"),
   .aggregation = get_config("aggregation"),
@@ -72,6 +97,7 @@ execute_script <- function(
       } else {
         result_object <- "ts"
       }
+
       assign(result_object, list(), envir = globalenv())
 
       complete_cases <- NULL
@@ -82,7 +108,7 @@ execute_script <- function(
 
         complete_cases <- complete_cases_df |>
           join_and_filter_area(.aggregation, .current_area = unique_area) |>
-          pull(case_id)
+          dplyr::pull(case_id)
 
       }
 

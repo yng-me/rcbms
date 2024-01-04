@@ -44,7 +44,7 @@ generate_validation_output <- function(
     if(i == 1) {
       output <- output_temp
     } else {
-      output <- output |> bind_rows(output_temp)
+      output <- output |> dplyr::bind_rows(output_temp)
     }
   }
 

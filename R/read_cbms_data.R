@@ -39,9 +39,10 @@ read_cbms_data <- function(
       pq_folder <- create_new_folder(get_data_path('parquet', df_input))
       pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
 
-      print(p_name)
 
       if(!read_from_parquet) {
+
+        print(p_name)
 
         df_src_files <- dplyr::as_tibble(df_files$all$value) |>
           dplyr::filter(grepl(paste0(p, '$'), value)) |>
@@ -87,7 +88,7 @@ read_cbms_data <- function(
     assign(.assign_name, df, envir = globalenv())
   }
 
-  return(df)
+  return(invisible(df))
 }
 
 

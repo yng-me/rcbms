@@ -4,7 +4,7 @@
 \alias{create_new_folder}
 \title{Title}
 \usage{
-create_new_folder(name)
+create_new_folder(.name)
 }
 \arguments{
 \item{name}{}

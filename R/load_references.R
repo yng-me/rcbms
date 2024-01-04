@@ -101,7 +101,8 @@ load_references <- function(
 
   assign(.config_key, refs, envir = globalenv())
 
-  return(refs)
+  return(invisible(refs))
+
 }
 
 #' Title

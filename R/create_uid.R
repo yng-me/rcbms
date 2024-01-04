@@ -18,15 +18,6 @@ create_case_id <- function(
 
   .data <- collect_first(.data)
 
-  region_code <- NULL
-  province_code <- NULL
-  city_mun_code <- NULL
-  barangay_code <- NULL
-  ean <- NULL
-  bsn <- NULL
-  husn <- NULL
-  hsn <- NULL
-
   add_length <- .config$project$add_length
 
   if(is.null(add_length)) add_length <- 0
@@ -87,7 +78,7 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 
   .data <- .data |>
     dplyr::mutate(
-      line_number_id = if_else(
+      line_number_id = dplyr::if_else(
         !is.na(line_number),
         paste0(
           case_id,
@@ -120,11 +111,6 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #' @examples
 
 create_barangay_geo <- function(.data, .config = getOption("rcbms_config")) {
-
-  region_code <- NULL
-  province_code <- NULL
-  city_mun_code <- NULL
-  barangay_code <- NULL
 
   add_length <- .config$project$add_length
   if(is.null(add_length)) add_length <- 0
@@ -194,7 +180,7 @@ create_uid <- function(.format) {
 add_uuid <- function(.data) {
 
   uid <- uuid::UUIDgenerate(n = nrow(.data))
-  .data |> add_column(uuid = uid, .before = 1)
+  .data |> tibble::add_column(uuid = uid, .before = 1)
 
 }
 

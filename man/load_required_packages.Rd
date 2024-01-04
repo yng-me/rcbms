@@ -4,7 +4,7 @@
 \alias{load_required_packages}
 \title{Load required packages}
 \usage{
-load_required_packages(.load_dependencies = T)
+load_required_packages(.load_dependencies = F)
 }
 \arguments{
 \item{.load_dependencies}{}

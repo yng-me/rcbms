@@ -164,7 +164,7 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
 #'
 normalize_variable <- function(.data) {
   .data |>
-    rename_with(~ str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
+    dplyr::rename_with(~ stringr::str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
 }
 
 
@@ -179,5 +179,5 @@ normalize_variable <- function(.data) {
 #'
 normalise_variable <- function(.data) {
   .data |>
-    rename_with(~ str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
+    dplyr::rename_with(~ stringr::str_remove(., '^[a-e]\\d{2}_([a-z]_)?'))
 }

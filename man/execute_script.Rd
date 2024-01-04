@@ -2,19 +2,13 @@
 % Please edit documentation in R/execute_script.R
 \name{execute_script}
 \alias{execute_script}
-\title{Title}
+\title{Execute script}
 \usage{
-execute_script(
-  .parquet = get_config("parquet"),
-  .references = get_config("references"),
-  .aggregation = get_config("aggregation"),
-  .config = getOption("rcbms_config"),
-  .excluded_cases = NULL
-)
+execute_script(.config_file, ...)
 }
 \arguments{
-\item{.config}{}
+\item{...}{}
 }
 \description{
-Title
+Execute script
 }

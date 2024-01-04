@@ -31,6 +31,7 @@ Import:
   openxlsx
 Suggests: 
   testthat (>= 3.0.0),
+  cli,
   knitr,
   rmarkdown,
   crayon,

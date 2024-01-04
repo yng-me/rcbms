@@ -26,18 +26,23 @@ convert_to_factor <- function(
     if(exists('refs')) {
       code_refs <- eval(as.name('refs'))
       refs_vs <- code_refs[[input_data]]$valueset |>
-        filter(list_name == code_ref)
+        dplyr::filter(name == code_ref)
     }
 
     if(is_char == T) {
       code <- refs_vs |>
-        mutate(level = str_trim(value))
+        dplyr::mutate(level = stringr::str_trim(value))
     } else {
       code <- refs_vs |>
-        mutate(level = as.integer(value))
+        dplyr::mutate(level = as.integer(value))
     }
 
-    factor(..., levels = code$level, labels = code$label, ordered = ordered)
+    factor(
+      ...,
+      levels = code$level,
+      labels = code$label,
+      ordered = ordered
+    )
 
   } else {
     factor(..., ordered = ordered)
@@ -94,7 +99,7 @@ convert_age <- function(.from, .to) {
 
   age <- to_lt$year - from_lt$year
 
-  if_else(
+  dplyr::if_else(
     to_lt$mon < from_lt$mon |
       (to_lt$mon == from_lt$mon & to_lt$mday < from_lt$mday),
     age - 1L,
@@ -102,36 +107,5 @@ convert_age <- function(.from, .to) {
   )
 }
 
-
-#' Title
-#'
-#' @param .data
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-
-mutate_line_number <- function(.data) {
-
-  ln <- .data |> group_by(case_id) |> count()
-  max <- max(ln$n, na.rm = T)
-
-  if(max > 0) {
-
-    for(i in seq_along(max)) {
-      .data <- .data |>
-        mutate(line_number = if_else(
-          case_id == lag(case_id) & is.na(line_number),
-          as.integer(lag(line_number)) + 1L,
-          line_number
-        )
-        )
-    }
-  }
-
-  return(.data)
-}
 
 

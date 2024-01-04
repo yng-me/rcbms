@@ -34,14 +34,8 @@ set_config <- function(
 
   # VERSION
   wd <- config$working_directory
-  current_version <- NULL
   if(is.null(wd)) wd <- './'
-  version_dir <- join_path(paste0(wd, '/version.json'))
-  if(file.exists(version_dir)) {
-    current_version <- jsonlite::read_json(version_dir)
-  }
 
-  config$version <- current_version
   config$base <- join_path(wd, 'src', config$cbms_round)
 
   rel_wd <- stringr::str_remove(.config_file, '(config|global)\\.(YML|yml|JSON|json)$')
@@ -72,7 +66,7 @@ set_config <- function(
     assign(.assign_name, config, envir = globalenv())
   }
 
-  return(config)
+  return(invisible(config))
 }
 
 

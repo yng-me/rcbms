@@ -9,8 +9,8 @@
 #' @examples
 load_package <- function(pkg, install_only = TRUE) {
 
-  if(!(pkg %in% installed.packages()[,'Package'])) {
-    install.packages(pkg)
+  if(!(pkg %in% utils::installed.packages()[,'Package'])) {
+    utils::install.packages(pkg)
   }
 
   library(
@@ -32,19 +32,19 @@ load_package <- function(pkg, install_only = TRUE) {
 #' @examples
 load_dependencies <- function() {
 
-  if(!('crayon' %in% installed.packages()[,'Package'])) {
+  if(!('crayon' %in% utils::installed.packages()[,'Package'])) {
     if(is_online()) {
-      install.packages('crayon')
+      utils::install.packages('crayon')
     } else {
       warning('You are currently offline. Check your internet connection.')
     }
   }
 
-  if('tsg' %in% installed.packages()[,'Package']) {
+  if('tsg' %in% utils::installed.packages()[,'Package']) {
 
     if(is_online()) {
 
-      tsg_version <- installed.packages() |>
+      tsg_version <- utils::installed.packages() |>
         tibble::as_tibble() |>
         dplyr::filter(Package == 'tsg') |>
         dplyr::pull(Version)
@@ -81,7 +81,7 @@ load_dependencies <- function() {
 #'
 #' @examples
 #'
-load_required_packages <- function(.load_dependencies = T) {
+load_required_packages <- function(.load_dependencies = F) {
 
   sapply(
     c(

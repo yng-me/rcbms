@@ -1,26 +1,27 @@
+name: "RCBMS-ONE Codebase"
+version:
+  app: 3.0.0
+  script: 0.0.1
+  package: 0.1.0
 cbms_round: 2024
 read_from_parquet: yes
 reload_references: no
 working_directory: './playground'
 complete_cases: yes
+harmonize_variable: yes
 aggregation:
   level: 1
   areas: all
 input_data: hp
 mode:
-  type: tabulation
+  type: validation
   edit: 1
   source: 2
   stage: dev
-  output:
-    generate: no
-    type: json
   options:
-    eda: yes
     detailed_output: no
     include_household_info: no
     add_uuid: no
     save_as_excel: no
     save_as_json: no
 verbose: yes
-show_error_code: no

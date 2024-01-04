@@ -22,7 +22,7 @@ select_with_geo <- function(.data, ...) {
           'barangay',
           'area_name',
           'class',
-          'regular_hh_completed',
+          'regular_hh_completed'
         )
       ),
       ...,
@@ -41,14 +41,14 @@ pivot_longer_lno <- function(.data) {
         1:8,
         dplyr::matches(paste0(stringr::str_pad(lno_i, width = 2, pad = "0"), '$'))
       ) |>
-      dplyr::select(-matches('^[b-e]_aux.*')) |>
+      dplyr::select(-dplyr::matches('^[b-e]_aux.*')) |>
       dplyr::filter_at(
-        dplyr::vars(matches(paste0(stringr::str_pad(lno_i, width = 2, pad = "0"), '$'))),
+        dplyr::vars(dplyr::matches(paste0(stringr::str_pad(lno_i, width = 2, pad = "0"), '$'))),
         dplyr::any_vars(!is.na(.))
       ) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::matches('_\\d{2}$')),
-        ~ str_replace(., '_\\d{2}$', '')
+        ~ stringr::str_replace(., '_\\d{2}$', '')
       )
   }
 
@@ -95,7 +95,7 @@ filter_and_select_regular_hh <- function(
 
   if(.filter_na) {
     .data <- .data |>
-      filter_at(
+      dplyr::filter_at(
         dplyr::vars(dplyr::matches(p)),
         dplyr::any_vars(!is.na(.))
       )
@@ -115,7 +115,7 @@ select_cv <- function(.data, ..., .join_hh_info = TRUE, .join_with = NULL) {
 
   .data <- .data |>
     dplyr::mutate(
-      ean = str_sub(case_id, 10 + add_length, 15 + add_length),
+      ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length),
       barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length)
     )
 
@@ -162,6 +162,43 @@ select_cv <- function(.data, ..., .join_hh_info = TRUE, .join_with = NULL) {
 
     .data <- .data |>
       dplyr::left_join(.join_with, by = 'case_id')
+  }
+
+  return(.data)
+}
+
+
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+mutate_line_number <- function(.data) {
+
+  ln <- .data |>
+    dplyr::group_by(case_id) |>
+    dplyr::count()
+
+  max <- max(ln$n, na.rm = T)
+
+  if(max > 0) {
+
+    for(i in seq_along(max)) {
+      .data <- .data |>
+        dplyr::mutate(line_number = dplyr::if_else(
+          case_id == dplyr::lag(case_id) & is.na(line_number),
+          as.integer(dplyr::lag(line_number)) + 1L,
+          line_number
+        )
+        )
+    }
   }
 
   return(.data)

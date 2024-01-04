@@ -6,7 +6,6 @@
 #' @export
 #'
 #' @examples
-#' set_dot_env()
 #'
 
 set_dot_env <- function(.path) {

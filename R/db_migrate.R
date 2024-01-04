@@ -58,7 +58,11 @@ db_migrate <- function(.migrations, ..., .name = NULL, .prefix = '') {
 #'
 #' @examples
 
-db_connect <- function(.env = getOption('rcbms_config')$env, .stage = 'dev', ...) {
+db_connect <- function(
+  .env = getOption('rcbms_config')$env,
+  .stage = 'dev',
+  ...
+) {
 
   if(is.null(.env)) stop('Environment variable not provided.')
   if(!(.stage %in% c('dev', 'qa', 'test', 'prod', ''))) .stage <- 'dev'
