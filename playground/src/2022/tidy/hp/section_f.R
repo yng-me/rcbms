@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   mutate_at(vars(
     matches('^f03_[a-v]_.*')),
     list(new = ~ if_else(. %in% c(1, 2), ., NA_integer_, NA_integer_))

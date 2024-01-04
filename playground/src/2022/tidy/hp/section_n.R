@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   filter_and_select_regular_hh(prefix = 'n') |> 
   mutate_at(
     vars(matches('^n\\d{2}'), -matches('_specified_\\d$')), 

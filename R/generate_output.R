@@ -17,7 +17,7 @@ generate_output <- function(
   .references,
   .aggregation,
   ...,
-  .config = getOption('rcbms_config')
+  .config = getOption('rcbms.config')
 ) {
 
   if(is.null(.result)) {

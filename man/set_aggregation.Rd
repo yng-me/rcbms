@@ -8,7 +8,7 @@ set_aggregation(
   ...,
   .parquet = get_config("parquet"),
   .references = get_config("references"),
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .input_data = "hp",
   .update_config = TRUE,
   .config_key = "aggregation"

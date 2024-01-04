@@ -59,11 +59,12 @@ set_config <- function(
   }
 
   if(.save_as_options) {
-    options(rcbms_config = config)
+    options(rcbms.config = config)
   }
 
   if(!is.null(.assign_name)) {
-    assign(.assign_name, config, envir = globalenv())
+    envir <- as.environment(1)
+    assign(.assign_name, config, envir = envir)
   }
 
   return(invisible(config))
@@ -71,7 +72,7 @@ set_config <- function(
 
 
 get_config <- function(.key) {
-  config <- getOption("rcbms_config")
+  config <- getOption("rcbms.config")
   obj <- config$links[[.key]]
 
   if(!is.null(obj)) {

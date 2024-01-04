@@ -9,7 +9,7 @@ generate_output(
   .references,
   .aggregation,
   ...,
-  .config = getOption("rcbms_config")
+  .config = getOption("rcbms.config")
 )
 }
 \arguments{

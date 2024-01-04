@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   filter_at(vars(matches('^a\\d.*'), -matches(c('^a13_pcn$', 'a01_.*'))), any_vars(!is.na(.))) |>
   filter_and_select_regular_hh(prefix = 'a') |> 
   mutate(
@@ -35,7 +35,7 @@ from_section_a <- df_temp |>
   distinct(case_id, line_number, .keep_all = T) |>
   select(case_id, line_number, age, sex)
 
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   select_with_geo(age, everything(), -case_id)
 
 suppressWarnings(rm(refs_ip, get_max))

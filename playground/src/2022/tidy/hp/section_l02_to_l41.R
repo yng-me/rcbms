@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   rename(line_number = section_l_line_number) |>
   mutate_at(vars(matches('_(other|specified)$')), as.character) |> 
   filter(!is.na(line_number)) |> 

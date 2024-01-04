@@ -4,17 +4,18 @@ version:
   script: 0.0.1
   package: 0.1.0
 cbms_round: 2024
-read_from_parquet: yes
+read_from_parquet: no
 reload_references: no
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes
+execute_mode: no
 aggregation:
   level: 1
   areas: all
 input_data: hp
 mode:
-  type: validation
+  type: tabulation
   edit: 1
   source: 2
   stage: dev

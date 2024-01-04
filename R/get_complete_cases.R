@@ -16,7 +16,7 @@ get_complete_cases <- function(
   .parquet,
   .aggregation,
   ...,
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .excluded_cases = NULL
 ) {
 

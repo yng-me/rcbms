@@ -7,7 +7,7 @@
 create_case_id(
   .data,
   .filter_completed = TRUE,
-  .config = getOption("rcbms_config")
+  .config = getOption("rcbms.config")
 )
 }
 \arguments{

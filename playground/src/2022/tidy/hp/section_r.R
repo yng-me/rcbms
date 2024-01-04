@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   mutate(
     r07_floor_area_range = case_when(
       r07_floor_area < 10 ~ 1L,

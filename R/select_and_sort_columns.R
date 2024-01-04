@@ -1,7 +1,7 @@
 #' Title
 #'
 #' @param .data
-#' @param .refs
+#' @param .references
 #' @param .config
 #'
 #' @return
@@ -12,12 +12,12 @@
 
 select_and_sort_columns <- function(
   .data,
-  .refs,
-  .config = getOption('rcbms_config')
+  .references = get_config("references"),
+  .config = getOption('rcbms.config')
 ) {
 
-  df <- dplyr::select(
-    .data,
+  df <- .data |>
+    dplyr::select(
     dplyr::any_of(
       c(
         'case_id',
@@ -37,7 +37,7 @@ select_and_sort_columns <- function(
 
   if(tolower(.config$mode$type) == 'portal') {
 
-    included <- .refs$data_dictionary |>
+    included <- .references$data_dictionary |>
       dplyr::filter(is_included_for_portal == 1) |>
       dplyr::collect() |>
       dplyr::pull(variable_name_new)

@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   pivot_longer_lno() |>
   filter_and_select_regular_hh(prefix = 'b') |>
   mutate_at(vars(matches('^b\\d{2}'), -matches('other$')), as.integer) |> 

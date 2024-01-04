@@ -8,7 +8,7 @@ execute(
   .parquet = get_config("parquet"),
   .references = get_config("references"),
   .aggregation = get_config("aggregation"),
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .excluded_cases = NULL
 )
 }

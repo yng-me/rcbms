@@ -9,7 +9,7 @@
 #'
 #' @examples
 load_references <- function(
-  .config = getOption('rcbms_config'),
+  .config = getOption('rcbms.config'),
   .update_config = TRUE,
   .config_key = "references"
 ) {
@@ -91,15 +91,15 @@ load_references <- function(
     refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
   }
 
-
+  envir <- as.environment(1)
   if(!is.null(.config_key) & .update_config) {
     .config$links$references <- .config_key
-    options(rcbms_config = .config)
+    options(rcbms.config = .config)
 
-    assign("config", .config, envir = globalenv())
+    assign("config", .config, envir = envir)
   }
 
-  assign(.config_key, refs, envir = globalenv())
+  assign(.config_key, refs, envir = envir)
 
   return(invisible(refs))
 

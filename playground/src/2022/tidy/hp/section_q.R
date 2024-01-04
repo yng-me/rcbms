@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   mutate(
     q02_main_water_distance_range = case_when(
       q01_main_water_other %in% c(1, 9, 10) | q02_main_water_distance == 0 ~ 1L,

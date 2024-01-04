@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   filter(regular_hh_completed == 1) |> 
   select(-regular_hh_completed) |> 
   filter_at(vars(matches('^l\\d{2}')), any_vars(!is.na(.))) |> 

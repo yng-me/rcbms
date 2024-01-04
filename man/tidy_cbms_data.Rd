@@ -9,7 +9,7 @@ tidy_cbms_data(
   .record,
   .input_data,
   ...,
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .complete_cases = NULL
 )
 }

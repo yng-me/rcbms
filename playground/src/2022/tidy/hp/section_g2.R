@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   filter_and_select_regular_hh(prefix = 'g') |>
   mutate(
     g20_growing_of_crops_operator_line_number = as.integer(g20_growing_of_crops_operator_line_number),

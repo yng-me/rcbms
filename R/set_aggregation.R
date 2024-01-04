@@ -15,7 +15,7 @@ set_aggregation <- function(
   ...,
   .parquet = get_config("parquet"),
   .references = get_config("references"),
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .input_data = "hp",
   .update_config = TRUE,
   .config_key = "aggregation"
@@ -82,14 +82,16 @@ set_aggregation <- function(
     }
   }
 
+  envir <- as.environment(1)
+
   if(!is.null(.config_key) & .update_config) {
     .config$links$aggregation <- .config_key
-    options(rcbms_config = .config)
+    options(rcbms.config = .config)
 
-    assign("config", .config, envir = globalenv())
+    assign("config", .config, envir = envir)
   }
 
-  assign(.config_key, agg, envir = globalenv())
+  assign(.config_key, agg, envir = envir)
 
   return(invisible(agg))
 

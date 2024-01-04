@@ -1,25 +1,19 @@
 #' Title
 #'
-#' @param pkg
-#' @param install_only
+#' @param .pkg
+#' @param .install_only
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_package <- function(pkg, install_only = TRUE) {
+#'
 
-  if(!(pkg %in% utils::installed.packages()[,'Package'])) {
-    utils::install.packages(pkg)
+load_package <- function(.pkg, .install_only = TRUE) {
+
+  if(!(.pkg %in% utils::installed.packages()[,'Package'])) {
+    utils::install.packages(.pkg)
   }
-
-  library(
-    pkg,
-    character.only = T,
-    quietly = T,
-    warn.conflicts = F,
-    verbose = F
-  )
 
 }
 
@@ -30,6 +24,8 @@ load_package <- function(pkg, install_only = TRUE) {
 #' @export
 #'
 #' @examples
+#'
+
 load_dependencies <- function() {
 
   if(!('crayon' %in% utils::installed.packages()[,'Package'])) {
@@ -66,9 +62,6 @@ load_dependencies <- function() {
       warning('You are currently offline. Check your internet connection and try again.')
     }
   }
-
-  library(crayon)
-  library(tsg)
 }
 
 

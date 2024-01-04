@@ -6,7 +6,7 @@
 \usage{
 read_cbms_data(
   .references = get_config("references"),
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .assign_name = "parquet"
 )
 }

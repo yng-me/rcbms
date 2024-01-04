@@ -4,10 +4,10 @@
 \alias{load_package}
 \title{Title}
 \usage{
-load_package(pkg, install_only = TRUE)
+load_package(.pkg, .install_only = TRUE)
 }
 \arguments{
-\item{install_only}{}
+\item{.install_only}{}
 }
 \description{
 Title

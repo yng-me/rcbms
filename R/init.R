@@ -26,8 +26,7 @@ utils::globalVariables(
     "aggregate_level",
     "config",
     "df_temp",
-    ".config_key",
-    ".assign_name",
+    "df_temp_tidy",
     "add_length",
     "code",
     "name",
@@ -58,6 +57,14 @@ utils::globalVariables(
     "mode_type",
     "is_included_for_portal",
     "regular_hh_completed",
-    "Version"
+    "Version",
+    "assign",
+    ".config",
+    ".config_key",
+    ".assign_name"
   )
 )
+
+
+
+

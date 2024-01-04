@@ -59,7 +59,7 @@ db_migrate <- function(.migrations, ..., .name = NULL, .prefix = '') {
 #' @examples
 
 db_connect <- function(
-  .env = getOption('rcbms_config')$env,
+  .env = getOption('rcbms.config')$env,
   .stage = 'dev',
   ...
 ) {

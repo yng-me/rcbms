@@ -13,7 +13,7 @@
 create_case_id <- function(
   .data,
   .filter_completed = TRUE,
-  .config = getOption("rcbms_config")
+  .config = getOption("rcbms.config")
 ) {
 
   .data <- collect_first(.data)
@@ -110,7 +110,7 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #'
 #' @examples
 
-create_barangay_geo <- function(.data, .config = getOption("rcbms_config")) {
+create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
 
   add_length <- .config$project$add_length
   if(is.null(add_length)) add_length <- 0

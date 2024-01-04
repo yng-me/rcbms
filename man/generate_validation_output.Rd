@@ -7,7 +7,7 @@
 generate_validation_output(
   .result,
   ...,
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .detailed_output = F,
   .include_household_info = F,
   .add_uuid = F,

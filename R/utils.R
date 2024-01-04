@@ -119,7 +119,7 @@ clean_colnames <- function(.data) {
 #' @examples
 #'
 
-set_rwd <- function(..., .base_wd = getOption('rcbms_config')$working_directory) {
+set_rwd <- function(..., .base_wd = getOption('rcbms.config')$working_directory) {
 
   if(!is.null(.base_wd)) {
     if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {

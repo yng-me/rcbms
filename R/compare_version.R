@@ -1,4 +1,4 @@
-compare_version <- function(.config = getOption("rcbms_config")) {
+compare_version <- function(.config = getOption("rcbms.config")) {
 
   is_package_latest <- utils::compareVersion(
     .config$version$package,

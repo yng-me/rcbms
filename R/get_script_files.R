@@ -8,7 +8,7 @@
 #'
 #' @examples
 #'
-get_script_files <- function(.input_data, .config = getOption('rcbms_config')) {
+get_script_files <- function(.input_data, .config = getOption('rcbms.config')) {
 
   script_files <- list.files(
     join_path(.config$base, 'scripts', .config$mode$type, .input_data),

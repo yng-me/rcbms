@@ -1,12 +1,12 @@
 if(config$data_chunk_options$conform_line_number == F) {
-  df_temp <- df_temp |> 
+  df_temp_tidy <- df_temp |> 
     mutate(result_of_visit = as.integer(result_of_visit))
 } else {
-  df_temp <- df_temp |> 
+  df_temp_tidy <- df_temp |> 
     mutate(result_of_visit = as.integer(result_of_visit)) 
 }
 
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   create_case_id(filter_completed = F) |> 
   change_status_of_incomplete_cases(new_status_code = 7L) |> 
   select(-case_id) |> 

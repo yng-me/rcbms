@@ -12,11 +12,13 @@
 
 read_cbms_data <- function(
   .references = get_config("references"),
-  .config = getOption('rcbms_config'),
+  .config = getOption('rcbms.config'),
   .assign_name = "parquet"
 ) {
 
-  .input_data <- check_input_data(.config$input_data)
+  envir <- as.environment(1)
+
+  input_data <- check_input_data(.config$input_data)
   mode <- tolower(.config$mode$type)
 
   read_from_parquet <- FALSE
@@ -26,9 +28,9 @@ read_cbms_data <- function(
 
   df <- list()
 
-  for(i in seq_along(.input_data)) {
+  for(i in seq_along(input_data)) {
 
-    df_input <- .input_data[i]
+    df_input <- input_data[i]
     df_files <- list_data_files(.config, df_input)
 
     for(j in seq_along(df_files$unique$value)) {
@@ -58,17 +60,22 @@ read_cbms_data <- function(
 
         df_temp <- do.call('rbind', df_list) |> dplyr::tibble()
 
-        assign("df_temp", df_temp, envir = globalenv())
+        assign("df_temp", df_temp, envir = envir)
 
-        if(mode == 'portal' | mode == 'tabulation') {
-          src_file <- join_path(.config$base, 'tidy', .input_data, paste0(p_name, '.R'))
-          if(file.exists(src_file)) source(src_file)
+        src_file <- join_path(.config$base, 'tidy', input_data, paste0(p_name, '.R'))
+        if(file.exists(src_file)) source(src_file)
+
+        if(exists("df_temp_tidy")) {
+          df_temp <- df_temp_tidy |>
+            add_metadata(.references$data_dictionary, .references$valueset)
+        } else {
+          df_temp <- df_temp |>
+            add_metadata(.references$data_dictionary, .references$valueset)
         }
 
-        df_temp <- df_temp |>
-          add_metadata(.references$data_dictionary, .references$valueset)
-
         arrow::write_parquet(df_temp, pq_path)
+        suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))
+        suppressWarnings(rm(list = 'df_temp', envir = envir))
 
       }
 
@@ -78,14 +85,12 @@ read_cbms_data <- function(
 
   }
 
-  suppressWarnings(rm(list = 'df_temp', envir = globalenv()))
-
   if(!is.null(.assign_name)) {
 
     .config$links$parquet <- .assign_name
-    options(rcbms_config = .config)
+    options(rcbms.config = .config)
 
-    assign(.assign_name, df, envir = globalenv())
+    assign(.assign_name, df, envir = envir)
   }
 
   return(invisible(df))
@@ -126,7 +131,7 @@ tidy_cbms_data <- function(
   .record,
   .input_data,
   ...,
-  .config = getOption('rcbms_config'),
+  .config = getOption('rcbms.config'),
   .complete_cases = NULL
 ) {
 

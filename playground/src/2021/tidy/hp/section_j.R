@@ -1,4 +1,4 @@
-df_temp <- df_temp |> 
+df_temp_tidy <- df_temp |> 
   filter(regular_hh_completed == 1) |> 
   select(-regular_hh_completed) |> 
   filter(!is.na(j_line_number)) |> 

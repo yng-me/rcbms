@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   mutate_at(vars(
     matches('^j0[1-8]_')),
     list(new = ~ if_else(. %in% c(1, 2), ., NA_integer_, NA_integer_))

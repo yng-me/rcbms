@@ -40,9 +40,11 @@ execute <- function(
   .parquet = get_config("parquet"),
   .references = get_config("references"),
   .aggregation = get_config("aggregation"),
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .excluded_cases = NULL
 ) {
+
+  if(isFALSE(.config$execute_mode)) return(invisible())
 
   if(is.null(.references)) stop("References in missing")
   if(is.null(.aggregation)) stop("References in missing")
@@ -90,6 +92,8 @@ execute <- function(
       )
     }
 
+    envir <- as.environment(1)
+
     for(j in seq_along(unique_areas$code)) {
 
       if(.config$mode$type == "validation") {
@@ -98,7 +102,7 @@ execute <- function(
         result_object <- "ts"
       }
 
-      assign(result_object, list(), envir = globalenv())
+      assign(result_object, list(), envir = envir)
 
       complete_cases <- NULL
       unique_area <- unique_areas$code[j]
@@ -113,7 +117,7 @@ execute <- function(
       }
 
       if(!is.null(complete_cases)) {
-        assign("complete_cases", complete_cases, envir = globalenv())
+        assign("complete_cases", complete_cases, envir = envir)
       }
 
       lapply(script_files, source)

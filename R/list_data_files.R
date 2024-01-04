@@ -1,4 +1,4 @@
-list_data_files <- function(.config = getOption('rcbms_config'), .input_data = 'hp') {
+list_data_files <- function(.config = getOption('rcbms.config'), .input_data = 'hp') {
 
   if(is.null(.config)) stop('.config not defined.')
 
@@ -40,7 +40,7 @@ list_data_files <- function(.config = getOption('rcbms_config'), .input_data = '
 }
 
 get_summary_record <- function(.input_data, .type = 'summary_record') {
-  .config <- getOption('rcbms_config')
+  .config <- getOption('rcbms.config')
   record <- .config$project[[.input_data]][[.type]]
 
   if(is.null(record) | is.na(record)) record <- ''
@@ -72,7 +72,7 @@ get_file_format <- function(.config, .input_data) {
 }
 
 
-get_data_path <- function(.type, .input_data = 'hp', .config = getOption('rcbms_config')) {
+get_data_path <- function(.type, .input_data = 'hp', .config = getOption('rcbms.config')) {
   wd <- .config$working_directory
   if(is.null(wd)) wd <- '.'
   full_path <- file.path(

@@ -110,7 +110,7 @@ filter_and_select_regular_hh <- function(
 
 select_cv <- function(.data, ..., .join_hh_info = TRUE, .join_with = NULL) {
 
-  config <- getOption('rcbms_config')
+  config <- getOption('rcbms.config')
   add_length <- config$project$add_length
 
   .data <- .data |>

@@ -1,4 +1,4 @@
-df_temp <- df_temp |>
+df_temp_tidy <- df_temp |>
   mutate(
     line_number = as.integer(line_number),
     a02_relation_to_hh_head = as.integer(a02_relation_to_hh_head),

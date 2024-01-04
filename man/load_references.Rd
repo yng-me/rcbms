@@ -5,7 +5,7 @@
 \title{Title}
 \usage{
 load_references(
-  .config = getOption("rcbms_config"),
+  .config = getOption("rcbms.config"),
   .update_config = TRUE,
   .config_key = "references"
 )
