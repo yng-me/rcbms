@@ -85,6 +85,8 @@ read_cbms_data <- function(
 
   }
 
+  df <- set_class(df, "rcbms_parquet")
+
   if(!is.null(.assign_name)) {
 
     .config$links$parquet <- .assign_name
@@ -92,6 +94,7 @@ read_cbms_data <- function(
 
     assign(.assign_name, df, envir = envir)
   }
+
 
   return(invisible(df))
 }

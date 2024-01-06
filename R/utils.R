@@ -119,7 +119,7 @@ clean_colnames <- function(.data) {
 #' @examples
 #'
 
-set_rwd <- function(..., .base_wd = getOption('rcbms.config')$working_directory) {
+set_relative_wd <- function(..., .base_wd = getOption('rcbms.config')$working_directory) {
 
   if(!is.null(.base_wd)) {
     if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {
@@ -132,4 +132,10 @@ set_rwd <- function(..., .base_wd = getOption('rcbms.config')$working_directory)
   }
 
   join_path(paste0(wd, '/', ...))
+}
+
+
+set_class <- function(.data, .class) {
+  class(.data) <- c(.class, class(.data))
+  return(.data)
 }

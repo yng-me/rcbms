@@ -45,6 +45,7 @@ execute <- function(
 ) {
 
   if(isFALSE(.config$execute_mode)) return(invisible())
+  envir <- as.environment(1)
 
   if(is.null(.references)) stop("References in missing")
   if(is.null(.aggregation)) stop("References in missing")
@@ -92,7 +93,6 @@ execute <- function(
       )
     }
 
-    envir <- as.environment(1)
 
     for(j in seq_along(unique_areas$code)) {
 
@@ -102,7 +102,14 @@ execute <- function(
         result_object <- "ts"
       }
 
-      assign(result_object, list(), envir = envir)
+      res_list <- list()
+      res_class <- paste0("rcbms_", result_object, "_list")
+
+      assign(
+        result_object,
+        set_class(res_list, res_class),
+        envir = envir
+      )
 
       complete_cases <- NULL
       unique_area <- unique_areas$code[j]

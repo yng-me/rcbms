@@ -4,7 +4,7 @@
 \alias{add_uuid}
 \title{Title}
 \usage{
-add_uuid(.data)
+add_uuid(.data, .id_name = "uuid")
 }
 \arguments{
 \item{.data}{}

@@ -177,10 +177,11 @@ create_uid <- function(.format) {
 #' @examples
 #'
 
-add_uuid <- function(.data) {
+add_uuid <- function(.data, .id_name = "uuid") {
 
   uid <- uuid::UUIDgenerate(n = nrow(.data))
-  .data |> tibble::add_column(uuid = uid, .before = 1)
+  .data |>
+    tibble::add_column(!!as.name(.id_name) := uid, .before = 1)
 
 }
 
