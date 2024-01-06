@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_references.R
 \name{load_area_name}
 \alias{load_area_name}
-\title{Load area name}
+\title{Load area name references}
 \usage{
 load_area_name(.gid)
 }
@@ -10,5 +10,5 @@ load_area_name(.gid)
 \item{.gid}{}
 }
 \description{
-Load area name
+Load area name references
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_references.R
 \name{load_data_dictionary}
 \alias{load_data_dictionary}
-\title{Load data dictionary}
+\title{Load data dictionary references}
 \usage{
 load_data_dictionary(.gid, .cbms_round = NULL)
 }
@@ -10,5 +10,5 @@ load_data_dictionary(.gid, .cbms_round = NULL)
 \item{.cbms_round}{}
 }
 \description{
-Load data dictionary
+Load data dictionary references
 }
