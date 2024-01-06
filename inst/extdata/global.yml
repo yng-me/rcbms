@@ -4,9 +4,9 @@ version:
   app: 3.0.0
   script: 0.0.1
   package: 0.1.0
-read_from_parquet: yes
-reload_references: no
-working_directory: './playground'
+read_from_parquet: no
+reload_references: yes
+working_directory: './'
 complete_cases: yes
 harmonize_variable: yes
 execute_mode: no

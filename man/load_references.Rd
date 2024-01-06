@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_references.R
 \name{load_references}
 \alias{load_references}
-\title{Title}
+\title{Load references}
 \usage{
 load_references(
   .config = getOption("rcbms.config"),
@@ -14,5 +14,5 @@ load_references(
 \item{.config_key}{}
 }
 \description{
-Title
+Load references
 }

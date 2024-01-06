@@ -5,8 +5,9 @@
 \title{Generate validation output}
 \usage{
 generate_validation_output(
-  .result,
+  .cv,
   ...,
+  .references = get_config("references"),
   .config = getOption("rcbms.config"),
   .detailed_output = F,
   .include_household_info = F,

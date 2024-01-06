@@ -1,4 +1,4 @@
-#' Title
+#' Load references
 #'
 #' @param .config
 #' @param .update_config
@@ -8,6 +8,8 @@
 #' @export
 #'
 #' @examples
+#'
+
 load_references <- function(
   .config = getOption('rcbms.config'),
   .update_config = TRUE,
@@ -21,7 +23,9 @@ load_references <- function(
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
 
-  wd_project <- create_new_folder(paste0(wd, '/src/', .config$cbms_round, '/references'))
+  wd_project <- create_new_folder(
+    paste0(wd, '/src/', .config$cbms_round, '/references')
+  )
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
   pq_dcf <- paste0(wd_project, '/ref_data_dictionary.parquet')
@@ -43,44 +47,49 @@ load_references <- function(
 
     arrow::write_parquet(
       suppressWarnings(load_data_dictionary(
-        .gid = .config$env$DATA_DICTIONARY,
+        .gid = .config$env$data_dictionary,
         .cbms_round = .config$cbms_round
       )),
       pq_dcf
     )
 
+    gid <- .config$references
+
     arrow::write_parquet(
-      suppressWarnings(load_valueset(.config$env$VALUESET)),
+      suppressWarnings(load_valueset(gid$valueset)),
       pq_vs
     )
 
     arrow::write_parquet(
-      suppressWarnings(load_area_name(.config$env$AREA_NAME)),
+      suppressWarnings(load_area_name(gid$area_name)),
       pq_anm
     )
 
     arrow::write_parquet(
-      suppressWarnings(load_validation_refs(.config$env$VALIDATION)),
+      suppressWarnings(load_validation_refs(gid$validation)),
       pq_cv
     )
     arrow::write_parquet(
-      suppressWarnings(load_tabulation_refs(.config$env$TABULATION)),
+      suppressWarnings(load_tabulation_refs(gid$tabulation)),
       pq_ts
     )
 
   }
 
-  refs$data_dictionary <- arrow::open_dataset(pq_dcf)
-  refs$valueset <- arrow::open_dataset(pq_vs)
-  refs$validation <- arrow::open_dataset(pq_cv)
-  refs$tabulation <- arrow::open_dataset(pq_ts)
-  refs$area_name <- arrow::open_dataset(pq_anm)
+  refs$data_dictionary <- arrow::open_dataset(pq_dcf) |>
+    set_class("rcbms_dcf_ref")
 
-  class(refs$data_dictionary) <- c("rcbms_dcf_df", class(refs$data_dictionary))
-  class(refs$valueset) <- c("rcbms_vs_df", class(refs$valueset))
-  class(refs$validation) <- c("rcbms_cv_df", class(refs$validation))
-  class(refs$tabulation) <- c("rcbms_ts_df", class(refs$tabulation))
-  class(refs$area_name) <- c("rcbms_anm_df", class(refs$area_name))
+  refs$valueset <- arrow::open_dataset(pq_vs) |>
+    set_class("rcbms_vs_ref")
+
+  refs$validation <- arrow::open_dataset(pq_cv) |>
+    set_class("rcbms_cv_ref")
+
+  refs$tabulation <- arrow::open_dataset(pq_ts) |>
+    set_class("rcbms_ts_ref")
+
+  refs$area_name <- arrow::open_dataset(pq_anm) |>
+    set_class("rcbms_anm_ref")
 
   refs$script_files <- NULL
 
@@ -99,6 +108,7 @@ load_references <- function(
     assign("config", .config, envir = envir)
   }
 
+  refs <- set_class(refs, "rcbms_refs")
   assign(.config_key, refs, envir = envir)
 
   return(invisible(refs))
@@ -118,7 +128,7 @@ load_references <- function(
 #' @examples
 #'
 fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
-  ss <- paste0("https://docs.google.com/spreadsheets/d/", .gid)
+  ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
   if(!is.null(.sheet)) .sheet <- as.character(.sheet)
 
   googlesheets4::read_sheet(
@@ -131,16 +141,6 @@ fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
 }
 
 
-#' Title
-#'
-#' @param .data
-#' @param .required_cols
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
 validate_required_cols <- function(.data, .required_cols) {
   required_cols_which <- which(.required_cols %in% names(.data))
 
@@ -152,28 +152,25 @@ validate_required_cols <- function(.data, .required_cols) {
 }
 
 
-#' Title
-#'
-#' @param .gid
-#' @param .required_cols
-#' @param .sheet
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-load_refs_from_gsheet <- function(.gid, .required_cols, .sheet = NULL, .start_at = 1, ...) {
+load_refs_from_gsheet <- function(
+  .gid,
+  .required_cols,
+  .sheet = NULL,
+  .start_at = 1,
+  ...
+) {
 
-  range <- paste0(LETTERS[.start_at], ':', LETTERS[length(.required_cols) + .start_at - 1])
+  range <- paste0(
+    LETTERS[.start_at], ':',
+    LETTERS[length(.required_cols) + .start_at - 1]
+  )
   dd <- fetch_gsheet(.gid, .sheet, .range = range, ...)
   return(validate_required_cols(dd, .required_cols))
 
 }
 
 
-#' Load data dictionary
+#' Load data dictionary references
 #'
 #' @param .gid
 #' @param .cbms_round
@@ -200,15 +197,18 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
     'is_derived'
   )
 
-  df <- load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciiiii')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    .cbms_round,
+    col_types = 'ccccccciiiii'
+  )
 
-  class(df) <- c('rcbms_dcf', 'rcbms_ref', class(df))
-
-  return(df)
+  set_class(df, "rcbms_dcf_ref")
 }
 
 
-#' Load area name
+#' Load area name references
 #'
 #' @param .gid
 #'
@@ -241,16 +241,23 @@ load_area_name <- function(.gid) {
       col_types = 'ccciiciciii'
     ) |>
     dplyr::mutate(
-      barangay_geo_new = stringr::str_pad(stringr::str_extract(barangay_geo_new, '\\d+'), width = 10, pad = '0'),
-      barangay_geo = stringr::str_pad(stringr::str_extract(barangay_geo, '\\d+'), width = 9, pad = '0')
+      barangay_geo_new = stringr::str_pad(
+        stringr::str_extract(barangay_geo_new, '\\d+'),
+        width = 10,
+        pad = '0'
+      ),
+      barangay_geo = stringr::str_pad(
+        stringr::str_extract(barangay_geo, '\\d+'),
+        width = 9,
+        pad = '0'
+      )
     )
 
-  class(df) <- c('rcbms_anm', 'rcbms_ref', class(df))
+  set_class(df, "rcbms_anm_ref")
 
-  return(df)
 }
 
-#' Load valueset
+#' Load valueset references
 #'
 #' @param .gid
 #'
@@ -265,10 +272,19 @@ load_valueset <- function(.gid) {
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
   )
-  class(df) <- c('rcbms_vs', 'rcbms_ref', class(df))
-  return(df)
+  set_class(df, "rcbms_vs_ref")
 }
 
+
+#' Load validation references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 
 load_validation_refs <- function(.gid) {
   required_cols <- c(
@@ -279,7 +295,11 @@ load_validation_refs <- function(.gid) {
     'section',
     'priority_level'
   )
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccc')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'cccccc'
+  )
 
   attr(df$validation_id, 'label') <- 'Validation ID'
   attr(df$title, 'label') <- 'Title'
@@ -288,10 +308,19 @@ load_validation_refs <- function(.gid) {
   attr(df$section, 'label') <- 'Section'
   attr(df$priority_level, 'label') <- 'Priority Level'
 
-  class(df) <- c('rcbms_cv', 'rcbms_ref', class(df))
-  return(df)
+  set_class(df, "rcbms_cv_ref")
 }
 
+
+#' Load tabulation references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_tabulation_refs <- function(.gid) {
   required_cols <- c(
     'tabulation_id',
@@ -309,9 +338,12 @@ load_tabulation_refs <- function(.gid) {
     'row_height_header',
     'row_reset_last'
   )
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciiciiici')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'cccccciiciiici'
+  )
 
-  class(df) <- c('rcbms_ts', 'rcbms_ref' , class(df))
-  return(df)
+  set_class(df, "rcbms_ts_ref")
 }
 

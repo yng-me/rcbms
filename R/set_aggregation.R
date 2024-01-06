@@ -91,6 +91,7 @@ set_aggregation <- function(
     assign("config", .config, envir = envir)
   }
 
+  agg <- set_class(agg, "rcbms_agg")
   assign(.config_key, agg, envir = envir)
 
   return(invisible(agg))
