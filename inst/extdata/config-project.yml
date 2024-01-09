@@ -1,6 +1,6 @@
 # Project config default values
 '2024':
-  reference_period: ~
+  reference_period: '2024-01-01'
   add_length: 1
   bp:
     id: uuid

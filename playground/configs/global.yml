@@ -4,7 +4,7 @@ reload_references: no
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes
-input_data: bp
+input_data: hp
 execute_mode: yes
 mode:
   type: validation
@@ -20,7 +20,7 @@ validation:
   validate_signatures: no
   add_uuid: no
   save_as_excel: no
-  save_as_json: no
+  save_as_json: yes
 tabulation: ~
 portal: ~
 version:

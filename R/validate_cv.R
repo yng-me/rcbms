@@ -40,16 +40,10 @@ select_cv <- function(
   attr(.data, "section") <- .section
   attr(.data, "priority_level") <- .priority_level
   attr(.data, "primary_data_item") <- .primary_data_item
+  attr(.data, "validation_type") <- .validation_type
   attr(.data, "status") <- .status
   attr(.data, "date_introduced") <- .date_introduced
 
-  if(is.null(.id)) {
-    .validation_type <- NULL
-  } else {
-    if(!(.validation_type %in% c(NA, 1:9))) { .validation_type <- 9 }
-  }
-
-  attr(.data, "validation_type") <- as.integer(.validation_type)
   set_class(.data, 'rcbms_cv_tbl')
 
   .data |> validate_select(...)

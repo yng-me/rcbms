@@ -54,7 +54,11 @@ read_cbms_data <- function(
           suppressWarnings(
             import_data(x, .input_data = df_input) |>
               clean_colnames() |>
-              harmonize_variable(.references$data_dictionary)
+              harmonize_variable(
+                .references$data_dictionary,
+                .cbms_round = .config$cbms_round,
+                .input_data = df_input
+              )
           )
         })
 

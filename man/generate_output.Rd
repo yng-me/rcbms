@@ -4,13 +4,7 @@
 \alias{generate_output}
 \title{Generate output}
 \usage{
-generate_output(
-  .result,
-  .references,
-  .aggregation,
-  ...,
-  .config = getOption("rcbms.config")
-)
+generate_output(.result, ..., .config = getOption("rcbms.config"))
 }
 \arguments{
 \item{.config}{}

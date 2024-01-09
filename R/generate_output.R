@@ -1,8 +1,6 @@
 #' Generate output
 #'
 #' @param .result
-#' @param .references
-#' @param .aggregation
 #' @param ...
 #' @param .config
 #'
@@ -14,8 +12,6 @@
 
 generate_output <- function(
   .result,
-  .references,
-  .aggregation,
   ...,
   .config = getOption('rcbms.config')
 ) {
@@ -36,20 +32,16 @@ generate_output <- function(
     return(invisible(NULL))
   }
 
-  if(!config$mode$output$generate) return(invisible(NULL))
-
   if(length(.result) == 0) stop('No results to output.')
 
-  mode_type <- tolower(.config$mode$type)
+  valid_modes <- c("validation", "tabulation")
+  mode_types <- tolower(.config$mode$type)
+  mode_types <- mode_types[mode_types %in% valid_modes]
 
-  if(mode_type %in% c("validation", "tabulation")) {
+  for(i in seq_along(mode_types)) {
 
-    generate_output_fn <- eval(as.name(paste0("generate_", mode_type, "_output")))
-    generate_output_fn(.result, ...)
-
-  } else {
-
-    stop('Mode defined in the config is not yet currently supported or maybe mispelled.')
-
+    mode_fn <- paste0("generate_", mode_types[i])
+    generate_output_fn <- eval(as.name(mode_fn))
+    generate_output_fn(.result, .config, ...)
   }
 }

@@ -16,9 +16,9 @@
 
 join_and_filter_area <- function(
   .data,
-  .aggregation,
   .current_area,
   ...,
+  .aggregation = get_config("aggregation"),
   .config = getOption("rcbms.config"),
   .input_data = "hp",
   .retain_agg_cols = FALSE,

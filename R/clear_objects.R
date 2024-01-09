@@ -1,0 +1,27 @@
+clear_objects <- function(.config = getOption("rcbms.config")) {
+
+  clear_objects <- .config$clear_objects
+  if(is.null(clear_objects)) {
+    clear_objects <- TRUE
+  }
+  if(rlang::is_true(clear_objects)) {
+    obj_env <- ls()
+    obj_retain <- c(
+      "config",
+      "references",
+      "aggregation",
+      "parquet",
+      "cv",
+      "ts"
+    )
+    suppressWarnings(
+      rm(
+        list = c(
+          obj_env[!(obj_env %in% obj_retain)],
+          "obj_env",
+          "obj_retain"
+        )
+      )
+    )
+  }
+}
