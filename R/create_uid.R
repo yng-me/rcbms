@@ -13,8 +13,11 @@
 create_case_id <- function(
   .data,
   .filter_completed = TRUE,
-  .config = getOption("rcbms.config")
+  .config = getOption("rcbms.config"),
+  .input_data = "hp"
 ) {
+
+  if(.input_data == "bp") return(.data)
 
   .data <- collect_first(.data)
 

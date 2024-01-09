@@ -3,7 +3,7 @@
 #' @param .cv
 #' @param .config
 #' @param .detailed_output
-#' @param .include_household_info
+#' @param .include_additional_info
 #' @param .add_uuid
 #' @param .save_as_excel
 #' @param .save_as_json
@@ -19,7 +19,7 @@ generate_validation_output <- function(
   .references = get_config("references"),
   .config = getOption('rcbms.config'),
   .detailed_output = F,
-  .include_household_info = F,
+  .include_additional_info = F,
   .add_uuid = F,
   .save_as_excel = F,
   .save_as_json = T
@@ -57,8 +57,8 @@ generate_validation_output <- function(
       if(!is.null(opt$detailed_output)) {
         .detailed_output <- rlang::is_true(as.logical(opt$detailed_output))
       }
-      if(!is.null(opt$include_household_info)) {
-        .include_household_info <- rlang::is_true(as.logical(opt$include_household_info))
+      if(!is.null(opt$include_additional_info)) {
+        .include_additional_info <- rlang::is_true(as.logical(opt$include_additional_info))
       }
       if(!is.null(opt$add_uuid)) {
         .add_uuid <- rlang::is_true(as.logical(opt$add_uuid))

@@ -3,9 +3,11 @@
   reference_period: ~
   add_length: 1
   bp:
+    id: uuid
     file_format: csv
     summary_record: bpq_user
   hp:
+    id: case_id
     file_format: txt
     summary_record: cover_page
     roster_record: section_a_f
@@ -21,8 +23,10 @@
   reference_period: 2022-06-30
   add_length: 0
   bp:
+    id: uuid
     file_format: xlsx
   hp:
+    id: case_id
     file_format: txt
     summary_record: summary_of_visit
     roster_record: section_a_to_e
@@ -38,8 +42,10 @@
   reference_period: 2021-10-01
   add_length: 0
   bp:
+    id: uuid
     file_format: csv
   hp:
+    id: case_id
     file_format: txt
     summary_record: interview_record
     roster_record: section_a_to_e

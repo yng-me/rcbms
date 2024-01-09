@@ -1,5 +1,5 @@
 cbms_round: '2024'
-read_from_parquet: no
+read_from_parquet: yes
 reload_references: yes
 working_directory: './playground'
 complete_cases: yes
@@ -16,7 +16,7 @@ aggregation:
   areas: all
 validation:
   detailed_output: no
-  include_household_info: no
+  include_additional_info: no
   validate_signatures: no
   add_uuid: no
   save_as_excel: no

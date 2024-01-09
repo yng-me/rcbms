@@ -152,9 +152,12 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     if(grepl(sheet_pattern, ss_name)) {
       ss_df_temp <- ss_df_temp |>
         dplyr::mutate(
-          cbms_round = stringr::str_sub(ss_name, 1, 4),
+          cbms_round = as.integer(stringr::str_sub(ss_name, 1, 4)),
           input_data = stringr::str_sub(ss_name, -2, -1)
         )
+
+      attr(ss_df_temp$cbms_round, "label") <- "CBMS Round"
+      attr(ss_df_temp$input_data, "label") <- "Input Data"
     }
 
     ss_df[[i]] <- ss_df_temp
@@ -203,6 +206,7 @@ load_refs_from_gsheet <- function(
 #'
 #' @examples
 #'
+
 load_data_dictionary <- function(.gid) {
 
   required_cols <- c(
@@ -315,12 +319,14 @@ load_validation_refs <- function(.gid) {
     'description',
     'primary_data_item',
     'section',
-    'priority_level'
+    'priority_level',
+    'status',
+    'date_introduced'
   )
   df <- load_refs_from_gsheet(
     .gid,
     required_cols,
-    col_types = 'cccccc'
+    col_types = 'cccccccc'
   )
 
   attr(df$validation_id, 'label') <- 'Validation ID'
@@ -329,6 +335,8 @@ load_validation_refs <- function(.gid) {
   attr(df$primary_data_item, 'label') <- 'Primary Data Item'
   attr(df$section, 'label') <- 'Section'
   attr(df$priority_level, 'label') <- 'Priority Level'
+  attr(df$status, 'label') <- 'Status'
+  attr(df$date_introduced, 'label') <- 'Date Introduced'
 
   set_class(df, "rcbms_cv_ref")
 }
