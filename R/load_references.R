@@ -35,10 +35,10 @@ load_references <- function(
   pq_vs <- paste0(wd_base_ref, '/ref_valueset.parquet')
   pq_anm <- paste0(wd_base_ref, '/ref_area_name.parquet')
 
-  refs_exist <- file.exists(pq_dcf) &
-    file.exists(pq_vs) &
-    file.exists(pq_anm) &
-    file.exists(pq_cv) &
+  refs_exist <- file.exists(pq_dcf) &&
+    file.exists(pq_vs) &&
+    file.exists(pq_anm) &&
+    file.exists(pq_cv) &&
     file.exists(pq_ts)
 
   if((!refs_exist | .config$reload_references) & is_online()) {

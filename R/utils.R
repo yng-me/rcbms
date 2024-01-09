@@ -8,11 +8,11 @@
 #' @examples
 #'
 
-create_new_folder <- function(.name) {
-  if(!dir.exists(.name)){
-    dir.create(.name, recursive = T)
+create_new_folder <- function(.dir) {
+  if(!dir.exists(.dir)){
+    dir.create(.dir, recursive = TRUE)
   }
-  return(.name)
+  return(.dir)
 }
 
 #' Title
@@ -119,7 +119,10 @@ clean_colnames <- function(.data) {
 #' @examples
 #'
 
-set_relative_wd <- function(..., .base_wd = getOption('rcbms.config')$working_directory) {
+set_relative_wd <- function(
+  ...,
+  .base_wd = getOption('rcbms.config')$working_directory
+) {
 
   if(!is.null(.base_wd)) {
     if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {
@@ -138,4 +141,8 @@ set_relative_wd <- function(..., .base_wd = getOption('rcbms.config')$working_di
 set_class <- function(.data, .class) {
   class(.data) <- c(.class, class(.data))
   return(.data)
+}
+
+is_not_installed <- function(.pkg) {
+  rlang::is_false(rlang::is_installed(.pkg))
 }
