@@ -4,10 +4,10 @@
 \alias{fetch_gsheet}
 \title{Title}
 \usage{
-fetch_gsheet(.gid, .sheet = NULL, .range = NULL, ...)
+fetch_gsheet(.gid, ..., .range = NULL)
 }
 \arguments{
-\item{...}{}
+\item{.range}{}
 }
 \description{
 Title

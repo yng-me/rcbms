@@ -4,7 +4,12 @@
 \alias{db_connect}
 \title{Title}
 \usage{
-db_connect(.env = getOption("rcbms.config")$env, .stage = "dev", ...)
+db_connect(
+  .env = getOption("rcbms.config")$env,
+  .stage = "dev",
+  .db_name = NULL,
+  ...
+)
 }
 \arguments{
 \item{...}{}

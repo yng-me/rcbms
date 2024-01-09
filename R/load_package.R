@@ -16,7 +16,7 @@ load_package <- function(.pkg, .install_only = TRUE) {
   }
 
   library(
-    pkg,
+    .pkg,
     character.only = T,
     quietly = T,
     warn.conflicts = F,
