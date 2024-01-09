@@ -47,9 +47,9 @@ validate <- function(
     .validation_type <- NULL
   } else {
     if(!(.validation_type %in% c(NA, 1:9))) { .validation_type <- 9 }
-    attr(.data, "validation_type") <- as.integer(.validation_type)
   }
 
+  attr(.data, "validation_type") <- as.integer(.validation_type)
   set_class(.data, 'rcbms_cv_tbl')
 
   .data |> validate_select(...)
@@ -144,7 +144,7 @@ validate_select <- function(.data, ...) {
     if(is.null(uid)) uid <- "case_id"
 
     .data <- .data |>
-      dplyr::left_join(summary_df |> dplyr::collect(), by = uid)
+      dplyr::left_join(hh_info |> dplyr::collect(), by = uid)
 
     }
   }
