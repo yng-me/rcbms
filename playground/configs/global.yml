@@ -1,10 +1,10 @@
 cbms_round: '2024'
-read_from_parquet: yes
+read_from_parquet: no
 reload_references: yes
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes
-input_data: hp
+input_data: bp
 execute_mode: yes
 mode:
   type: validation

@@ -19,24 +19,28 @@ import_data <- function(
   if(.input_data == 'hp') {
 
     df <- readr::read_delim(
-      .path,
-      delim = "\t",
-      quote = "",
-      progress = F,
-      trim_ws = T,
-      show_col_types = F,
-      ...
-    ) |> dplyr::select(-dplyr::starts_with('aux'))
+        .path,
+        delim = "\t",
+        quote = "",
+        progress = FALSE,
+        trim_ws = TRUE,
+        show_col_types = FALSE,
+        ...
+      ) |>
+      dplyr::select(-dplyr::starts_with('aux'))
 
   } else if (.input_data == 'bp') {
 
     df <- readr::read_csv(
-      .path,
-      progress = F,
-      trim_ws = T,
-      show_col_types = F,
-      ...
-    )
+        .path,
+        progress = FALSE,
+        trim_ws = TRUE,
+        show_col_types = FALSE,
+        skip_empty_rows = TRUE,
+        ...
+      ) |>
+      dplyr::select(-dplyr::any_of("...1")) |>
+      convert_to_na()
 
   } else {
 

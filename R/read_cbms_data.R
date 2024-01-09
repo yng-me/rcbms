@@ -31,7 +31,7 @@ read_cbms_data <- function(
   for(i in seq_along(input_data)) {
 
     df_input <- input_data[i]
-    df_files <- list_data_files(.config, df_input)
+    df_files <- list_data_files(df_input, .config)
 
     for(j in seq_along(df_files$unique$value)) {
 
