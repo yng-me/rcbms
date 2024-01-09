@@ -4,7 +4,7 @@
 \alias{get_script_files}
 \title{Get script files}
 \usage{
-get_script_files(.input_data, .config = getOption("rcbms_config"))
+get_script_files(.input_data, .config = getOption("rcbms.config"))
 }
 \arguments{
 \item{.config}{}

@@ -4,3 +4,4 @@
 ^playground\.R$
 ^config\.yml$
 playground/*
+^LICENSE\.md$

@@ -1,16 +1,18 @@
 #' Title
 #'
-#' @param pkg
-#' @param install_only
+#' @param .pkg
+#' @param .install_only
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_package <- function(pkg, install_only = TRUE) {
+#'
 
-  if(!(pkg %in% installed.packages()[,'Package'])) {
-    install.packages(pkg)
+load_package <- function(.pkg, .install_only = TRUE) {
+
+  if(is_not_installed(.pkg)) {
+    utils::install.packages(.pkg)
   }
 
   library(
@@ -24,54 +26,6 @@ load_package <- function(pkg, install_only = TRUE) {
 }
 
 
-#' Title
-#'
-#' @return
-#' @export
-#'
-#' @examples
-load_dependencies <- function() {
-
-  if(!('crayon' %in% installed.packages()[,'Package'])) {
-    if(is_online()) {
-      install.packages('crayon')
-    } else {
-      warning('You are currently offline. Check your internet connection.')
-    }
-  }
-
-  if('tsg' %in% installed.packages()[,'Package']) {
-
-    if(is_online()) {
-
-      tsg_version <- installed.packages() |>
-        tibble::as_tibble() |>
-        dplyr::filter(Package == 'tsg') |>
-        dplyr::pull(Version)
-
-      if(tsg_version != '0.1.3') {
-        devtools::install_github('yng-me/tsg')
-        cat('\n')
-      }
-
-    } else {
-      warning('You are currently offline. Check your internet connection.')
-    }
-
-  } else {
-
-    if(is_online()) {
-      devtools::install_github('yng-me/tsg')
-    } else {
-      warning('You are currently offline. Check your internet connection and try again.')
-    }
-  }
-
-  library(crayon)
-  library(tsg)
-}
-
-
 #' Load required packages
 #'
 #' @param .load_dependencies
@@ -81,7 +35,7 @@ load_dependencies <- function() {
 #'
 #' @examples
 #'
-load_required_packages <- function(.load_dependencies = T) {
+load_required_packages <- function(.load_dependencies = F) {
 
   sapply(
     c(
@@ -99,13 +53,45 @@ load_required_packages <- function(.load_dependencies = T) {
       'readr',
       'quarto',
       'devtools',
-      'googlesheets4'
+      'googlesheets4',
+      'cli'
     ),
     load_package
   )
 
   if(.load_dependencies) {
     load_dependencies()
+  }
+}
+
+
+load_dependencies <- function() {
+
+  if(is_not_installed("tsg")) {
+
+    if(is_online()) {
+
+      tsg_version <- utils::installed.packages() |>
+        tibble::as_tibble() |>
+        dplyr::filter(Package == "tsg") |>
+        dplyr::pull(Version)
+
+      if(tsg_version != "0.1.3") {
+        devtools::install_github("yng-me/tsg")
+        cat('\n')
+      }
+
+    } else {
+      warning('You are currently offline. Check your internet connection.')
+    }
+
+  } else {
+
+    if(is_online()) {
+      devtools::install_github('yng-me/tsg')
+    } else {
+      warning('You are currently offline. Check your internet connection and try again.')
+    }
   }
 }
 

@@ -5,8 +5,10 @@
 \title{Generate validation output}
 \usage{
 generate_validation_output(
-  .result,
-  .config = getOption("rcbms_config"),
+  .cv,
+  ...,
+  .references = get_config("references"),
+  .config = getOption("rcbms.config"),
   .detailed_output = F,
   .include_household_info = F,
   .add_uuid = F,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_references.R
 \name{load_valueset}
 \alias{load_valueset}
-\title{Load valueset}
+\title{Load valueset references}
 \usage{
 load_valueset(.gid)
 }
@@ -10,5 +10,5 @@ load_valueset(.gid)
 \item{.gid}{}
 }
 \description{
-Load valueset
+Load valueset references
 }

@@ -15,7 +15,3 @@ List of environment variables defined
 \description{
 Read Environment Variable
 }
-\examples{
-set_dot_env()
-
-}

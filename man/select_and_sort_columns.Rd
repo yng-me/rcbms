@@ -4,7 +4,11 @@
 \alias{select_and_sort_columns}
 \title{Title}
 \usage{
-select_and_sort_columns(.data, .refs, .config = getOption("rcbms_config"))
+select_and_sort_columns(
+  .data,
+  .references = get_config("references"),
+  .config = getOption("rcbms.config")
+)
 }
 \arguments{
 \item{.config}{}

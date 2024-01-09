@@ -1,12 +1,20 @@
-#' Title
+#' Load references
 #'
 #' @param .config
+#' @param .update_config
+#' @param .config_key
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_references <- function(.config = getOption('rcbms_config')) {
+#'
+
+load_references <- function(
+  .config = getOption('rcbms.config'),
+  .update_config = TRUE,
+  .config_key = "references"
+) {
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -15,7 +23,9 @@ load_references <- function(.config = getOption('rcbms_config')) {
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
 
-  wd_project <- create_new_folder(paste0(wd, '/src/', .config$cbms_round, '/references'))
+  wd_project <- create_new_folder(
+    paste0(wd, '/src/', .config$cbms_round, '/references')
+  )
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
   pq_dcf <- paste0(wd_project, '/ref_data_dictionary.parquet')
@@ -25,50 +35,61 @@ load_references <- function(.config = getOption('rcbms_config')) {
   pq_vs <- paste0(wd_base_ref, '/ref_valueset.parquet')
   pq_anm <- paste0(wd_base_ref, '/ref_area_name.parquet')
 
-  refs_exist <- file.exists(pq_dcf) &
-    file.exists(pq_vs) &
-    file.exists(pq_anm) &
-    file.exists(pq_cv) &
+  refs_exist <- file.exists(pq_dcf) &&
+    file.exists(pq_vs) &&
+    file.exists(pq_anm) &&
+    file.exists(pq_cv) &&
     file.exists(pq_ts)
 
-  if((!refs_exist | .config$reload_refs) & is_online()) {
+  if((!refs_exist | .config$reload_references) & is_online()) {
 
     googlesheets4::gs4_deauth()
 
     arrow::write_parquet(
       suppressWarnings(load_data_dictionary(
-        .gid = .config$env$DATA_DICTIONARY,
+        .gid = .config$env$data_dictionary,
         .cbms_round = .config$cbms_round
       )),
       pq_dcf
     )
 
+    gid <- .config$references
+
     arrow::write_parquet(
-      suppressWarnings(load_valueset(.config$env$VALUESET)),
+      suppressWarnings(load_valueset(gid$valueset)),
       pq_vs
     )
 
     arrow::write_parquet(
-      suppressWarnings(load_area_name(.config$env$AREA_NAME)),
+      suppressWarnings(load_area_name(gid$area_name)),
       pq_anm
     )
 
     arrow::write_parquet(
-      suppressWarnings(load_validation_refs(.config$env$VALIDATION)),
+      suppressWarnings(load_validation_refs(gid$validation)),
       pq_cv
     )
     arrow::write_parquet(
-      suppressWarnings(load_tabulation_refs(.config$env$TABULATION)),
+      suppressWarnings(load_tabulation_refs(gid$tabulation)),
       pq_ts
     )
 
   }
 
-  refs$data_dictionary <- arrow::open_dataset(pq_dcf)
-  refs$valueset <- arrow::open_dataset(pq_vs)
-  refs$validation <- arrow::open_dataset(pq_cv)
-  refs$tabulation <- arrow::open_dataset(pq_ts)
-  refs$area_name <- arrow::open_dataset(pq_anm)
+  refs$data_dictionary <- arrow::open_dataset(pq_dcf) |>
+    set_class("rcbms_dcf_ref")
+
+  refs$valueset <- arrow::open_dataset(pq_vs) |>
+    set_class("rcbms_vs_ref")
+
+  refs$validation <- arrow::open_dataset(pq_cv) |>
+    set_class("rcbms_cv_ref")
+
+  refs$tabulation <- arrow::open_dataset(pq_ts) |>
+    set_class("rcbms_ts_ref")
+
+  refs$area_name <- arrow::open_dataset(pq_anm) |>
+    set_class("rcbms_anm_ref")
 
   refs$script_files <- NULL
 
@@ -79,7 +100,19 @@ load_references <- function(.config = getOption('rcbms_config')) {
     refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
   }
 
-  return(refs)
+  envir <- as.environment(1)
+  if(!is.null(.config_key) & .update_config) {
+    .config$links$references <- .config_key
+    options(rcbms.config = .config)
+
+    assign("config", .config, envir = envir)
+  }
+
+  refs <- set_class(refs, "rcbms_refs")
+  assign(.config_key, refs, envir = envir)
+
+  return(invisible(refs))
+
 }
 
 #' Title
@@ -95,7 +128,7 @@ load_references <- function(.config = getOption('rcbms_config')) {
 #' @examples
 #'
 fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
-  ss <- paste0("https://docs.google.com/spreadsheets/d/", .gid)
+  ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
   if(!is.null(.sheet)) .sheet <- as.character(.sheet)
 
   googlesheets4::read_sheet(
@@ -108,16 +141,6 @@ fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
 }
 
 
-#' Title
-#'
-#' @param .data
-#' @param .required_cols
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
 validate_required_cols <- function(.data, .required_cols) {
   required_cols_which <- which(.required_cols %in% names(.data))
 
@@ -129,28 +152,25 @@ validate_required_cols <- function(.data, .required_cols) {
 }
 
 
-#' Title
-#'
-#' @param .gid
-#' @param .required_cols
-#' @param .sheet
-#' @param ...
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-load_refs_from_gsheet <- function(.gid, .required_cols, .sheet = NULL, .start_at = 1, ...) {
+load_refs_from_gsheet <- function(
+  .gid,
+  .required_cols,
+  .sheet = NULL,
+  .start_at = 1,
+  ...
+) {
 
-  range <- paste0(LETTERS[.start_at], ':', LETTERS[length(.required_cols) + .start_at - 1])
+  range <- paste0(
+    LETTERS[.start_at], ':',
+    LETTERS[length(.required_cols) + .start_at - 1]
+  )
   dd <- fetch_gsheet(.gid, .sheet, .range = range, ...)
   return(validate_required_cols(dd, .required_cols))
 
 }
 
 
-#' Load data dictionary
+#' Load data dictionary references
 #'
 #' @param .gid
 #' @param .cbms_round
@@ -177,15 +197,18 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
     'is_derived'
   )
 
-  df <- load_refs_from_gsheet(.gid, required_cols, .cbms_round, col_types = 'ccccccciiiii')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    .cbms_round,
+    col_types = 'ccccccciiiii'
+  )
 
-  class(df) <- c('rcbms_dcf', 'rcbms_ref', class(df))
-
-  return(df)
+  set_class(df, "rcbms_dcf_ref")
 }
 
 
-#' Load area name
+#' Load area name references
 #'
 #' @param .gid
 #'
@@ -218,16 +241,23 @@ load_area_name <- function(.gid) {
       col_types = 'ccciiciciii'
     ) |>
     dplyr::mutate(
-      barangay_geo_new = stringr::str_pad(stringr::str_extract(barangay_geo_new, '\\d+'), width = 10, pad = '0'),
-      barangay_geo = stringr::str_pad(stringr::str_extract(barangay_geo, '\\d+'), width = 9, pad = '0')
+      barangay_geo_new = stringr::str_pad(
+        stringr::str_extract(barangay_geo_new, '\\d+'),
+        width = 10,
+        pad = '0'
+      ),
+      barangay_geo = stringr::str_pad(
+        stringr::str_extract(barangay_geo, '\\d+'),
+        width = 9,
+        pad = '0'
+      )
     )
 
-  class(df) <- c('rcbms_anm', 'rcbms_ref', class(df))
+  set_class(df, "rcbms_anm_ref")
 
-  return(df)
 }
 
-#' Load valueset
+#' Load valueset references
 #'
 #' @param .gid
 #'
@@ -242,10 +272,19 @@ load_valueset <- function(.gid) {
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
   )
-  class(df) <- c('rcbms_vs', 'rcbms_ref', class(df))
-  return(df)
+  set_class(df, "rcbms_vs_ref")
 }
 
+
+#' Load validation references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 
 load_validation_refs <- function(.gid) {
   required_cols <- c(
@@ -256,7 +295,11 @@ load_validation_refs <- function(.gid) {
     'section',
     'priority_level'
   )
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccc')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'cccccc'
+  )
 
   attr(df$validation_id, 'label') <- 'Validation ID'
   attr(df$title, 'label') <- 'Title'
@@ -265,10 +308,19 @@ load_validation_refs <- function(.gid) {
   attr(df$section, 'label') <- 'Section'
   attr(df$priority_level, 'label') <- 'Priority Level'
 
-  class(df) <- c('rcbms_cv', 'rcbms_ref', class(df))
-  return(df)
+  set_class(df, "rcbms_cv_ref")
 }
 
+
+#' Load tabulation references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_tabulation_refs <- function(.gid) {
   required_cols <- c(
     'tabulation_id',
@@ -286,96 +338,12 @@ load_tabulation_refs <- function(.gid) {
     'row_height_header',
     'row_reset_last'
   )
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciiciiici')
+  df <- load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'cccccciiciiici'
+  )
 
-  class(df) <- c('rcbms_ts', 'rcbms_ref' , class(df))
-  return(df)
-}
-
-
-#' Title
-#'
-#' @param .refs
-#' @param .add_length
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-
-transform_area_name <- function(.refs, .add_length = 0) {
-
-  regions <- .refs$valueset |>
-    dplyr::filter(name == 'area_name_region') |>
-    dplyr::collect() |>
-    dplyr::transmute(
-      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-      region = label
-    )
-
-  regions_long <- .refs$valueset |>
-    dplyr::filter(name == 'area_name_region_long') |>
-    dplyr::collect() |>
-    dplyr::transmute(
-      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-      region_long = label
-    )
-
-  .data <- .refs$area_name |>
-    dplyr::collect() |>
-    dplyr::mutate(add_length = .add_length) |>
-    dplyr::mutate(
-      barangay_geo = dplyr::if_else(
-        add_length == 1,
-        stringr::str_pad(barangay_geo_new, width = 10, pad = '0'),
-        stringr::str_pad(barangay_geo, width = 9, pad = '0')
-      )
-    ) |>
-    dplyr::mutate(
-      region_code = stringr::str_sub(barangay_geo, 1, 2),
-      province_code = stringr::str_sub(barangay_geo, 3, 4 + add_length),
-      city_mun_code = stringr::str_sub(barangay_geo, 5 + add_length, 6 + add_length),
-      barangay_code = stringr::str_sub(barangay_geo, 7 + add_length, 9 + add_length),
-      province_geo = stringr::str_sub(barangay_geo, 1, 4 + add_length),
-      city_mun_geo = stringr::str_sub(barangay_geo, 1, 6 + add_length)
-    ) |>
-    dplyr::left_join(regions, by = 'region_code', multiple = 'first') |>
-    dplyr::left_join(regions_long, by = 'region_code', multiple = 'first') |>
-    dplyr::mutate(
-      region_agg = region,
-      province_agg = dplyr::if_else(
-        is_huc == 1,
-        paste0(city_mun, ', ', region),
-        paste0(province, ', ', region)
-      ),
-      city_mun_agg = dplyr::if_else(
-        is_huc == 1,
-        city_mun,
-        paste0(city_mun, ', ', province)
-      ),
-      barangay_agg = barangay
-    ) |>
-    dplyr::select(
-      dplyr::starts_with('region'),
-      dplyr::starts_with('province'),
-      dplyr::starts_with('city_mun'),
-      dplyr::starts_with('barangay'),
-      dplyr::everything()
-    ) |>
-    dplyr::select(
-      dplyr::ends_with('_code'),
-      dplyr::ends_with('_geo'),
-      dplyr::ends_with('_agg'),
-      dplyr::everything()
-    ) |>
-    dplyr::select(-add_length, -barangay_geo_new)
-
-  attr(.data$region, 'label') <- 'Region'
-  attr(.data$province, 'label') <- 'Province'
-  attr(.data$city_mun, 'label') <- 'City/Municipality'
-  attr(.data$barangay, 'label') <- 'Barangay'
-
-  return(.data)
+  set_class(df, "rcbms_ts_ref")
 }
 

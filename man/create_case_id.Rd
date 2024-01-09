@@ -4,7 +4,11 @@
 \alias{create_case_id}
 \title{Create case ID}
 \usage{
-create_case_id(.data, .filter_completed = T, .add_length = 0)
+create_case_id(
+  .data,
+  .filter_completed = TRUE,
+  .config = getOption("rcbms.config")
+)
 }
 \arguments{
 \item{.add_length}{}

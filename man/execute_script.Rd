@@ -2,19 +2,13 @@
 % Please edit documentation in R/execute_script.R
 \name{execute_script}
 \alias{execute_script}
-\title{Title}
+\title{Execute script}
 \usage{
-execute_script(
-  .parquet,
-  .refs,
-  .aggregation,
-  .config = getOption("rcbms_config"),
-  .filter_complete_cases = T
-)
+execute_script(.config_file, ...)
 }
 \arguments{
-\item{.filter_complete_cases}{}
+\item{...}{}
 }
 \description{
-Title
+Execute script
 }

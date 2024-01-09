@@ -1,7 +1,7 @@
 #' Title
 #'
 #' @param .parquet
-#' @param .refs
+#' @param .references
 #' @param ...
 #' @param .config
 #'
@@ -12,21 +12,23 @@
 #'
 
 set_aggregation <- function(
-  .parquet,
-  .refs,
   ...,
-  .config = getOption('rcbms_config')
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
+  .config = getOption("rcbms.config"),
+  .input_data = "hp",
+  .update_config = TRUE,
+  .config_key = "aggregation"
 ) {
 
-  input_data <- .config$input_data[1]
-  agg_record <- get_summary_record(input_data)
+  agg_record <- get_summary_record(.input_data)
 
   if(is.null(agg_record)) stop('Summary record is not defined.')
 
   agg <- list()
   agg_level <- .config$aggregation$level
-  if(.config$aggregation$level > 5) agg_level <- 5
-  if(.config$aggregation$level < 1) agg_level <- 1
+  if(agg_level > 4) agg_level <- 4
+  if(agg_level < 1) agg_level <- 1
 
   agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'all_area')
   agg$labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
@@ -34,29 +36,31 @@ set_aggregation <- function(
   agg$value <- agg$levels[agg_level]
   agg$label <- agg$labels[agg_level]
 
-  agg$areas_all <- .parquet[[input_data]][[agg_record]] |>
+  agg$areas_all <- .parquet[[.input_data]][[agg_record]] |>
     dplyr::collect() |>
     create_barangay_geo() |>
-    dplyr::select(-contains('_code')) |>
+    dplyr::select(-dplyr::contains('_code')) |>
     dplyr::left_join(
-      transform_area_name(.refs, .config$project$add_length),
+      transform_area_name(.references, .config$project$add_length),
       by = 'barangay_geo'
     ) |>
     dplyr::select(
       dplyr::starts_with(c('region', 'province', 'city_mun', 'barangay')),
-      is_huc
+      dplyr::any_of("is_huc")
     ) |>
     dplyr::distinct() |>
-    tidyr::drop_na()
-
-  geo_name <- paste0(agg$value, '_geo')
-  geo_agg <- paste0(agg$value, '_agg')
-  agg$areas_unique <- agg$areas_all |>
+    tidyr::drop_na() |>
     dplyr::mutate(
+      all_area_geo = "",
+      all_area_agg = "All Areas",
       region_geo = region_code,
-      all_area_geo = '',
-      all_area_agg = 'All Areas'
-    ) |>
+      .before = 1
+    )
+
+  geo_name <- paste0(agg$levels[agg_level + 1], "_geo")
+  geo_agg <- paste0(agg$levels[agg_level + 1], "_agg")
+
+  agg$areas_unique <- agg$areas_all |>
     dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
     dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
     dplyr::rename(
@@ -78,9 +82,23 @@ set_aggregation <- function(
     }
   }
 
-  # .config$aggregation <- c(.config$aggregation, agg)
-  # options(rcbms_config = .config)
+  envir <- as.environment(1)
 
-  return(agg)
+  if(!is.null(.config_key) && .update_config) {
+    .config$links$aggregation <- .config_key
+    options(rcbms.config = .config)
+
+    assign("config", .config, envir = envir)
+  }
+
+  agg <- set_class(agg, "rcbms_agg")
+  assign(.config_key, agg, envir = envir)
+
+  return(invisible(agg))
 
 }
+
+
+
+
+

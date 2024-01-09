@@ -4,7 +4,7 @@
 \alias{create_barangay_geo}
 \title{Create barangay geo ID}
 \usage{
-create_barangay_geo(.data, .add_length = 0)
+create_barangay_geo(.data, .config = getOption("rcbms.config"))
 }
 \arguments{
 \item{.add_length}{}

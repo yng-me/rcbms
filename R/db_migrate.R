@@ -58,7 +58,12 @@ db_migrate <- function(.migrations, ..., .name = NULL, .prefix = '') {
 #'
 #' @examples
 
-db_connect <- function(.env = getOption('rcbms_config')$env, .stage = 'dev', ...) {
+db_connect <- function(
+  .env = getOption('rcbms.config')$env,
+  .stage = 'dev',
+  .db_name = NULL,
+  ...
+) {
 
   if(is.null(.env)) stop('Environment variable not provided.')
   if(!(.stage %in% c('dev', 'qa', 'test', 'prod', ''))) .stage <- 'dev'
@@ -66,10 +71,14 @@ db_connect <- function(.env = getOption('rcbms_config')$env, .stage = 'dev', ...
   if(.stage == '') stage <- ''
   else stage <- paste0(.stage, '_')
 
+  if(is.null(.db_name)) {
+    .db_name <- .env[[paste0(toupper(stage), 'DB_DATABASE')]]
+  }
+
   db_connection <- DBI::dbConnect(
     RMySQL::MySQL(),
     port = as.integer(.env$DB_PORT),
-    dbname = .env[[paste0(toupper(stage), 'DB_DATABASE')]],
+    dbname = .db_name,
     host = .env[[paste0(toupper(stage), 'DB_HOST')]],
     user = .env[[paste0(toupper(stage), 'DB_USERNAME')]],
     password = .env[[paste0(toupper(stage), 'DB_PASSWORD')]],

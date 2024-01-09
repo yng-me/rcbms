@@ -9,7 +9,7 @@
 #'
 #' @examples
 
-add_ip_group <- function(.data, .ethnicity, .prefix = 'a10') {
+add_ip_group <- function(.data, .ethnicity, .prefix) {
   .data |>
     dplyr::mutate(
       !!as.name(paste0(tolower(.prefix), '_ip_group')) := dplyr::case_when(

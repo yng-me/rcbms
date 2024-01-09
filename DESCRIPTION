@@ -17,20 +17,28 @@ Maintainer: Bhas Abdulsamad <aeabdulsamad@gmail.com>
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Import:
+Imports:
   dplyr,
   tidyr,
   stringr,
+  arrow,
   jsonlite,
   yaml,
   DBI,
   RMySQL,
-  odbc,
   purrr,
   tibble,
-  openxlsx
+  googlesheets4,
+  lubridate,
+  utils,
+  readr,
+  uuid
 Suggests: 
   testthat (>= 3.0.0),
+  tsg,
+  cli,
+  openxlsx,
+  devtools,
   knitr,
   rmarkdown,
   crayon,

@@ -44,7 +44,7 @@ import_data <- function(
 
   }
 
-  class(df) <- c('rcbms_df', class(df))
+  set_class(df, "rcbms_df")
 
   return(df)
 

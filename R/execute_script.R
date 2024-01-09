@@ -1,10 +1,7 @@
-#' Title
+#' Execute script
 #'
-#' @param .parquet
-#' @param .refs
-#' @param .aggregation
-#' @param .config
-#' @param .filter_complete_cases
+#' @param .config_file
+#' @param ...
 #'
 #' @return
 #' @export
@@ -12,73 +9,130 @@
 #' @examples
 #'
 
-execute_script <- function(
-  .parquet,
-  .refs,
-  .aggregation,
-  .config = getOption('rcbms_config'),
-  .filter_complete_cases = T
+execute_script <- function(.config_file, ...) {
+
+  load_required_packages(...)
+
+  set_config(.config_file)
+  compare_version()
+  load_references()
+  read_cbms_data()
+  set_aggregation()
+  execute()
+
+}
+
+
+#' Title
+#'
+#' @param .parquet
+#' @param .references
+#' @param .aggregation
+#' @param .config
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+execute <- function(
+  .parquet = get_config("parquet"),
+  .references = get_config("references"),
+  .aggregation = get_config("aggregation"),
+  .config = getOption("rcbms.config"),
+  .excluded_cases = NULL
 ) {
 
-  assign('result', list(), envir = globalenv())
+  if(rlang::is_false(.config$execute_mode)) return(invisible())
+  envir <- as.environment(1)
 
-  if(length(.refs$script_files) == 0) {
+  if(is.null(.references)) stop("References in missing")
+  if(is.null(.aggregation)) stop("References in missing")
+
+  if(length(.references$script_files) == 0) {
     if(is.null(.config$verbose)) .config$verbose <- TRUE
     if(.config$verbose) {
       warning(
         cat(
-          'SCRIPT WAS NOT EXECUTED:\n| Scripts for',
+          "SCRIPT WAS NOT EXECUTED:\n| Scripts for",
           crayon::red(crayon::italic(crayon::bold(tolower(.config$mode$type)))),
-          'not found.\n| Check your config if the',
+          "not found.\n| Check your config if the",
           crayon::red(crayon::italic(crayon::bold('mode'))),
-          'is correct.\n'
+          "is defined correctly.\n"
         )
       )
     }
     return(invisible(NULL))
   }
 
-  script_files <- .refs$script_files |>
-    dplyr::filter(input_data == input_df) |>
-    dplyr::pull(file)
 
   unique_areas <- .aggregation$areas_unique
 
-  for(i in seq_along(unique_areas$code)) {
+  for(i in seq_along(.config$input_data)) {
 
-    unique_area <- unique_areas$code[i]
-    cat('Processing: ', unique_area, ' ', unique_areas$label[i], '...\n', sep = '')
+    input_df <- .config$input_data[i]
 
-    for(j in seq_along(.config$input_data)) {
+    script_files <- .references$script_files |>
+      dplyr::filter(input_data == input_df) |>
+      dplyr::pull(file)
 
-      input_df <- .config$input_data[j]
+    complete_cases_df <- NULL
 
-      if(input_df == 'hp') {
+    if(input_df == "hp") {
 
-        age_variable <- .config$project[[input_df]]$variable$age
-        sex_variable <- .config$project[[input_df]]$variable$sex
+      filter_var <- .config$project[[input_df]]$variable
 
-        complete_cases <- get_complete_cases(
-          .parquet,
-          .aggregation,
-          !is.na(!!as.name(sex_variable)),
-          !is.na(!!as.name(age_variable)),
-          !!as.name(age_variable) >= 0,
-          .input_data = input_df,
-          .current_area = unique_area
-        )
+      complete_cases_df <- get_complete_cases(
+        .parquet,
+        .aggregation,
+        !is.na(!!as.name(filter_var$age)) &
+          !is.na(!!as.name(filter_var$sex)) &
+          !!as.name(filter_var$age) >= 0,
+        .excluded_cases = .excluded_cases
+      )
+    }
+
+
+    for(j in seq_along(unique_areas$code)) {
+
+      if(.config$mode$type == "validation") {
+        result_object <- "cv"
       } else {
-        complete_cases <- NULL
+        result_object <- "ts"
       }
 
-      assign('complete_cases', complete_cases, envir = globalenv())
+      res_list <- list()
+      res_class <- paste0("rcbms_", result_object, "_list")
+
+      assign(
+        result_object,
+        set_class(res_list, res_class),
+        envir = envir
+      )
+
+      complete_cases <- NULL
+      unique_area <- unique_areas$code[j]
+      cat("Processing: ", unique_area, " ", unique_areas$label[j], "...\n", sep = "")
+
+      if(!is.null(complete_cases_df)) {
+
+        complete_cases <- complete_cases_df |>
+          join_and_filter_area(.aggregation, .current_area = unique_area) |>
+          dplyr::pull(case_id)
+
+      }
+
+      if(!is.null(complete_cases)) {
+        assign("complete_cases", complete_cases, envir = envir)
+      }
 
       lapply(script_files, source)
 
+      generate_output(result, .references, .aggregation)
+      suppressWarnings(rm(list = "complete_cases"))
     }
 
   }
-
-  return(result)
 
 }
