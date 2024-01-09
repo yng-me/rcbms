@@ -1,8 +1,8 @@
 # Global config default values
 cbms_round: '2024'
-read_from_parquet: yes
+read_from_parquet: no
 reload_references: no
-working_directory: './'
+working_directory: '.'
 complete_cases: yes
 harmonize_variable: yes
 input_data: hp
