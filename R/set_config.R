@@ -59,7 +59,10 @@ set_config <- function(
 
   # ENV
   if(.include_env) {
-    config$env <- set_dot_env(join_path(rel_wd, ".env"))
+    env_path <- join_path(rel_wd, ".env")
+    if(file.exists(env_path)) {
+      config$env <- set_dot_env(env_path)
+    }
   }
 
   config <- set_class(config, "rcbms_config")
