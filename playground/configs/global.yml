@@ -4,7 +4,7 @@ reload_references: no
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes
-input_data: bp
+input_data: hp
 execute_mode: yes
 mode:
   type: validation
