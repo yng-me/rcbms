@@ -19,7 +19,7 @@
 #' @examples
 #'
 
-validate <- function(
+select_cv <- function(
   .data,
   ...,
   .id = NULL,
