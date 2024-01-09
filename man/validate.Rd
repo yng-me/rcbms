@@ -6,8 +6,8 @@
 \usage{
 validate(
   .data,
-  .id,
   ...,
+  .id = NULL,
   .references = get_config("references"),
   .title = get_from_validation_id(.id, .references, "title"),
   .description = get_from_validation_id(.id, .references, "description"),
