@@ -27,8 +27,8 @@ set_aggregation <- function(
 
   agg <- list()
   agg_level <- .config$aggregation$level
-  if(.config$aggregation$level > 4) agg_level <- 4
-  if(.config$aggregation$level < 1) agg_level <- 1
+  if(agg_level > 4) agg_level <- 4
+  if(agg_level < 1) agg_level <- 1
 
   agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'all_area')
   agg$labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
@@ -84,7 +84,7 @@ set_aggregation <- function(
 
   envir <- as.environment(1)
 
-  if(!is.null(.config_key) & .update_config) {
+  if(!is.null(.config_key) && .update_config) {
     .config$links$aggregation <- .config_key
     options(rcbms.config = .config)
 

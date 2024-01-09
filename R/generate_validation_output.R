@@ -55,19 +55,19 @@ generate_validation_output <- function(
     opt <- .config$mode$options
     if(!is.null(opt)) {
       if(!is.null(opt$detailed_output)) {
-        .detailed_output <- isTRUE(as.logical(opt$detailed_output))
+        .detailed_output <- rlang::is_true(as.logical(opt$detailed_output))
       }
       if(!is.null(opt$include_household_info)) {
-        .include_household_info <- isTRUE(as.logical(opt$include_household_info))
+        .include_household_info <- rlang::is_true(as.logical(opt$include_household_info))
       }
       if(!is.null(opt$add_uuid)) {
-        .add_uuid <- isTRUE(as.logical(opt$add_uuid))
+        .add_uuid <- rlang::is_true(as.logical(opt$add_uuid))
       }
       if(!is.null(opt$save_as_excel)) {
-        .save_as_excel <- isTRUE(as.logical(opt$save_as_excel))
+        .save_as_excel <- rlang::is_true(as.logical(opt$save_as_excel))
       }
       if(!is.null(opt$save_as_json)) {
-        .save_as_json <- isTRUE(as.logical(opt$save_as_json))
+        .save_as_json <- rlang::is_true(as.logical(opt$save_as_json))
       }
     }
 

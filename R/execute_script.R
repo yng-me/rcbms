@@ -44,7 +44,7 @@ execute <- function(
   .excluded_cases = NULL
 ) {
 
-  if(isFALSE(.config$execute_mode)) return(invisible())
+  if(rlang::is_false(.config$execute_mode)) return(invisible())
   envir <- as.environment(1)
 
   if(is.null(.references)) stop("References in missing")
@@ -59,7 +59,7 @@ execute <- function(
           crayon::red(crayon::italic(crayon::bold(tolower(.config$mode$type)))),
           "not found.\n| Check your config if the",
           crayon::red(crayon::italic(crayon::bold('mode'))),
-          "is correct.\n"
+          "is defined correctly.\n"
         )
       )
     }
