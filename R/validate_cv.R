@@ -75,17 +75,36 @@ get_from_validation_id <- function(.validation_id, .references, .info) {
 validate_select <- function(.data, ...) {
 
   config <- getOption('rcbms.config')
+  uid <- config$project[[current_input_data]]$id
+
+  if(is.null(uid)) uid <- "case_id"
+
   if(!exists("current_input_data")) {
     current_input_data <- config$input_data[1]
   }
+
   references <- get_config("references")
   add_length <- config$project$add_length
 
   .data <- .data |>
     dplyr::mutate(
-      ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length),
-      barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length)
+      barangay_geo = stringr::str_sub(
+        !!as.name(uid),
+        1,
+        9 + add_length
+      )
     )
+
+  if(current_input_data == "hp") {
+    .data <- .data |>
+      dplyr::mutate(
+        ean = stringr::str_sub(
+          case_id,
+          10 + add_length,
+          15 + add_length
+        )
+      )
+  }
 
   if(!('line_number' %in% names(.data)) && current_input_data == "hp") {
     .data <- .data |>
@@ -117,7 +136,6 @@ validate_select <- function(.data, ...) {
 
   if(isTRUE(join_hh_info) & !is.null(summary_record)) {
 
-    uid <- config$project[[current_input_data]]$id
     parquet <- get_config("parquet")
     summary_df <- parquet[[current_input_data]][[summary_record]]
     if(!is.null(summary_df)) {
@@ -128,7 +146,7 @@ validate_select <- function(.data, ...) {
         dplyr::select(
           dplyr::any_of(
             c(
-              config$project[[current_input_data]]$id,
+              uid,
               'hh_head',
               'respondent_contact_number',
               'contact_number',
@@ -140,8 +158,6 @@ validate_select <- function(.data, ...) {
             )
           )
         )
-
-    if(is.null(uid)) uid <- "case_id"
 
     .data <- .data |>
       dplyr::left_join(hh_info |> dplyr::collect(), by = uid)
