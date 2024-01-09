@@ -43,9 +43,12 @@ validate <- function(
   attr(.data, "status") <- .status
   attr(.data, "date_introduced") <- .date_introduced
 
-  if(is.null(.validation_type)) .validation_type <- NULL
-  if(!(.validation_type %in% c(NA, 1:9))) { .validation_type <- 9 }
-  attr(.data, "validation_type") <- as.integer(.validation_type)
+  if(is.null(.id)) {
+    .validation_type <- NULL
+  } else {
+    if(!(.validation_type %in% c(NA, 1:9))) { .validation_type <- 9 }
+    attr(.data, "validation_type") <- as.integer(.validation_type)
+  }
 
   set_class(.data, 'rcbms_cv_tbl')
 
