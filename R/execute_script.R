@@ -71,17 +71,20 @@ execute <- function(
 
   for(i in seq_along(.config$input_data)) {
 
-    input_df <- .config$input_data[i]
+    current_input_data <- .config$input_data[i]
+
+    envir <- as.environment(1)
+    assign("current_input_data", current_input_data, envir = envir)
 
     script_files <- .references$script_files |>
-      dplyr::filter(input_data == input_df) |>
+      dplyr::filter(input_data == current_input_data) |>
       dplyr::pull(file)
 
     complete_cases_df <- NULL
 
-    if(input_df == "hp") {
+    if(current_input_data == "hp") {
 
-      filter_var <- .config$project[[input_df]]$variable
+      filter_var <- .config$project[[current_input_data]]$variable
 
       complete_cases_df <- get_complete_cases(
         .parquet,

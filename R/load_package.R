@@ -96,3 +96,16 @@ load_dependencies <- function() {
 }
 
 
+#' Install RCBMS package
+#'
+#' @param .reinstall
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+reinstall_rcbms <- function() {
+  remove.packages("rcbms")
+  devtools::install_github("yng-me/rcbms")
+}

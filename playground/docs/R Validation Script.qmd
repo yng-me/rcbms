@@ -65,7 +65,7 @@ mode:
   stage: dev
   options:
     detailed_output: no
-    include_household_info: no
+    include_additional_info: no
     add_uuid: no
     save_as_excel: no
     save_as_json: no
