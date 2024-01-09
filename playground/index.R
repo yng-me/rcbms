@@ -1,1 +1,1 @@
-rcbms::execute_script(.config_file = "playground/configs/global.yml")
+execute_script(.config_file = "playground/configs/global.yml")
