@@ -1,6 +1,6 @@
 cbms_round: '2024'
 read_from_parquet: yes
-reload_references: no
+reload_references: yes
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes

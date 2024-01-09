@@ -14,11 +14,13 @@ validate(
   .section = get_from_validation_id(.id, .references, "section"),
   .priority_level = get_from_validation_id(.id, .references, "priority_level"),
   .primary_data_item = get_from_validation_id(.id, .references, "primary_data_item"),
-  .validation_type = get_from_validation_id(.id, .references, "validation_type")
+  .validation_type = get_from_validation_id(.id, .references, "validation_type"),
+  .status = get_from_validation_id(.id, .references, "status"),
+  .date_introduced = get_from_validation_id(.id, .references, "date_introduced")
 )
 }
 \arguments{
-\item{.primary_data_item}{}
+\item{.date_introduced}{}
 }
 \description{
 Title

@@ -45,15 +45,12 @@ load_references <- function(
 
     googlesheets4::gs4_deauth()
 
+    gid <- .config$references
+
     arrow::write_parquet(
-      suppressWarnings(load_data_dictionary(
-        .gid = .config$env$data_dictionary,
-        .cbms_round = .config$cbms_round
-      )),
+      suppressWarnings(load_data_dictionary(gid$data_dictionary)),
       pq_dcf
     )
-
-    gid <- .config$references
 
     arrow::write_parquet(
       suppressWarnings(load_valueset(gid$valueset)),
@@ -118,26 +115,53 @@ load_references <- function(
 #' Title
 #'
 #' @param .gid
-#' @param .sheet
-#' @param .range
 #' @param ...
+#' @param .range
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-fetch_gsheet <- function(.gid, .sheet = NULL, .range = NULL, ...) {
+fetch_gsheet <- function(.gid, ..., .range = NULL) {
+  sheet_pattern <- "^\\d{4}_[hb]p$"
   ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
-  if(!is.null(.sheet)) .sheet <- as.character(.sheet)
 
-  googlesheets4::read_sheet(
-    ss = ss,
-    sheet = .sheet,
-    range = .range,
-    trim_ws = T,
-    ...
-  ) |> clean_colnames()
+  ss_names <- googlesheets4::sheet_names(ss) |>
+    dplyr::as_tibble() |>
+    dplyr::filter(grepl(sheet_pattern, value)) |>
+    dplyr::pull(value)
+
+  if(length(ss_names) == 0) ss_names <- 1
+
+  ss_df <- list()
+
+  for(i in seq_along(ss_names)) {
+
+    ss_name <- ss_names[i]
+
+    ss_df_temp <- googlesheets4::read_sheet(
+        ss = ss,
+        sheet = ss_name,
+        range = .range,
+        trim_ws = TRUE,
+        ...
+      ) |>
+      clean_colnames()
+
+    if(grepl(sheet_pattern, ss_name)) {
+      ss_df_temp <- ss_df_temp |>
+        dplyr::mutate(
+          cbms_round = stringr::str_sub(ss_name, 1, 4),
+          input_data = stringr::str_sub(ss_name, -2, -1)
+        )
+    }
+
+    ss_df[[i]] <- ss_df_temp
+  }
+
+  do.call("rbind", ss_df)
+
 }
 
 
@@ -155,16 +179,15 @@ validate_required_cols <- function(.data, .required_cols) {
 load_refs_from_gsheet <- function(
   .gid,
   .required_cols,
-  .sheet = NULL,
-  .start_at = 1,
-  ...
+  ...,
+  .start_at = 1
 ) {
 
   range <- paste0(
     LETTERS[.start_at], ':',
     LETTERS[length(.required_cols) + .start_at - 1]
   )
-  dd <- fetch_gsheet(.gid, .sheet, .range = range, ...)
+  dd <- fetch_gsheet(.gid, ..., .range = range)
   return(validate_required_cols(dd, .required_cols))
 
 }
@@ -180,7 +203,7 @@ load_refs_from_gsheet <- function(
 #'
 #' @examples
 #'
-load_data_dictionary <- function(.gid, .cbms_round = NULL) {
+load_data_dictionary <- function(.gid) {
 
   required_cols <- c(
     'variable_name',
@@ -199,8 +222,7 @@ load_data_dictionary <- function(.gid, .cbms_round = NULL) {
 
   df <- load_refs_from_gsheet(
     .gid,
-    required_cols,
-    .cbms_round,
+    .required_cols = required_cols,
     col_types = 'ccccccciiiii'
   )
 
@@ -237,8 +259,8 @@ load_area_name <- function(.gid) {
   df <- load_refs_from_gsheet(
       .gid,
       .required_cols = required_cols,
-      .start_at = 2,
-      col_types = 'ccciiciciii'
+      col_types = 'ccciiciciii',
+      .start_at = 2
     ) |>
     dplyr::mutate(
       barangay_geo_new = stringr::str_pad(
