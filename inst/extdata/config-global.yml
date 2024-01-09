@@ -19,9 +19,9 @@ validation:
   detailed_output: no
   include_additional_info: no
   validate_signatures: no
-  add_uuid: no
+  add_uuid: yes
   save_as_excel: no
-  save_as_json: no
+  save_as_json: yes
 tabulation: ~
 portal: ~
 version:
@@ -34,4 +34,5 @@ references:
   validation: PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY
   tabulation: jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE
   data_dictionary: MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ
+clear_objects: yes
 verbose: yes

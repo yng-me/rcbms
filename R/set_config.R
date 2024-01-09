@@ -53,10 +53,6 @@ set_config <- function(
 
   config$project <- project[[as.character(config$cbms_round)]]
 
-  if(is.null(config$mode$output$generate)) {
-    config$mode$output$generate <- FALSE
-  }
-
   # ENV
   if(.include_env) {
     env_path <- join_path(rel_wd, ".env")

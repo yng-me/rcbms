@@ -19,6 +19,7 @@ execute_script <- function(.config_file, ...) {
   read_cbms_data()
   set_aggregation()
   execute()
+  clear_objects()
 
 }
 
@@ -116,14 +117,20 @@ execute <- function(
 
       complete_cases <- NULL
       unique_area <- unique_areas$code[j]
-      cat("Processing: ", unique_area, " ", unique_areas$label[j], "...\n", sep = "")
+
+      assign("current_area_code", unique_area, envir = envir)
+
+      area_label <- paste0(unique_area, " ", unique_areas$label[j])
+      cat("Processing: ", area_label, "...\n", sep = "")
 
       if(!is.null(complete_cases_df)) {
 
         complete_cases <- complete_cases_df |>
-          join_and_filter_area(.aggregation, .current_area = unique_area) |>
+          join_and_filter_area(
+            .aggregation,
+            .current_area = unique_area
+          ) |>
           dplyr::pull(case_id)
-
       }
 
       if(!is.null(complete_cases)) {
@@ -132,7 +139,12 @@ execute <- function(
 
       lapply(script_files, source)
 
-      generate_output(result, .references, .aggregation)
+      generate_output(
+        eval(as.name(result_object)),
+        .references,
+        .aggregation,
+        .config = .config
+      )
       suppressWarnings(rm(list = "complete_cases"))
     }
 

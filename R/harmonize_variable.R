@@ -8,7 +8,12 @@
 #'
 #' @examples
 #'
-harmonize_variable <- function(.data, .dictionary) {
+harmonize_variable <- function(
+  .data,
+  .dictionary,
+  .cbms_round,
+  .input_data
+) {
 
   if(is.null(.dictionary)) return(.data)
 
@@ -18,6 +23,10 @@ harmonize_variable <- function(.data, .dictionary) {
   )
 
   .dictionary <- .dictionary |>
+    dplyr::filter(
+      cbms_round == as.integer(.cbms_round),
+      input_data == .input_data
+    ) |>
     dplyr::collect() |>
     dplyr::mutate(
       variable_name = tolower(stringr::str_trim(variable_name)),
