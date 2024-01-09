@@ -16,11 +16,11 @@ set_aggregation <- function(
   .parquet = get_config("parquet"),
   .references = get_config("references"),
   .config = getOption("rcbms.config"),
-  .input_data = "hp",
   .update_config = TRUE,
   .config_key = "aggregation"
 ) {
 
+  .input_data <- .config$input_data[1]
   agg_record <- get_summary_record(.input_data)
 
   if(is.null(agg_record)) stop('Summary record is not defined.')

@@ -1,19 +1,22 @@
 # Project config default values
-'2021':
-  reference_period: 2021-10-01
-  add_length: 0
+'2024':
+  reference_period: ~
+  add_length: 1
   bp:
     file_format: csv
+    summary_record: bpq_user
   hp:
     file_format: txt
-    summary_record: interview_record
-    roster_record: section_a_to_e
+    summary_record: cover_page
+    roster_record: section_a_f
     unfiltered_records:
+      - cover_page
       - interview_record
     variable:
-      line_number: lineno
-      age: a07_age
-      sex: a05_sex
+      line_number: line_no
+      result_of_visit: result_of_final_visit
+      age: a05_age
+      sex: a03_sex
 '2022':
   reference_period: 2022-06-30
   add_length: 0
@@ -31,20 +34,18 @@
       result_of_visit: result_of_visit
       age: a07_age
       sex: a05_sex
-'2024':
-  reference_period: ~
-  add_length: 1
+'2021':
+  reference_period: 2021-10-01
+  add_length: 0
   bp:
     file_format: csv
   hp:
     file_format: txt
-    summary_record: cover_page
-    roster_record: section_a_f
+    summary_record: interview_record
+    roster_record: section_a_to_e
     unfiltered_records:
-      - cover_page
       - interview_record
     variable:
-      line_number: line_no
-      result_of_visit: result_of_final_visit
-      age: a05_age
-      sex: a03_sex
+      line_number: lineno
+      age: a07_age
+      sex: a05_sex
