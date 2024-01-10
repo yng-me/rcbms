@@ -1,3 +1,16 @@
+#' Title
+#'
+#' @param .data
+#' @param .base
+#' @param .sex_of_head
+#' @param .relation
+#' @param .condition
+#' @param .threshold
+#'
+#' @return
+#' @export
+#'
+#' @examples
 check_age_sex_relation <- function(
     .data,
     .base,
