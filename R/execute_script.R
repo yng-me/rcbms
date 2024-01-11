@@ -19,6 +19,7 @@ execute_script <- function(.config_file, ...) {
   read_cbms_data()
   set_aggregation()
   execute()
+  save_logs()
   clear_objects()
 
 }

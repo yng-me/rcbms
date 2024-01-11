@@ -42,6 +42,15 @@ generate_validation <- function(
     result_names %in% references$validation_id
   ]
 
+  with_incon <- NULL
+  for(i in seq_along(result_names)) {
+    if(nrow(.cv[[result_names[i]]]) > 0) {
+      with_incon <- c(with_incon, result_names[i])
+    }
+  }
+
+  result_names <- result_names[result_names %in% with_incon]
+
   output <- NULL
 
   opt <- .config$validation
@@ -85,6 +94,7 @@ generate_validation <- function(
   for(i in seq_along(result_names)) {
 
     result_name <- result_names[i]
+
     output_temp <- .cv[[result_name]] |>
       dplyr::mutate(validation_id = result_name) |>
       dplyr::select(
@@ -139,13 +149,15 @@ generate_validation <- function(
       output <- output |> dplyr::rename(id = "uuid")
     }
 
-    if(.save_as_json) {
-      save_as_json(
-        .output = output,
-        .input_data = input_data,
-        .config = .config
-      )
-    }
+    save_rcbms_logs(output, input_data, .config)
+
+    # if(.save_as_json) {
+    #   save_as_json(
+    #     .output = output,
+    #     .input_data = input_data,
+    #     .config = .config
+    #   )
+    # }
 
     if(.save_as_excel) {
       # save_as_excel(
