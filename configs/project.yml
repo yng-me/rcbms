@@ -1,0 +1,58 @@
+'2024':
+  reference_period: '2024-01-01'
+  add_length: 1
+  bp:
+    id: uuid
+    file_format: csv
+    summary_record: bpq_user
+  hp:
+    id: case_id
+    file_format: txt
+    summary_record: cover_page
+    roster_record: section_a_f
+    unfiltered_records:
+    - cover_page
+    - interview_record
+    variable:
+      line_number: line_no
+      result_of_visit: result_of_final_visit
+      relation_to_hh_head: a02_relation_to_hh_head
+      age: a05_age
+      sex: a03_sex
+'2022':
+  reference_period: '2022-06-30'
+  add_length: 0
+  bp:
+    id: uuid
+    file_format: xlsx
+  hp:
+    id: case_id
+    file_format: txt
+    summary_record: summary_of_visit
+    roster_record: section_a_to_e
+    unfiltered_records:
+    - summary_of_visit
+    - geo_info
+    variable:
+      line_number: lno
+      result_of_visit: result_of_visit
+      relation_to_hh_head: a02_relation_to_hh_head
+      age: a07_age
+      sex: a05_sex
+'2021':
+  reference_period: '2021-10-01'
+  add_length: 0
+  bp:
+    id: uuid
+    file_format: csv
+  hp:
+    id: case_id
+    file_format: txt
+    summary_record: interview_record
+    roster_record: section_a_to_e
+    unfiltered_records: interview_record
+    variable:
+      line_number: lineno
+      relation_to_hh_head: a02_relation_to_hh_head
+      age: a07_age
+      sex: a05_sex

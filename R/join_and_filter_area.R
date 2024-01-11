@@ -28,8 +28,8 @@ join_and_filter_area <- function(
     .data <- .data |> create_case_id()
   }
 
-  if(exists('current_area_filter')) {
-    current_area <- current_area_filter
+  if(exists('current_area_code')) {
+    current_area <- current_area_code
   } else {
     current_area <- NULL
   }

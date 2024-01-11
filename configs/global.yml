@@ -1,0 +1,37 @@
+cbms_round: '2024'
+read_from_parquet: no
+reload_references: yes
+working_directory: '.'
+complete_cases: yes
+harmonize_variable: yes
+input_data: hp
+execute_mode: yes
+mode:
+  type: validation
+  edit: 1
+  source: 2
+  stage: dev
+aggregation:
+  level: 1
+  areas: all
+validation:
+  detailed_output: no
+  include_additional_info: no
+  validate_signatures: no
+  add_uuid: yes
+  save_as_excel: no
+  save_as_json: yes
+tabulation: ~
+portal: ~
+version:
+  app: 3.0.0
+  script: 0.0.1
+  package: 0.1.0
+references:
+  area_name: seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE
+  valueset: eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A
+  validation: PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY
+  tabulation: jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE
+  data_dictionary: MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ
+clear_objects: yes
+verbose: yes

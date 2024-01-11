@@ -6,20 +6,23 @@ save_as_json <- function(.output, .input_data, .config) {
     current_area_code <- ''
   }
 
+  uuid_primary <- uuid::UUIDgenerate()
   output_json <- list()
+  output_json$uuid <- uuid_primary
   output_json$edit <- .config$mode$edit
   output_json$source <- .config$mode$source
   output_json$input_data <- .input_data
   output_json$created_at <- created_date
   output_json$area_code <- current_area_code
   output_json$inconsistencies <- .output |>
+    dplyr::mutate(id = uuid_primary, .before = 1) |>
     dplyr::select(
       dplyr::any_of(
         c(
           "id",
+          "uuid",
           "case_id",
           "validation_id",
-          "primary_data_item",
           "line_number"
         )
       )
