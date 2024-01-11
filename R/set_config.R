@@ -67,8 +67,12 @@ set_config <- function(
     options(rcbms.config = config)
   }
 
+  envir <- as.environment(1)
+  if(length(config$input_data) == 1) {
+    assign("current_input_data", config$input_data[1], envir = envir)
+  }
+
   if(!is.null(.assign_name)) {
-    envir <- as.environment(1)
     assign(.assign_name, config, envir = envir)
   }
 

@@ -1,8 +1,8 @@
 #' Title
 #'
 #' @param .data
-#' @param .aggregation
 #' @param ...
+#' @param .aggregation
 #' @param .config
 #' @param .input_data
 #' @param .retain_agg_cols
@@ -16,7 +16,6 @@
 
 join_and_filter_area <- function(
   .data,
-  .current_area,
   ...,
   .aggregation = get_config("aggregation"),
   .config = getOption("rcbms.config"),
@@ -29,9 +28,15 @@ join_and_filter_area <- function(
     .data <- .data |> create_case_id()
   }
 
+  if(exists('current_area_filter')) {
+    current_area <- current_area_filter
+  } else {
+    current_area <- NULL
+  }
+
   .data <- .data |>
     join_area(.aggregation) |>
-    filter_area(.current_area, .aggregation, .config)
+    filter_area(.aggregation, .config, current_area)
 
   if(!.retain_agg_cols) {
     .data <- .data |> dplyr::select(-dplyr::ends_with("_agg"))
@@ -74,9 +79,14 @@ join_area <- function(.data, .aggregation) {
 }
 
 
-filter_area <- function(.data, .current_area, .aggregation, .config) {
+filter_area <- function(
+  .data,
+  .aggregation,
+  .config,
+  .current_area = NULL
+) {
 
-  if(.config$aggregation$level < length(.aggregation$levels)) {
+  if(.config$aggregation$level < length(.aggregation$levels) && !is.null(.current_area)) {
     current_area_filter <- paste0(.aggregation$levels[.config$aggregation$level + 1], '_geo')
     .data <- .data |>
       dplyr::filter(!!as.name(current_area_filter) == .current_area)
