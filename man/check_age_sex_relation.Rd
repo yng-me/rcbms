@@ -6,15 +6,16 @@
 \usage{
 check_age_sex_relation(
   .data,
-  .base,
-  .sex_of_head,
-  .relation,
-  .condition,
-  .threshold
+  .primary_member,
+  .sex_of_primary_member,
+  .relation_to_primary_member,
+  .threshold,
+  .condition = "<",
+  .config = getOption("rcbms.config")
 )
 }
 \arguments{
-\item{.threshold}{}
+\item{.config}{}
 }
 \description{
 Title

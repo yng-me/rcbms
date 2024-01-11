@@ -17,6 +17,7 @@
     variable:
       line_number: line_no
       result_of_visit: result_of_final_visit
+      relation_to_hh_head: a02_relation_to_hh_head
       age: a05_age
       sex: a03_sex
 '2022':
@@ -36,6 +37,7 @@
     variable:
       line_number: lno
       result_of_visit: result_of_visit
+      relation_to_hh_head: a02_relation_to_hh_head
       age: a07_age
       sex: a05_sex
 '2021':
@@ -53,5 +55,6 @@
       - interview_record
     variable:
       line_number: lineno
+      relation_to_hh_head: a02_relation_to_hh_head
       age: a07_age
       sex: a05_sex

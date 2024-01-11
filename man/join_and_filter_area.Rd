@@ -6,7 +6,6 @@
 \usage{
 join_and_filter_area(
   .data,
-  .current_area,
   ...,
   .aggregation = get_config("aggregation"),
   .config = getOption("rcbms.config"),
