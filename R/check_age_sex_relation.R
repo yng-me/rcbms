@@ -30,10 +30,10 @@ check_age_sex_relation <- function(
   sex_var <- var$sex
 
   .data |>
-    group_by(case_id) |>
-    nest() |>
-    mutate(
-      data = map(data, \(x) {
+    dplyr::group_by(case_id) |>
+    tidyr::nest() |>
+    dplyr::mutate(
+      data = purrr::map(data, \(x) {
 
         df <- x |>
           dplyr::mutate(
@@ -43,7 +43,7 @@ check_age_sex_relation <- function(
               !!as.name(sex_var) == .sex_of_primary_member,
             with_relation = relation_to_hh_head == .relation_to_primary_member
           ) |>
-          filter(is_primary_member | with_relation)
+          dplyr::filter(is_primary_member | with_relation)
 
         df_list <- list()
         df_first <- df |>
@@ -58,13 +58,13 @@ check_age_sex_relation <- function(
           )
         df_list[[1]] <- df_first
 
-        df_head <- df |> filter(is_primary_member)
-        df_relation <- df |> filter(with_relation)
+        df_head <- df |> dplyr::filter(is_primary_member)
+        df_relation <- df |> dplyr::filter(with_relation)
 
         if(nrow(df_head) == 1 & nrow(df_relation) > 1) {
 
-          hh_head_d <- df |> filter(is_primary_member) |> pull(age)
-          hh_relation_d <- df |> filter(with_relation) |> pull(age)
+          hh_head_d <- df |> dplyr::filter(is_primary_member) |> dplyr::pull(age)
+          hh_relation_d <- df |> dplyr::filter(with_relation) |> dplyr::pull(age)
 
           for(i in seq_along(hh_relation_d)) {
 
@@ -85,7 +85,7 @@ check_age_sex_relation <- function(
         return(df_final)
       })
     ) |>
-    unnest(data) |>
+    tidyr::unnest(data) |>
     validate_select(
       primary_member,
       sex_of_primary_member,

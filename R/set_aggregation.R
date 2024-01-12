@@ -20,6 +20,10 @@ set_aggregation <- function(
   .config_key = "aggregation"
 ) {
 
+  if(.config$verbose) {
+    cli::cli_h2("Setting Aggregation")
+  }
+
   .input_data <- .config$input_data[1]
   agg_record <- get_summary_record(.input_data)
 

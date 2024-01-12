@@ -149,7 +149,7 @@ generate_validation <- function(
       output <- output |> dplyr::rename(id = "uuid")
     }
 
-    save_rcbms_logs(output, input_data, .config)
+    save_rcbms_logs(output, input_data, .references, .config)
 
     # if(.save_as_json) {
     #   save_as_json(

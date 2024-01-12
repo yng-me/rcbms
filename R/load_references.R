@@ -18,6 +18,10 @@ load_references <- function(
 
   if(is.null(.config)) stop('Config not found.')
 
+  if(.config$verbose) {
+    cli::cli_h2("Loading References")
+  }
+
   refs <- list()
 
   wd <- .config$working_directory
@@ -41,35 +45,64 @@ load_references <- function(
     file.exists(pq_cv) &&
     file.exists(pq_ts)
 
-  if((!refs_exist | .config$reload_references) & is_online()) {
+  reload_ref <- .config$reload_references
+
+  if(length(reload_ref) == 1) {
+    reload_dcf <- reload_ref
+    reload_vs <- reload_ref
+    reload_anm <- reload_ref
+    reload_cv <- reload_ref
+    reload_ts <- reload_ref
+  } else {
+    reload_dcf <- reload_ref$data_dictionary
+    reload_vs <- reload_ref$valueset
+    reload_anm <- reload_ref$area_name
+    reload_cv <- reload_ref$validation
+    reload_ts <- reload_ref$tabulation
+    reload_ref <- reload_dcf || reload_vs || reload_anm || reload_cv || reload_ts
+  }
+
+
+  if((!refs_exist || reload_ref) && is_online()) {
 
     googlesheets4::gs4_deauth()
 
     gid <- .config$references
 
-    arrow::write_parquet(
-      suppressWarnings(load_data_dictionary(gid$data_dictionary)),
-      pq_dcf
-    )
+    if(reload_dcf) {
+      arrow::write_parquet(
+        suppressWarnings(load_data_dictionary(gid$data_dictionary)),
+        pq_dcf
+      )
+    }
 
-    arrow::write_parquet(
-      suppressWarnings(load_valueset(gid$valueset)),
-      pq_vs
-    )
+    if(reload_vs) {
+      arrow::write_parquet(
+        suppressWarnings(load_valueset(gid$valueset)),
+        pq_vs
+      )
+    }
 
-    arrow::write_parquet(
-      suppressWarnings(load_area_name(gid$area_name)),
-      pq_anm
-    )
+    if(reload_anm) {
+      arrow::write_parquet(
+        suppressWarnings(load_area_name(gid$area_name)),
+        pq_anm
+      )
+    }
 
-    arrow::write_parquet(
-      suppressWarnings(load_validation_refs(gid$validation)),
-      pq_cv
-    )
-    arrow::write_parquet(
-      suppressWarnings(load_tabulation_refs(gid$tabulation)),
-      pq_ts
-    )
+    if(reload_cv) {
+      arrow::write_parquet(
+        suppressWarnings(load_validation_refs(gid$validation)),
+        pq_cv
+      )
+    }
+
+    if(reload_ts) {
+      arrow::write_parquet(
+        suppressWarnings(load_tabulation_refs(gid$tabulation)),
+        pq_ts
+      )
+    }
 
   }
 

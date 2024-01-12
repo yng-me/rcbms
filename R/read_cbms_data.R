@@ -16,6 +16,10 @@ read_cbms_data <- function(
   .assign_name = "parquet"
 ) {
 
+  if(.config$verbose) {
+    cli::cli_h2("Import Data Files")
+  }
+
   envir <- as.environment(1)
 
   input_data <- check_input_data(.config$input_data)
@@ -63,6 +67,7 @@ read_cbms_data <- function(
         })
 
         df_temp <- do.call('rbind', df_list) |> dplyr::tibble()
+        attr(df_temp, "n_rows_before_tidy") <- nrow(df_temp)
 
         assign("df_temp", df_temp, envir = envir)
 
@@ -76,6 +81,8 @@ read_cbms_data <- function(
           df_temp <- df_temp |>
             add_metadata(.references$data_dictionary, .references$valueset)
         }
+
+        attr(df_temp, "n_rows_after_tidy") <- nrow(df_temp)
 
         arrow::write_parquet(df_temp, pq_path)
         suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))

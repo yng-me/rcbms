@@ -1,6 +1,11 @@
 cbms_round: '2024'
 read_from_parquet: yes
-reload_references: no
+reload_references:
+  area_name: no
+  valueset: no
+  validation: yes
+  tabulation: no
+  data_dictionary: no
 working_directory: './playground'
 complete_cases: yes
 harmonize_variable: yes
@@ -27,6 +32,7 @@ version:
   app: 3.0.0
   script: 0.0.1
   package: 0.1.0
+  db: 0.0.1
 references:
   area_name: seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE
   valueset: eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A
