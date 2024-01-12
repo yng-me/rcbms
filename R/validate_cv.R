@@ -80,23 +80,21 @@ validate_select <- function(.data, ...) {
   references <- get_config("references")
   add_length <- config$project$add_length
 
-  .data <- .data |>
-    dplyr::mutate(
-      barangay_geo = stringr::str_sub(
-        !!as.name(uid),
-        1,
-        9 + add_length
-      )
-    )
+  geo_cols <- c('region_code', 'province_code', 'city_mun_code', 'barangay_code')
+
+  if(length(which(geo_cols %in% names(.data))) == 4) {
+    .data <- .data |> create_barangay_geo()
+  }
+
+  if(!('barangay_geo' %in% names(.data)) && current_input_data == "hp") {
+    .data <- .data |>
+      dplyr::mutate(barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length))
+  }
 
   if(current_input_data == "hp") {
     .data <- .data |>
       dplyr::mutate(
-        ean = stringr::str_sub(
-          case_id,
-          10 + add_length,
-          15 + add_length
-        )
+        ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length)
       )
   }
 
@@ -107,23 +105,26 @@ validate_select <- function(.data, ...) {
 
   area_name <- transform_area_name(references, add_length)
 
-  .data <- .data |>
-    dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay'))) |>
-    dplyr::left_join(area_name, by = 'barangay_geo', multiple = 'first') |>
-    dplyr::select(
-      dplyr::any_of(
-        c(
-          "case_id",
-          "region",
-          "province",
-          "city_mun",
-          "barangay",
-          "ean",
-          "line_number"
-        )
-      ),
-      ...
-    )
+  if("barangay_geo" %in% names(.data)) {
+
+    .data <- .data |>
+      dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay'))) |>
+      dplyr::left_join(area_name, by = 'barangay_geo', multiple = 'first') |>
+      dplyr::select(
+        dplyr::any_of(
+          c(
+            uid,
+            "region",
+            "province",
+            "city_mun",
+            "barangay",
+            "ean",
+            "line_number"
+          )
+        ),
+        ...
+      )
+  }
 
   join_hh_info <- config$validation$include_additional_info
   summary_record <- get_summary_record(current_input_data)
@@ -159,6 +160,6 @@ validate_select <- function(.data, ...) {
     }
   }
 
-  return(.data)
+  .data |> dplyr::select(dplyr::any_of(c(uid, geo_cols)), ...)
 
 }

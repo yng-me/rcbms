@@ -6,6 +6,8 @@
     id: uuid
     file_format: csv
     summary_record: bpq_user
+    variable:
+      result_of_visit: verified
   hp:
     id: case_id
     file_format: txt
@@ -26,6 +28,8 @@
   bp:
     id: uuid
     file_format: xlsx
+    variable:
+      result_of_visit: verified
   hp:
     id: case_id
     file_format: txt

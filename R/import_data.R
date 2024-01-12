@@ -12,45 +12,56 @@
 #'
 import_data <- function(
   .path,
-  .input_data = 'hp',
+  .input_data = "hp",
+  .config = getOption("rcbms.config"),
   ...
 ) {
 
-  if(.input_data == 'hp') {
 
-    df <- readr::read_delim(
-        .path,
-        delim = "\t",
-        quote = "",
-        progress = FALSE,
-        trim_ws = TRUE,
-        show_col_types = FALSE,
-        ...
-      ) |>
-      dplyr::select(-dplyr::starts_with('aux'))
-
-  } else if (.input_data == 'bp') {
-
-    df <- readr::read_csv(
-        .path,
-        progress = FALSE,
-        trim_ws = TRUE,
-        show_col_types = FALSE,
-        skip_empty_rows = TRUE,
-        ...
-      ) |>
-      dplyr::select(-dplyr::any_of("...1")) |>
-      convert_to_na()
-
-  } else {
-
+  if(!(.input_data %in% c("hp", "bp", "ilq"))) {
     stop('Invalid input data.')
-
   }
 
-  set_class(df, "rcbms_df")
+  file_format <- .config$project[[.input_data]]$file_format
+  import_func <- eval(as.name(paste0("import_", file_format)))
 
+  df <- import_func(.path, ...)
+  set_class(df, "rcbms_df")
   return(df)
 
 }
 
+import_txt <- function(.path, ...) {
+  readr::read_delim(
+    .path,
+    delim = "\t",
+    quote = "",
+    progress = FALSE,
+    trim_ws = TRUE,
+    show_col_types = FALSE,
+    ...
+  ) |> dplyr::select(-dplyr::starts_with('aux'))
+}
+
+
+import_csv <- function(.path, ...) {
+  readr::read_csv(
+    .path,
+    progress = FALSE,
+    trim_ws = TRUE,
+    show_col_types = FALSE,
+    skip_empty_rows = TRUE,
+    ...
+  ) |>
+  dplyr::select(-dplyr::any_of("...1")) |>
+  convert_to_na()
+}
+
+import_xlsx <- function(.path, ...) {
+  openxlsx::read.xlsx(
+    .path,
+    skipEmptyRows = TRUE,
+    skipEmptyCols = TRUE,
+    ...
+  ) |> convert_to_na()
+}

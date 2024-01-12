@@ -29,6 +29,7 @@ connect_to_rcbms_logs <- function(.config) {
 }
 
 
+
 create_remarks_table <- function(.conn, .tables) {
   if(!("remarks" %in% .tables)) {
     DBI::dbExecute(
