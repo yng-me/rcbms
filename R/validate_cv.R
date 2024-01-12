@@ -1,4 +1,4 @@
-#' Title
+#'
 #'
 #' @param .data
 #' @param ...
@@ -80,7 +80,8 @@ validate_select <- function(.data, ...) {
   references <- get_config("references")
   add_length <- config$project$add_length
 
-  geo_cols <- c('region_code', 'province_code', 'city_mun_code', 'barangay_code')
+  geo_name_cols <- c('region', 'province', 'city_mun', 'barangay')
+  geo_cols <- paste0(geo_name_cols, '_code')
 
   if(length(which(geo_cols %in% names(.data))) == 4) {
     .data <- .data |> create_barangay_geo()
@@ -108,16 +109,13 @@ validate_select <- function(.data, ...) {
   if("barangay_geo" %in% names(.data)) {
 
     .data <- .data |>
-      dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay'))) |>
+      dplyr::select(-dplyr::any_of(geo_name_cols)) |>
       dplyr::left_join(area_name, by = 'barangay_geo', multiple = 'first') |>
       dplyr::select(
         dplyr::any_of(
           c(
             uid,
-            "region",
-            "province",
-            "city_mun",
-            "barangay",
+            geo_name_cols,
             "ean",
             "line_number"
           )
