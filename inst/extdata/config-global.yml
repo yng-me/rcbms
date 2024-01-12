@@ -1,7 +1,12 @@
 # Global config default values
 cbms_round: '2024'
 read_from_parquet: no
-reload_references: yes
+reload_references:
+  area_name: yes
+  valueset: yes
+  validation: yes
+  tabulation: yes
+  data_dictionary: yes
 working_directory: '.'
 complete_cases: yes
 harmonize_variable: yes
@@ -12,6 +17,7 @@ mode:
   edit: 1
   source: 2
   stage: dev
+  station: co
 aggregation:
   level: 1
   areas: all
@@ -28,6 +34,7 @@ version:
   app: 3.0.0
   script: 0.0.1
   package: 0.1.0
+  db: 0.0.1
 references:
   area_name: seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE
   valueset: eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A

@@ -12,7 +12,6 @@
 execute_script <- function(.config_file, ...) {
 
   load_required_packages(...)
-
   set_config(.config_file)
   compare_version()
   load_references()
@@ -45,6 +44,10 @@ execute <- function(
   .config = getOption("rcbms.config"),
   .excluded_cases = NULL
 ) {
+
+  if(.config$verbose) {
+    cli::cli_h2("Executing Scripts")
+  }
 
   if(rlang::is_false(.config$execute_mode)) return(invisible())
   envir <- as.environment(1)
@@ -122,7 +125,10 @@ execute <- function(
       assign("current_area_code", unique_area, envir = envir)
 
       area_label <- paste0(unique_area, " ", unique_areas$label[j])
-      cat("Processing: ", area_label, "...\n", sep = "")
+
+      if(.config$verbose) {
+        cli::cli_h3(paste0("Current Area: ", area_label))
+      }
 
       if(!is.null(complete_cases_df)) {
 
@@ -138,7 +144,18 @@ execute <- function(
         assign("complete_cases", complete_cases, envir = envir)
       }
 
-      lapply(script_files, source)
+
+      for(i in seq_along(script_files)) {
+
+        if(.config$verbose) {
+          script_file <- basename(script_files[i]) |>
+            stringr::str_remove("\\.(r|R)$")
+          if(!grepl("^\\_\\_", script_file)) {
+            cli::cli_alert_info(paste0("Processing: ", script_file))
+          }
+        }
+        suppressWarnings(source(script_files[i]))
+      }
 
       generate_output(
         eval(as.name(result_object)),

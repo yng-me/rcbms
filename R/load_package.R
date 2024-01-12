@@ -49,6 +49,8 @@ load_required_packages <- function(.load_dependencies = F) {
       'lubridate',
       'janitor',
       'jsonlite',
+      'RSQLite',
+      'DBI',
       'yaml',
       'readr',
       'quarto',
@@ -93,19 +95,4 @@ load_dependencies <- function() {
       warning('You are currently offline. Check your internet connection and try again.')
     }
   }
-}
-
-
-#' Install RCBMS package
-#'
-#' @param .reinstall
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-reinstall_rcbms <- function() {
-  remove.packages("rcbms")
-  devtools::install_github("yng-me/rcbms")
 }
