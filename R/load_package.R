@@ -49,6 +49,8 @@ load_required_packages <- function(.load_dependencies = F) {
       'lubridate',
       'janitor',
       'jsonlite',
+      'RSQLite',
+      'DBI',
       'yaml',
       'readr',
       'quarto',
