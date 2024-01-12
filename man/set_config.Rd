@@ -12,6 +12,8 @@ set_config(
 )
 }
 \arguments{
+\item{.config_file}{Path to config file}
+
 \item{.assign_name}{}
 }
 \description{

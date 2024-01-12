@@ -53,7 +53,7 @@ read_cbms_data <- function(
       if(!read_from_parquet) {
 
         if(.config$verbose) {
-          cli::cli_alert_info(paste0("Importing: ", p_name))
+          cli::cli_alert_success(paste0("Importing: ", p_name))
         }
 
         df_src_files <- dplyr::as_tibble(df_files$all$value) |>

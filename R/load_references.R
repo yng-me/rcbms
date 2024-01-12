@@ -62,64 +62,42 @@ load_references <- function(
     reload_ref <- reload_dcf || reload_vs || reload_anm || reload_cv || reload_ts
   }
 
+  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts")
 
   if((!refs_exist || reload_ref) && is_online()) {
 
     googlesheets4::gs4_deauth()
-
     gid <- .config$references
 
-    if(reload_dcf) {
-      arrow::write_parquet(
-        suppressWarnings(load_data_dictionary(gid$data_dictionary)),
-        pq_dcf
-      )
-    }
+    for(i in seq_along(ref_list)) {
 
-    if(reload_vs) {
-      arrow::write_parquet(
-        suppressWarnings(load_valueset(gid$valueset)),
-        pq_vs
-      )
-    }
+      ref <- ref_list[[i]]
+      ref_short <- ref_list_short[[i]]
 
-    if(reload_anm) {
-      arrow::write_parquet(
-        suppressWarnings(load_area_name(gid$area_name)),
-        pq_anm
-      )
+      if(eval(parse(text = paste0("reload_", ref_short)))) {
+        load_reference_fn <- eval(as.name(paste0("load_", ref, "_refs")))
+        arrow::write_parquet(
+          suppressWarnings(load_reference_fn(gid[[ref]])),
+          paste0(wd_project, '/ref_', ref, '.parquet')
+        )
+      }
     }
-
-    if(reload_cv) {
-      arrow::write_parquet(
-        suppressWarnings(load_validation_refs(gid$validation)),
-        pq_cv
-      )
-    }
-
-    if(reload_ts) {
-      arrow::write_parquet(
-        suppressWarnings(load_tabulation_refs(gid$tabulation)),
-        pq_ts
-      )
-    }
-
   }
 
-  refs$data_dictionary <- arrow::open_dataset(pq_dcf) |>
-    set_class("rcbms_dcf_ref")
+  for(i in seq_along(ref_list)) {
 
-  refs$valueset <- arrow::open_dataset(pq_vs) |>
-    set_class("rcbms_vs_ref")
+    ref <- ref_list[[i]]
+    ref_short <- ref_list_short[[i]]
 
-  refs$validation <- arrow::open_dataset(pq_cv) |>
-    set_class("rcbms_cv_ref")
+    if(!eval(parse(text = paste0("reload_", ref_short)))) {
+      cli::cli_alert_success(paste0("Loading ", ref, " reference"))
+    }
 
-  refs$tabulation <- arrow::open_dataset(pq_ts) |>
-    set_class("rcbms_ts_ref")
+    refs[[ref]] <- arrow::open_dataset(eval(parse(text = paste0("pq_", ref_short))))
+    set_class(refs[[ref]], paste0("rcbms_", ref_short, "_ref"))
 
-  refs$area_name <- arrow::open_dataset(pq_anm) |>
-    set_class("rcbms_anm_ref")
+  }
 
   refs$script_files <- NULL
 
@@ -240,7 +218,7 @@ load_refs_from_gsheet <- function(
 #' @examples
 #'
 
-load_data_dictionary <- function(.gid) {
+load_data_dictionary_refs <- function(.gid) {
 
   required_cols <- c(
     'variable_name',
@@ -276,7 +254,7 @@ load_data_dictionary <- function(.gid) {
 #'
 #' @examples
 #'
-load_area_name <- function(.gid) {
+load_area_name_refs <- function(.gid) {
 
   required_cols <- c(
     # 'region',
@@ -325,7 +303,7 @@ load_area_name <- function(.gid) {
 #'
 #' @examples
 #'
-load_valueset <- function(.gid) {
+load_valueset_refs <- function(.gid) {
   df <- load_refs_from_gsheet(
     .gid,
     .required_cols = c('name', 'value', 'label'),

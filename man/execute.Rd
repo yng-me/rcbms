@@ -2,7 +2,7 @@
 % Please edit documentation in R/execute_script.R
 \name{execute}
 \alias{execute}
-\title{Title}
+\title{Execute script for a given mode}
 \usage{
 execute(
   .parquet = get_config("parquet"),
@@ -13,8 +13,14 @@ execute(
 )
 }
 \arguments{
-\item{.config}{}
+\item{.parquet}{parquet data object. The default is \code{get_config("parquet")}.}
+
+\item{.references}{references object}
+
+\item{.aggregation}{aggregation object}
+
+\item{.config}{config object}
 }
 \description{
-Title
+Execute script for a given mode
 }

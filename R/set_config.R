@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param .config_file
+#' @param .config_file Path to config file
 #' @param .include_env
 #' @param .save_as_options
 #' @param .assign_name

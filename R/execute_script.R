@@ -101,7 +101,6 @@ execute <- function(
       )
     }
 
-
     for(j in seq_along(unique_areas$code)) {
 
       if(.config$mode$type == "validation") {
@@ -157,7 +156,7 @@ execute <- function(
           script_file <- basename(script_files[i]) |>
             stringr::str_remove("\\.(r|R)$")
           if(!grepl("^\\_\\_", script_file)) {
-            cli::cli_alert_info(paste0("Processing: ", script_file))
+            cli::cli_alert_success(paste0("Processing: ", script_file))
           }
         }
         suppressWarnings(source(script_files[i]))
