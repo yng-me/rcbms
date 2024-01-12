@@ -7,7 +7,9 @@
 execute_script(.config_file, ...)
 }
 \arguments{
-\item{...}{}
+\item{.config_file}{Path to config file}
+
+\item{...}{Additional arguments passed to \code{\link{load_required_packages}}}
 }
 \description{
 Execute script

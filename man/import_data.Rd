@@ -4,7 +4,12 @@
 \alias{import_data}
 \title{Rear CBMS Data}
 \usage{
-import_data(.path, .input_data = "hp", ...)
+import_data(
+  .path,
+  .input_data = "hp",
+  .config = getOption("rcbms.config"),
+  ...
+)
 }
 \arguments{
 \item{...}{}
