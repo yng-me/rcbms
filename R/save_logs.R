@@ -29,6 +29,7 @@ connect_to_rcbms_logs <- function(.config) {
 }
 
 
+
 create_remarks_table <- function(.conn, .tables) {
   if(!("remarks" %in% .tables)) {
     DBI::dbExecute(
@@ -252,6 +253,7 @@ save_logs <- function(.config = getOption("rcbms.config")) {
         dplyr::tibble() |>
         dplyr::mutate(id_old = id) |>
         dplyr::filter(!is.na(status))
+      print(nrow(cv_logs_with_remakrs))
 
       if(nrow(cv_logs_with_remakrs) > 0) {
         cv_logs_current <- cv_logs |>

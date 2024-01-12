@@ -37,6 +37,11 @@ read_cbms_data <- function(
     df_input <- input_data[i]
     df_files <- list_data_files(df_input, .config)
 
+    uid <- "case_id"
+    if(df_input == "bp") uid <- "uuid"
+
+    summary_record <- NULL
+
     for(j in seq_along(df_files$unique$value)) {
 
       p <- df_files$unique$value[j]
@@ -45,10 +50,11 @@ read_cbms_data <- function(
       pq_folder <- create_new_folder(get_data_path('parquet', df_input))
       pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
 
-
       if(!read_from_parquet) {
 
-        print(p_name)
+        if(.config$verbose) {
+          cli::cli_alert_info(paste0("Importing: ", p_name))
+        }
 
         df_src_files <- dplyr::as_tibble(df_files$all$value) |>
           dplyr::filter(grepl(paste0(p, '$'), value)) |>
@@ -67,6 +73,42 @@ read_cbms_data <- function(
         })
 
         df_temp <- do.call('rbind', df_list) |> dplyr::tibble()
+
+        if(j == 1 && df_files$unique$n[j] == 0) {
+
+          rov_var <- config$project[[df_input]]$variable$result_of_visit
+
+          summary_record <- df_temp |>
+            dplyr::select(
+              dplyr::any_of(
+                c(
+                  uid,
+                  "region_code",
+                  "province_code",
+                  "city_mun_code",
+                  "barangay_code",
+                  rov_var
+                )
+              )
+            )
+        }
+
+        if(!is.null(summary_record)) {
+          geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
+          with_geo_code <- which(geo_cols %in% names(df_temp))
+
+          if(length(with_geo_code) == 4) {
+            summary_record_only <- summary_record |>
+              dplyr::select(-dplyr::all_of(geo_cols[with_geo_code]))
+
+          } else {
+            summary_record_only <- summary_record
+          }
+
+          df_temp <- df_temp |>
+            dplyr::left_join(summary_record_only, by = uid)
+        }
+
         attr(df_temp, "n_rows_before_tidy") <- nrow(df_temp)
 
         assign("df_temp", df_temp, envir = envir)
@@ -155,7 +197,7 @@ tidy_cbms_data <- function(
 
   df <- .parquet[[.record]] |>
     dplyr::collect() |>
-    create_case_id()
+    create_case_id(.input_data = .input_data)
 
   if(!is.null(.complete_cases)) {
     df <- df |> dplyr::filter(case_id %in% .complete_cases)

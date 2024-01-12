@@ -14,8 +14,17 @@ create_case_id <- function(
   .data,
   .filter_completed = TRUE,
   .config = getOption("rcbms.config"),
-  .input_data = "hp"
+  .input_data = NULL
 ) {
+
+
+  if(is.null(.input_data)) {
+    if(exists('current_input_data')) {
+      .input_data <- current_input_data
+    } else {
+      .input_data <- "hp"
+    }
+  }
 
   if(.input_data == "bp") return(.data)
 

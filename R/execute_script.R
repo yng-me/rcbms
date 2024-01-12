@@ -1,7 +1,7 @@
 #' Execute script
 #'
-#' @param .config_file
-#' @param ...
+#' @param .config_file Path to config file
+#' @param ... Additional arguments passed to \code{\link{load_required_packages}}
 #'
 #' @return
 #' @export
@@ -24,12 +24,12 @@ execute_script <- function(.config_file, ...) {
 }
 
 
-#' Title
+#' Execute script for a given mode
 #'
-#' @param .parquet
-#' @param .references
-#' @param .aggregation
-#' @param .config
+#' @param .parquet parquet data object. The default is \code{get_config("parquet")}.
+#' @param .references references object
+#' @param .aggregation aggregation object
+#' @param .config config object
 #'
 #' @return
 #' @export
@@ -127,7 +127,13 @@ execute <- function(
       area_label <- paste0(unique_area, " ", unique_areas$label[j])
 
       if(.config$verbose) {
-        cli::cli_h3(paste0("Current Area: ", area_label))
+        if(length(unique_areas$code) > 1) {
+          progress_n <- paste0("[", j, "/", length(unique_areas$code), "]: ")
+        } else {
+          progress_n <- ""
+        }
+        cli::cli_h3(paste0(progress_n, area_label)
+        )
       }
 
       if(!is.null(complete_cases_df)) {
