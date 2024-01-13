@@ -17,7 +17,7 @@ execute_script <- function(.config_file, ...) {
   load_references()
   read_cbms_data()
   set_aggregation()
-  execute()
+  execute_mode()
   save_logs()
   clear_objects()
 
@@ -37,7 +37,7 @@ execute_script <- function(.config_file, ...) {
 #' @examples
 #'
 
-execute <- function(
+execute_mode <- function(
   .parquet = get_config("parquet"),
   .references = get_config("references"),
   .aggregation = get_config("aggregation"),
@@ -45,12 +45,12 @@ execute <- function(
   .excluded_cases = NULL
 ) {
 
+  if(rlang::is_false(.config$execute_mode)) return(invisible())
+  envir <- as.environment(1)
+
   if(.config$verbose) {
     cli::cli_h2("Executing Scripts")
   }
-
-  if(rlang::is_false(.config$execute_mode)) return(invisible())
-  envir <- as.environment(1)
 
   if(is.null(.references)) stop("References in missing")
   if(is.null(.aggregation)) stop("References in missing")
@@ -71,8 +71,8 @@ execute <- function(
     return(invisible(NULL))
   }
 
-
   unique_areas <- .aggregation$areas_unique
+
 
   for(i in seq_along(.config$input_data)) {
 
@@ -131,8 +131,8 @@ execute <- function(
         } else {
           progress_n <- ""
         }
-        cli::cli_h3(paste0(progress_n, area_label)
-        )
+        cli::cli_h3(paste0(progress_n, cli::col_br_cyan(area_label)))
+        cli::cli_alert_info("Running validation checks")
       }
 
       if(!is.null(complete_cases_df)) {
@@ -149,14 +149,13 @@ execute <- function(
         assign("complete_cases", complete_cases, envir = envir)
       }
 
-
       for(i in seq_along(script_files)) {
 
         if(.config$verbose) {
           script_file <- basename(script_files[i]) |>
             stringr::str_remove("\\.(r|R)$")
           if(!grepl("^\\_\\_", script_file)) {
-            cli::cli_alert_success(paste0("Processing: ", script_file))
+            cli::cli_alert_success(paste0("Processing ", cli::col_br_cyan(script_file), " script file"))
           }
         }
         suppressWarnings(source(script_files[i]))
