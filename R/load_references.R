@@ -90,8 +90,12 @@ load_references <- function(
     ref <- ref_list[[i]]
     ref_short <- ref_list_short[[i]]
 
-    if(!eval(parse(text = paste0("reload_", ref_short)))) {
-      cli::cli_alert_success(paste0("Loading ", ref, " reference"))
+    if(.config$verbose) {
+      if(!eval(parse(text = paste0("reload_", ref_short)))) {
+        cli::cli_alert_info(
+          paste0("Loading ", cli::col_br_yellow(ref), " reference ", cli::col_br_cyan("✓"))
+        )
+      }
     }
 
     refs[[ref]] <- arrow::open_dataset(eval(parse(text = paste0("pq_", ref_short))))

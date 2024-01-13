@@ -17,7 +17,6 @@ create_case_id <- function(
   .input_data = NULL
 ) {
 
-
   if(is.null(.input_data)) {
     if(exists('current_input_data')) {
       .input_data <- current_input_data

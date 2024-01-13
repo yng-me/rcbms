@@ -112,14 +112,7 @@ validate_select <- function(.data, ...) {
       dplyr::select(-dplyr::any_of(geo_name_cols)) |>
       dplyr::left_join(area_name, by = 'barangay_geo', multiple = 'first') |>
       dplyr::select(
-        dplyr::any_of(
-          c(
-            uid,
-            geo_name_cols,
-            "ean",
-            "line_number"
-          )
-        ),
+        dplyr::any_of(c(uid, geo_name_cols, "ean", "line_number")),
         ...
       )
   }
