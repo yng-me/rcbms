@@ -131,20 +131,25 @@ read_cbms_data <- function(
               df_temp_dim_before[1], "×", df_temp_dim_before[2],
               " → ", df_temp_dim_after[1], "×", df_temp_dim_after[2]
             )
-          }
 
-          cli::cli_alert_info(
-            paste0(
-              "Importing ", cli::col_br_yellow(p_name), " record (",
-              cli::col_br_cyan(df_temp_dim), ") ", cli::col_br_cyan("✓")
-            )
-          )
+          }
+          df_temp_dim <- paste0("(", cli::col_br_cyan(df_temp_dim), ") ")
         }
 
         arrow::write_parquet(df_temp, pq_path)
         suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))
         suppressWarnings(rm(list = 'df_temp', envir = envir))
 
+      } else {
+        df_temp_dim <- ""
+      }
+
+      if(.config$verbose) {
+        cli::cli_alert_info(
+          paste0(
+            "Importing ", cli::col_br_yellow(p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
+          )
+        )
       }
 
       df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)

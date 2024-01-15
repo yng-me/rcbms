@@ -71,12 +71,10 @@ execute_mode <- function(
     return(invisible(NULL))
   }
 
-  unique_areas <- .aggregation$areas_unique
-
-
   for(i in seq_along(.config$input_data)) {
 
     current_input_data <- .config$input_data[i]
+    unique_areas <- .aggregation[[current_input_data]]$areas_unique
 
     envir <- as.environment(1)
     assign("current_input_data", current_input_data, envir = envir)
@@ -169,7 +167,5 @@ execute_mode <- function(
       )
       suppressWarnings(rm(list = "complete_cases"))
     }
-
   }
-
 }
