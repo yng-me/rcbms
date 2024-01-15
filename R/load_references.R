@@ -85,7 +85,7 @@ load_references <- function(
         load_reference_fn <- eval(as.name(paste0("load_", ref, "_refs")))
         arrow::write_parquet(
           suppressWarnings(load_reference_fn(eval(as.name(paste0("gid_", ref))))),
-          paste0(wd_project, '/ref_', ref, '.parquet')
+          eval(parse(text = paste0("pq_", ref_short)))
         )
       }
     }

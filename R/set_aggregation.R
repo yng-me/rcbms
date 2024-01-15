@@ -110,15 +110,13 @@ set_aggregation <- function(
         areas_cli <- agg[[input_data]]$areas_unique |>
           dplyr::select(code, label)
 
-        for(k in seq_along(areas_cli$label)) {
-          cli::cli_alert_info(
-            paste0(
-              cli::style_bold(areas_cli$code[k]), " ",
-              areas_cli$label[k], " ",
-              cli::col_br_cyan("✓")
-            )
+        cli::cli_ul(
+          paste0(
+            cli::style_bold(areas_cli$code), " ",
+            areas_cli$label, " ",
+            cli::col_br_cyan("✓")
           )
-        }
+        )
       }
 
     }

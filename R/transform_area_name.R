@@ -31,6 +31,7 @@ transform_area_name <- function(.references, .add_length = 0) {
     dplyr::collect() |>
     dplyr::mutate(add_length = .add_length) |>
     dplyr::mutate(
+      is_huc = as.integer(is_huc),
       barangay_geo = dplyr::if_else(
         add_length == 1,
         stringr::str_pad(barangay_geo_new, width = 10, pad = '0'),
