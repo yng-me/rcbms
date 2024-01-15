@@ -49,7 +49,7 @@ execute_mode <- function(
   envir <- as.environment(1)
 
   if(.config$verbose) {
-    cli::cli_h2("Executing Scripts")
+    cli::cli_h1("Executing Scripts")
   }
 
   if(is.null(.references)) stop("References in missing")
@@ -75,6 +75,18 @@ execute_mode <- function(
 
     current_input_data <- .config$input_data[i]
     unique_areas <- .aggregation[[current_input_data]]$areas_unique
+
+    if(.config$verbose) {
+
+      if(length(.config$input_data) > 1) {
+        progress_n <- paste0("[", i, "/", length(.config$input_data), "]: ")
+      } else {
+        progress_n <- ""
+      }
+      cli::cli_h3(
+        paste0(progress_n, cli::col_br_cyan(get_input_data_label(current_input_data)))
+      )
+    }
 
     envir <- as.environment(1)
     assign("current_input_data", current_input_data, envir = envir)
@@ -129,8 +141,9 @@ execute_mode <- function(
         } else {
           progress_n <- ""
         }
-        cli::cli_h3(paste0(progress_n, cli::col_br_cyan(area_label)))
-        cli::cli_alert_info("Running validation checks")
+        cli::cli_alert_info(
+          paste0(progress_n, cli::col_br_cyan(area_label), " ", cli::col_br_cyan("✓"))
+        )
       }
 
       if(!is.null(complete_cases_df)) {
@@ -153,7 +166,7 @@ execute_mode <- function(
           script_file <- basename(script_files[i]) |>
             stringr::str_remove("\\.(r|R)$")
           if(!grepl("^\\_\\_", script_file)) {
-            cli::cli_alert_success(paste0("Processing ", cli::col_br_cyan(script_file), " script file"))
+            cli::cli_alert_success(paste0("Processing ", cli::col_br_yellow(script_file), " script file"))
           }
         }
         suppressWarnings(source(script_files[i]))

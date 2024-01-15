@@ -19,10 +19,18 @@ join_and_filter_area <- function(
   ...,
   .aggregation = get_config("aggregation"),
   .config = getOption("rcbms.config"),
-  .input_data = "hp",
+  .input_data = NULL,
   .retain_agg_cols = FALSE,
   .minimized = TRUE
 ) {
+
+  if(is.null(.input_data)) {
+    if(exists('current_input_data')) {
+      .input_data <- current_input_data
+    } else {
+      .input_data <- "hp"
+    }
+  }
 
   if(!("case_id" %in% names(.data)) & .input_data == "hp") {
     .data <- .data |> create_case_id()
@@ -35,8 +43,8 @@ join_and_filter_area <- function(
   }
 
   .data <- .data |>
-    join_area(.aggregation[[input_data]]) |>
-    filter_area(.aggregation[[input_data]], .config, current_area)
+    join_area(.aggregation[[.input_data]]) |>
+    filter_area(.aggregation[[.input_data]], .config, current_area)
 
   if(!.retain_agg_cols) {
     .data <- .data |> dplyr::select(-dplyr::ends_with("_agg"))

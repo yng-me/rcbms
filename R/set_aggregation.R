@@ -21,7 +21,7 @@ set_aggregation <- function(
 ) {
 
   if(.config$verbose) {
-    cli::cli_h2("Setting Aggregation")
+    cli::cli_h1("Setting Aggregation")
   }
 
   agg <- list()
@@ -95,6 +95,32 @@ set_aggregation <- function(
             dplyr::filter(label %in% agg_areas_i)
         }
       }
+
+      if(.config$verbose) {
+
+        if(length(.config$input_data) > 1) {
+          progress_n <- paste0("[", i, "/", length(.config$input_data), "]: ")
+        } else {
+          progress_n <- ""
+        }
+        cli::cli_h3(
+          paste0(progress_n, cli::col_br_cyan(get_input_data_label(input_data)))
+        )
+
+        areas_cli <- agg[[input_data]]$areas_unique |>
+          dplyr::select(code, label)
+
+        for(k in seq_along(areas_cli$label)) {
+          cli::cli_alert_info(
+            paste0(
+              cli::style_bold(areas_cli$code[k]), " ",
+              areas_cli$label[k], " ",
+              cli::col_br_cyan("✓")
+            )
+          )
+        }
+      }
+
     }
   }
 

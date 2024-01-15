@@ -3,7 +3,7 @@ save_logs <- function(.config = getOption("rcbms.config")) {
   if(rlang::is_false(.config$execute_mode)) return(invisible())
 
   if(.config$verbose) {
-    cli::cli_h2("Saving Logs")
+    cli::cli_h1("Saving Logs")
   }
 
   if(!exists("current_logs_id")) return(invisible())

@@ -8,7 +8,7 @@ update_rcbms <- function(.config = getOption("rcbms.config")) {
   if(is_package_latest != 0) {
 
     if(.config$verbose) {
-      cli::cli_h2("Checking Versions")
+      cli::cli_h1("Checking Versions")
     }
 
     if(is_online()) {
