@@ -13,7 +13,7 @@ execute_script <- function(.config_file, ...) {
 
   load_required_packages(...)
   set_config(.config_file)
-  compare_version()
+  update_rcbms()
   load_references()
   read_cbms_data()
   set_aggregation()
