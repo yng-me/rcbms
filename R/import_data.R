@@ -26,8 +26,6 @@ import_data <- function(
 
   df <- import_func(.path, ...)
   set_class(df, "rcbms_df")
-  return(df)
-
 }
 
 import_txt <- function(.path, ...) {

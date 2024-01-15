@@ -1,4 +1,4 @@
-#'
+#' Title
 #'
 #' @param .data
 #' @param ...
@@ -34,6 +34,9 @@ select_cv <- function(
   .date_introduced = get_from_validation_id(.id, .references, "date_introduced")
 ) {
 
+
+  .data <- .data |> validate_select(...)
+
   attr(.data, "validation_id") <- .id
   attr(.data, "title") <- .title
   attr(.data, "description") <- .description
@@ -45,8 +48,6 @@ select_cv <- function(
   attr(.data, "date_introduced") <- .date_introduced
 
   set_class(.data, 'rcbms_cv_tbl')
-
-  .data |> validate_select(...)
 
 }
 

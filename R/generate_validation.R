@@ -44,8 +44,10 @@ generate_validation <- function(
 
   with_incon <- NULL
   for(i in seq_along(result_names)) {
-    if(nrow(.cv[[result_names[i]]]) > 0) {
-      with_incon <- c(with_incon, result_names[i])
+    result_name <- result_names[i]
+    is_rcbms_cv_tbl <- inherits(.cv[[result_name]], "rcbms_cv_tbl")
+    if(nrow(.cv[[result_name]]) > 0 && is_rcbms_cv_tbl) {
+      with_incon <- c(with_incon, result_name)
     }
   }
 
@@ -90,7 +92,6 @@ generate_validation <- function(
   uid <- .config$project[[current_input_data]]$id
   if(is.null(uid)) uid <- "case_id"
 
-
   for(i in seq_along(result_names)) {
 
     result_name <- result_names[i]
@@ -108,10 +109,13 @@ generate_validation <- function(
     }
 
     if(i == 1) {
-      output <- output_temp
+      output <- output_temp |> dplyr::tibble()
     } else {
-      output <- output |> dplyr::bind_rows(output_temp)
+      output <- output |>
+        dplyr::bind_rows(output_temp) |>
+        dplyr::tibble()
     }
+
   }
 
   if(!is.null(output)) {
