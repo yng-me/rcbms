@@ -153,7 +153,7 @@ save_current_logs <- function(
       mode = .config$mode$type,
       edit = .config$mode$edit,
       source = .config$mode$source,
-      station = .config$mode$station,
+      station = toupper(.config$mode$station),
       level = .config$aggregation$level,
       input_data = .input_data,
       area_code = current_area_code,

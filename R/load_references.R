@@ -25,7 +25,7 @@ load_references <- function(
   if(is.null(.config)) stop('Config not found.')
 
   if(.config$verbose) {
-    cli::cli_h2("Loading References")
+    cli::cli_h1("Loading References")
   }
 
   refs <- list()

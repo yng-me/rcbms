@@ -17,7 +17,7 @@ read_cbms_data <- function(
 ) {
 
   if(.config$verbose) {
-    cli::cli_h2("Importing Data Files")
+    cli::cli_h1("Importing Data Files")
   }
 
   envir <- as.environment(1)
