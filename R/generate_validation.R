@@ -43,12 +43,37 @@ generate_validation <- function(
   ]
 
   with_incon <- NULL
+  is_not_rcbms_cv_tbl <- NULL
   for(i in seq_along(result_names)) {
     result_name <- result_names[i]
     is_rcbms_cv_tbl <- inherits(.cv[[result_name]], "rcbms_cv_tbl")
+
+    if(!is_rcbms_cv_tbl) {
+      is_not_rcbms_cv_tbl <- c(is_not_rcbms_cv_tbl, result_name)
+    }
+
     if(nrow(.cv[[result_name]]) > 0 && is_rcbms_cv_tbl) {
       with_incon <- c(with_incon, result_name)
     }
+  }
+
+  if(!is.null(is_not_rcbms_cv_tbl)) {
+    cli::cli_rule()
+    cli::cli_text(
+      cli::col_br_red(
+        paste0(
+          "The following validation results are not of class `rcbms_cv_tbl` object.\nPlease use ",
+          cli::style_bold("select_cv()"), " for each validation check."
+        )
+      )
+    )
+    cli::cli_ul(
+      paste0(
+        cli::style_bold(is_not_rcbms_cv_tbl), " ",
+        cli::col_br_red("✗")
+      )
+    )
+    cli::cli_rule()
   }
 
   result_names <- result_names[result_names %in% with_incon]

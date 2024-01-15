@@ -30,14 +30,17 @@ import_data <- function(
 
 import_txt <- function(.path, ...) {
   readr::read_delim(
-    .path,
-    delim = "\t",
-    quote = "",
-    progress = FALSE,
-    trim_ws = TRUE,
-    show_col_types = FALSE,
-    ...
-  ) |> dplyr::select(-dplyr::starts_with('aux'))
+      .path,
+      delim = "\t",
+      quote = "",
+      progress = FALSE,
+      trim_ws = TRUE,
+      show_col_types = FALSE,
+      ...
+    ) |>
+    dplyr::select(-dplyr::starts_with('aux')) |>
+    convert_to_na() |>
+    convert_to_na(.pattern = "^DEFAULT$")
 }
 
 

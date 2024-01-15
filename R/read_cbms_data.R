@@ -125,15 +125,19 @@ read_cbms_data <- function(
 
         if(.config$verbose) {
           if(identical(df_temp_dim_before, df_temp_dim_after)) {
-            df_temp_dim <- paste0(df_temp_dim_before[1], "×", df_temp_dim_before[2])
+            df_temp_dim <- paste0(
+              cli::col_br_cyan(df_temp_dim_before[1]), "×",
+              cli::col_br_cyan(df_temp_dim_before[2])
+            )
           } else {
             df_temp_dim <- paste0(
-              df_temp_dim_before[1], "×", df_temp_dim_before[2],
-              " → ", df_temp_dim_after[1], "×", df_temp_dim_after[2]
+              cli::col_br_cyan(df_temp_dim_before[1]), "×",
+              cli::col_br_cyan(df_temp_dim_before[2]), " → ",
+              cli::col_br_cyan(df_temp_dim_after[1]), "×",
+              cli::col_br_cyan(df_temp_dim_after[2])
             )
-
           }
-          df_temp_dim <- paste0("(", cli::col_br_cyan(df_temp_dim), ") ")
+          df_temp_dim <- paste0("(", df_temp_dim, ") ")
         }
 
         arrow::write_parquet(df_temp, pq_path)
