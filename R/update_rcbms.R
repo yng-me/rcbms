@@ -16,9 +16,10 @@ update_rcbms <- function(.config = getOption("rcbms.config")) {
 
       print(as.character(utils::packageVersion("rcbms")))
 
-      .config$version$package <- as.character(utils::packageVersion("rcbms"))
       wd <- .config$working_directory
-      yaml::write_yaml(.config, file = paste0(wd, "/configs/global.yml"))
+      config_updated <- .config
+      config_updated$version$package <- as.character(utils::packageVersion("rcbms"))
+      yaml::write_yaml(config_updated, file = paste0(wd, "/configs/global.yml"))
 
     } else {
       cli::cli_alert_warning(paste0(
