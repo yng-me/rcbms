@@ -24,65 +24,77 @@ set_aggregation <- function(
     cli::cli_h2("Setting Aggregation")
   }
 
-  .input_data <- .config$input_data[1]
-  agg_record <- get_summary_record(.input_data)
-
-  if(is.null(agg_record)) stop('Summary record is not defined.')
-
   agg <- list()
-  agg_level <- .config$aggregation$level
-  if(agg_level > 4) agg_level <- 4
-  if(agg_level < 1) agg_level <- 1
 
+  agg_level <- .config$aggregation$level
+  agg_areas <- .config$aggregation$areas
   agg$levels <- c('barangay', 'city_mun', 'province', 'region', 'all_area')
   agg$labels <- c('Barangay', 'City/Municipality', 'Province', 'Region', 'Philippines')
 
-  agg$value <- agg$levels[agg_level]
-  agg$label <- agg$labels[agg_level]
 
-  agg$areas_all <- .parquet[[.input_data]][[agg_record]] |>
-    dplyr::collect() |>
-    create_barangay_geo() |>
-    dplyr::select(-dplyr::contains('_code')) |>
-    dplyr::left_join(
-      transform_area_name(.references, .config$project$add_length),
-      by = 'barangay_geo'
-    ) |>
-    dplyr::select(
-      dplyr::starts_with(c('region', 'province', 'city_mun', 'barangay')),
-      dplyr::any_of("is_huc")
-    ) |>
-    dplyr::distinct() |>
-    tidyr::drop_na() |>
-    dplyr::mutate(
-      all_area_geo = "",
-      all_area_agg = "All Areas",
-      region_geo = region_code,
-      .before = 1
-    )
+  for(i in seq_along(.config$input_data)) {
 
-  geo_name <- paste0(agg$levels[agg_level + 1], "_geo")
-  geo_agg <- paste0(agg$levels[agg_level + 1], "_agg")
+    input_data <- .config$input_data[[i]]
+    agg_record <- get_summary_record(input_data)
 
-  agg$areas_unique <- agg$areas_all |>
-    dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
-    dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
-    dplyr::rename(
-      code = !!as.name(geo_name),
-      label = !!as.name(geo_agg)
-    )
+    agg_level_i <- .config$project[[input_data]]$aggregation$level
 
-  if(tolower(config$aggregation$areas[1]) != 'all') {
+    if(is.null(agg_level_i)) agg_level_i <- agg_level
+    if(agg_level_i > 4) agg_level_i <- 4
+    if(agg_level_i < 1) agg_level_i <- 1
 
-    if(grepl('\\d+', .config$aggregation$areas)) {
+    agg[[input_data]]$value <- agg$levels[agg_level_i]
+    agg[[input_data]]$label <- agg$labels[agg_level_i]
 
-      agg$areas_unique <- agg$areas_unique |>
-        dplyr::filter(code %in% .config$aggregation$areas)
+    if(!is.null(agg_record)) {
+      agg[[input_data]]$areas_all <- .parquet[[input_data]][[agg_record]] |>
+        dplyr::collect() |>
+        create_barangay_geo() |>
+        dplyr::select(-dplyr::contains('_code')) |>
+        dplyr::left_join(
+          transform_area_name(.references, .config$project$add_length),
+          by = 'barangay_geo'
+        ) |>
+        dplyr::select(
+          dplyr::starts_with(c('region', 'province', 'city_mun', 'barangay')),
+          dplyr::any_of("is_huc")
+        ) |>
+        dplyr::distinct() |>
+        tidyr::drop_na() |>
+        dplyr::mutate(
+          all_area_geo = "",
+          all_area_agg = "All Areas",
+          region_geo = region_code,
+          .before = 1
+        )
 
-    } else {
+      geo_name <- paste0(agg$levels[agg_level_i + 1], "_geo")
+      geo_agg <- paste0(agg$levels[agg_level_i + 1], "_agg")
 
-      agg$areas_unique <- agg$areas_unique |>
-        dplyr::filter(label %in% .config$aggregation$areas)
+      agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_all |>
+        dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
+        dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
+        dplyr::rename(
+          code = !!as.name(geo_name),
+          label = !!as.name(geo_agg)
+        )
+
+      agg_areas_i <- .config$project[[input_data]]$aggregation$areas
+      if(is.null(agg_areas_i)) agg_areas_i <- agg_areas
+
+      if(tolower(agg_areas_i[1]) != 'all') {
+
+        if(grepl('\\d+', agg_areas_i)) {
+
+          agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
+            dplyr::filter(code %in% agg_areas_i)
+
+        } else {
+
+          agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
+            dplyr::filter(label %in% agg_areas_i)
+        }
+      }
     }
   }
 

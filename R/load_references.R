@@ -16,6 +16,12 @@ load_references <- function(
   .config_key = "references"
 ) {
 
+  gid_area_name <- "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
+  gid_valueset <- "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
+  gid_validation <- "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY"
+  gid_tabulation <- "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE"
+  gid_data_dictionary <- "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
+
   if(is.null(.config)) stop('Config not found.')
 
   if(.config$verbose) {
@@ -78,7 +84,7 @@ load_references <- function(
       if(eval(parse(text = paste0("reload_", ref_short)))) {
         load_reference_fn <- eval(as.name(paste0("load_", ref, "_refs")))
         arrow::write_parquet(
-          suppressWarnings(load_reference_fn(gid[[ref]])),
+          suppressWarnings(load_reference_fn(eval(as.name(paste0("gid_", ref))))),
           paste0(wd_project, '/ref_', ref, '.parquet')
         )
       }

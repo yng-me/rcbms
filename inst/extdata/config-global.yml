@@ -35,11 +35,5 @@ version:
   script: 0.0.1
   package: 0.1.0
   db: 0.0.1
-references:
-  area_name: seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE
-  valueset: eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A
-  validation: PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY
-  tabulation: jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE
-  data_dictionary: MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ
 clear_objects: yes
 verbose: yes

@@ -35,8 +35,8 @@ join_and_filter_area <- function(
   }
 
   .data <- .data |>
-    join_area(.aggregation) |>
-    filter_area(.aggregation, .config, current_area)
+    join_area(.aggregation[[input_data]]) |>
+    filter_area(.aggregation[[input_data]], .config, current_area)
 
   if(!.retain_agg_cols) {
     .data <- .data |> dplyr::select(-dplyr::ends_with("_agg"))
