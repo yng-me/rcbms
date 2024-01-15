@@ -14,11 +14,11 @@ update_rcbms <- function(.config = getOption("rcbms.config")) {
     if(is_online()) {
       devtools::install_github("yng-me/rcbms", upgrade = TRUE)
 
-      print(as.character(utils::packageVersion("rcbms")))
-
       wd <- .config$working_directory
       config_updated <- .config
       config_updated$version$package <- as.character(utils::packageVersion("rcbms"))
+      config_updated$project <- NULL
+      config_updated$base <- NULL
       yaml::write_yaml(config_updated, file = paste0(wd, "/configs/global.yml"))
 
     } else {
