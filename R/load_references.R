@@ -32,16 +32,11 @@ load_references <- function(
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
-
-  wd_project <- create_new_folder(
-    paste0(wd, '/src/', .config$cbms_round, '/references')
-  )
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
-  pq_dcf <- paste0(wd_project, '/ref_data_dictionary.parquet')
-  pq_cv <- paste0(wd_project, '/ref_validation.parquet')
-  pq_ts <- paste0(wd_project, '/ref_tabulation.parquet')
-
+  pq_dcf <- paste0(wd_base_ref, '/ref_data_dictionary.parquet')
+  pq_cv <- paste0(wd_base_ref, '/ref_validation.parquet')
+  pq_ts <- paste0(wd_base_ref, '/ref_tabulation.parquet')
   pq_vs <- paste0(wd_base_ref, '/ref_valueset.parquet')
   pq_anm <- paste0(wd_base_ref, '/ref_area_name.parquet')
 
