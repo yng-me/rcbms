@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param .migrations
+#' @param .output
 #' @param ...
 #'
 #' @return
@@ -9,25 +9,30 @@
 #' @examples
 #'
 
-db_migrate <- function(.migrations, ..., .name = NULL, .prefix = '') {
+db_migrate <- function(.output, ..., .name = NULL, .prefix = '') {
+
   db_conn <- db_connect()
 
   if(.prefix != '') prefix <- paste0(.prefix, '_')
   else prefix <- ''
 
-  if(inherits(.migrations, 'list')) {
+  if(inherits(.output, 'rcbms_ts_list')) {
 
-    db_tables <- names(.migrations)
+    db_tables <- names(.output)
 
     for(i in seq_along(db_tables)) {
 
-      DBI::dbWriteTable(
-        conn = db_conn,
-        name = paste0(prefix, db_tables[i]),
-        value = .migrations[i],
-        row.names = F,
-        ...
-      )
+      ts <- .output[i]
+      if(inherits(ts, 'rcbms_ts_tbl')) {
+
+        DBI::dbWriteTable(
+          conn = db_conn,
+          name = paste0(prefix, db_tables[i]),
+          value = ts,
+          row.names = F,
+          ...
+        )
+      }
     }
 
   } else {
@@ -39,7 +44,7 @@ db_migrate <- function(.migrations, ..., .name = NULL, .prefix = '') {
     DBI::dbWriteTable(
       conn = db_conn,
       paste0(prefix, .name),
-      value = .migrations,
+      value = .output,
       row.names = F,
       ...
     )
