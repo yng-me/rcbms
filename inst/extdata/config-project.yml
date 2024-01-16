@@ -68,6 +68,7 @@
       - interview_record
     variable:
       line_number: lineno
+      result_of_visit: result_of_visit
       relation_to_hh_head: a02_relation_to_hh_head
       age: a07_age
       sex: a05_sex

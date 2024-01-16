@@ -37,6 +37,8 @@ read_cbms_data <- function(
 
     df_input <- input_data[i]
     rov_var <- config$project[[df_input]]$variable$result_of_visit
+    unfiltered_records <- .config$project[[df_input]]$unfiltered_records
+    if(is.null(unfiltered_records)) unfiltered_records <- ""
 
     if(.config$verbose) {
       if(length(input_data) > 1) {
@@ -107,6 +109,21 @@ read_cbms_data <- function(
           df_temp <- df_temp |>
             create_case_id(.input_data = df_input) |>
             dplyr::left_join(summary_record_only, by = uid)
+
+          if(.config$complete_cases && !(p_name %in% unfiltered_records)) {
+
+            if(rov_var %in% names(df_temp)) {
+              df_temp <- df_temp |>
+                dplyr::filter(!!as.name(rov_var) == 1)
+            }
+
+            if("hsn" %in% names(df_temp)) {
+              df_temp <- df_temp |>
+                dplyr::filter(
+                  as.integer(hsn) < as.integer(paste(rep(7, 4 + .config$project$add_length), collapse = ''))
+                )
+            }
+          }
         }
 
         assign("df_temp", df_temp, envir = envir)
@@ -170,8 +187,6 @@ read_cbms_data <- function(
 
     assign(.assign_name, df, envir = envir)
   }
-
-
   return(invisible(df))
 }
 
