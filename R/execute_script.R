@@ -166,7 +166,9 @@ execute_mode <- function(
           script_file <- basename(script_files[i]) |>
             stringr::str_remove("\\.(r|R)$")
           if(!grepl("^\\_\\_", script_file)) {
-            cli::cli_alert_success(paste0("Processing ", cli::col_br_yellow(script_file), " script file"))
+            cli::cli_alert_success(
+              paste0("Processing ", cli::col_br_yellow(script_file), " script file")
+            )
           }
         }
         suppressWarnings(source(script_files[i]))
@@ -178,7 +180,8 @@ execute_mode <- function(
         .aggregation,
         .config = .config
       )
-      suppressWarnings(rm(list = "complete_cases"))
+
+      suppressWarnings(rm(list = "complete_cases", envir = envir))
     }
   }
 }
