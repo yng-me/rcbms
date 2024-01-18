@@ -58,7 +58,7 @@ utils::globalVariables(
     "is_included_for_portal",
     "regular_hh_completed",
     "Version",
-    "cbms_round",
+    "survey_round",
     "current_area_code",
     "current_input_data",
     "relation_to_hh_head",

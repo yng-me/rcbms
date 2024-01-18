@@ -32,7 +32,7 @@ generate_validation <- function(
 
   references <- .references$validation |>
     dplyr::filter(
-      cbms_round == as.integer(.config$cbms_round),
+      survey_round == as.integer(.config$survey_round),
       input_data == input_data
     ) |>
     dplyr::collect()

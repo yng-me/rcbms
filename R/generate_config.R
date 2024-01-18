@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param .cbms_round
+#' @param .survey_round
 #' @param .values
 #' @param .create_file
 #'
@@ -10,7 +10,7 @@
 #' @examples
 #'
 
-generate_config <- function(.cbms_round, .directory = NULL) {
+generate_config <- function(.survey_round, .directory = NULL) {
 
   if(is.null(.directory)) {
     .directory <- "./configs/"

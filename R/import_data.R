@@ -17,7 +17,7 @@ import_data <- function(
   ...
 ) {
 
-  if(!(.input_data %in% c("hp", "bp", "ilq"))) {
+  if(!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
     stop('Invalid input data.')
   }
 

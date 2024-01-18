@@ -4,7 +4,7 @@
 \alias{generate_config}
 \title{Title}
 \usage{
-generate_config(.cbms_round, .directory = NULL)
+generate_config(.survey_round, .directory = NULL)
 }
 \arguments{
 \item{.create_file}{}

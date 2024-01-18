@@ -9,7 +9,7 @@ join_and_filter_area(
   ...,
   .aggregation = get_config("aggregation"),
   .config = getOption("rcbms.config"),
-  .input_data = "hp",
+  .input_data = NULL,
   .retain_agg_cols = FALSE,
   .minimized = TRUE
 )

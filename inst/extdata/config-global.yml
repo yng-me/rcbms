@@ -1,5 +1,5 @@
 # Global config default values
-cbms_round: '2024'
+survey_round: '2024'
 read_from_parquet: no
 reload_references:
   area_name: yes
