@@ -39,8 +39,7 @@ check_age_sex_relation <- function(
           dplyr::mutate(
             age = !!as.name(age_var),
             relation_to_hh_head = as.integer(!!as.name(relation_to_hh_head_var)),
-            is_primary_member = relation_to_hh_head == .primary_member &
-              !!as.name(sex_var) %in% .sex_of_primary_member,
+            is_primary_member = relation_to_hh_head == .primary_member & !!as.name(sex_var) %in% .sex_of_primary_member,
             with_relation = relation_to_hh_head == .relation_to_primary_member
           ) |>
           dplyr::filter(is_primary_member | with_relation)
@@ -52,7 +51,7 @@ check_age_sex_relation <- function(
             primary_member = .primary_member,
             sex_of_primary_member = dplyr::if_else(
               length(.sex_of_primary_member) == 1,
-              .sex_of_primary_member,
+              .sex_of_primary_member[1],
               NA_integer_
             ),
             relation_to_primary_member = .relation_to_primary_member,

@@ -7,7 +7,7 @@
 check_age_sex_relation(
   .data,
   .primary_member,
-  .sex_of_primary_member,
+  .sex_of_primary_member = c(1, 2),
   .relation_to_primary_member,
   .threshold,
   .condition = "<",
