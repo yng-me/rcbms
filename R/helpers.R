@@ -60,6 +60,8 @@ convert_to_factor <- function(
 #' @export
 #'
 #' @examples
+#'
+
 convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
 
   if(!is.null(.pattern)) {
