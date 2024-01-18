@@ -24,7 +24,7 @@ set_config <- function(
 
   if(!file.exists(.config_file)) {
     ext <- "yml"
-    .config_file <- generate_config(.cbms_round = 2024)
+    .config_file <- generate_config(.survey_round = 2024)
     .include_env <- FALSE
   }
 
@@ -40,7 +40,18 @@ set_config <- function(
   wd <- config$working_directory
   if(is.null(wd)) wd <- "./"
 
-  config$base <- join_path(wd, "src", config$cbms_round)
+  if(!is.null(config$cbms_round)) {
+    cli::cli_alert_warning(
+      paste0(
+        "Global config has been renamed from ",
+        cli::style_bold(cli::col_black("cbms_round")), " to",
+        cli::style_bold(cli::col_black("survey_round"))
+      )
+    )
+    config$survey_round <- config$cbms_round
+  }
+
+  config$base <- join_path(wd, "src", config$survey_round)
 
   rel_wd <- stringr::str_remove(.config_file, "(config|global)\\.(YML|yml|JSON|json)$")
 
@@ -51,7 +62,8 @@ set_config <- function(
     project <- jsonlite::fromJSON(join_path(rel_wd, "project.json"), simplifyVector = T)
   }
 
-  config$project <- project[[as.character(config$cbms_round)]]
+  config$project <- project[[as.character(config$survey_round)]]
+
 
   # ENV
   if(.include_env) {

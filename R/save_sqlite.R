@@ -120,7 +120,7 @@ save_current_logs <- function(
   cv_ref <- .references$validation |>
     dplyr::collect() |>
     dplyr::filter(
-      cbms_round == as.integer(.config$cbms_round),
+      survey_round == as.integer(.config$survey_round),
       input_data == .input_data
     ) |>
     dplyr::select(validation_id, priority_level)
@@ -131,7 +131,7 @@ save_current_logs <- function(
       .references$validation |>
         dplyr::collect() |>
         dplyr::filter(
-          cbms_round == as.integer(.config$cbms_round),
+          survey_round == as.integer(.config$survey_round),
           input_data == .input_data
         ) |>
         dplyr::select(validation_id, priority_level),
@@ -149,7 +149,7 @@ save_current_logs <- function(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
-      round = .config$cbms_round,
+      round = .config$survey_round,
       mode = .config$mode$type,
       edit = .config$mode$edit,
       source = .config$mode$source,

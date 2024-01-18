@@ -11,7 +11,7 @@
 harmonize_variable <- function(
   .data,
   .dictionary,
-  .cbms_round,
+  .survey_round,
   .input_data
 ) {
 
@@ -24,7 +24,7 @@ harmonize_variable <- function(
 
   .dictionary <- .dictionary |>
     dplyr::filter(
-      cbms_round == as.integer(.cbms_round),
+      survey_round == as.integer(.survey_round),
       input_data == .input_data
     ) |>
     dplyr::collect() |>

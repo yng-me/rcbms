@@ -79,7 +79,7 @@ read_cbms_data <- function(
               clean_colnames() |>
               harmonize_variable(
                 .references$data_dictionary,
-                .cbms_round = .config$cbms_round,
+                .survey_round = .config$survey_round,
                 .input_data = df_input
               )
           )
@@ -192,50 +192,15 @@ read_cbms_data <- function(
 
 
 get_input_data_label <- function(.key) {
-  labels <- c("Household Profile", "Barangay Profile", "Institutional Population")
-  labels_short <- c("hp", "bp", "ilq")
+  labels <- c(
+    "Household Profile",
+    "Barangay Profile",
+    "Institutional Population",
+    "Census of Population",
+    "Barangay Schedule"
+  )
+  labels_short <- c("hp", "bp", "ilq", "cph", "bs")
   label_which <- which(labels_short == .key)
   if(length(label_which) == 0) return(.key)
   labels[which(labels_short == .key)]
 }
-
-
-# tidy_data_frame <- function(.data, .base, .input_data, .record, ...) {
-#
-#   src_file <- join_path(.base, 'tidy', .input_data, paste0(.record, '.R'))
-#
-#   if(!file.exists(src_file)) return(.data)
-#   source(src_file)
-#
-#   if(!exists('tidy_cbms_data_temp')) return(.data)
-#
-#   .data |> tidy_cbms_data_temp(...)
-#
-# }
-#
-#
-# tidy_cbms_data <- function(
-#     .parquet,
-#     .record,
-#     .input_data,
-#     ...,
-#     .config = getOption('rcbms.config'),
-#     .complete_cases = NULL
-# ) {
-#
-#   if(exists('tidy_cbms_data_temp')) {
-#     suppressWarnings(rm(list = 'tidy_cbms_data_temp'))
-#   }
-#
-#   df <- .parquet[[.record]] |>
-#     dplyr::collect() |>
-#     create_case_id(.input_data = .input_data)
-#
-#   if(!is.null(.complete_cases)) {
-#     df <- df |> dplyr::filter(case_id %in% .complete_cases)
-#   }
-#
-#   df |> tidy_data_frame(.config$base, .record, .input_data, ...)
-#
-# }
-

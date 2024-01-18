@@ -45,8 +45,9 @@ add_wgss <- function(.data, .prefix) {
       f_sssco = dplyr::if_else(wgss_f == 1, 0, 6 ^ (wgss_f - 2))
     ) |>
     dplyr::mutate_at(dplyr::vars(dplyr::matches('^wgss_[a-f]$')), as.integer) |>
+    sum_rows("sssco", dplyr::matches('^[a-f]_sssco$')) |>
     dplyr::mutate(
-      sssco = rowSums(dplyr::select(., dplyr::matches('^[a-f]_sssco$')), na.rm = T),
+      # sssco = rowSums(dplyr::select(., dplyr::matches('^[a-f]_sssco$')), na.rm = T),
       sssc = dplyr::case_when(
         sssco == 0 ~ 1L,
         sssco < 5 ~ 2L,

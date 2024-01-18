@@ -60,6 +60,8 @@ convert_to_factor <- function(
 #' @export
 #'
 #' @examples
+#'
+
 convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
 
   if(!is.null(.pattern)) {
@@ -109,3 +111,22 @@ convert_age <- function(.from, .to) {
 
 
 
+
+#' Title
+#'
+#' @param .data
+#' @param .name
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+sum_rows <- function(.data, .name, ...) {
+  df <- dplyr::select(.data, ...)
+  s__ <- rowSums(df, na.rm = T)
+  .data |>
+    tibble::add_column(`s__`) |>
+    dplyr::rename(!!as.name(.name) := `s__`)
+}

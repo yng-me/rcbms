@@ -85,7 +85,7 @@ get_data_path <- function(
   full_path <- file.path(
     wd,
     'src',
-    .config$cbms_round,
+    .config$survey_round,
     'data',
     .type,
     .input_data

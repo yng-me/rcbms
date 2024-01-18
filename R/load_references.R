@@ -100,6 +100,12 @@ load_references <- function(
     }
 
     refs[[ref]] <- arrow::open_dataset(eval(parse(text = paste0("pq_", ref_short))))
+
+    if(!("survey_round" %in% names(refs[[ref]])) && "cbms_round" %in% names(refs[[ref]])) {
+      refs[[ref]] <- refs[[ref]] |>
+        dplyr::rename(survey_round = cbms_round)
+    }
+
     set_class(refs[[ref]], paste0("rcbms_", ref_short, "_ref"))
 
   }
@@ -168,11 +174,11 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     if(grepl(sheet_pattern, ss_name)) {
       ss_df_temp <- ss_df_temp |>
         dplyr::mutate(
-          cbms_round = as.integer(stringr::str_sub(ss_name, 1, 4)),
-          input_data = stringr::str_sub(ss_name, -2, -1)
+          survey_round = as.integer(stringr::str_sub(ss_name, 1, 4)),
+          input_data = stringr::str_sub(ss_name, 6, -1)
         )
 
-      attr(ss_df_temp$cbms_round, "label") <- "CBMS Round"
+      attr(ss_df_temp$survey_round, "label") <- "Survey Round"
       attr(ss_df_temp$input_data, "label") <- "Input Data"
     }
 
@@ -215,7 +221,7 @@ load_refs_from_gsheet <- function(
 #' Load data dictionary references
 #'
 #' @param .gid
-#' @param .cbms_round
+#' @param .survey_round
 #'
 #' @return
 #' @export
