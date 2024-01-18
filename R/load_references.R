@@ -175,7 +175,7 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
       ss_df_temp <- ss_df_temp |>
         dplyr::mutate(
           survey_round = as.integer(stringr::str_sub(ss_name, 1, 4)),
-          input_data = stringr::str_sub(ss_name, -2, -1)
+          input_data = stringr::str_sub(ss_name, 6, -1)
         )
 
       attr(ss_df_temp$survey_round, "label") <- "Survey Round"
