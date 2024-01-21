@@ -51,9 +51,9 @@ get_summary_record <- function(.input_data, .type = 'summary_record') {
   .config$project[[.input_data]][[.type]]
 }
 
-check_input_data <- function(.input_data = 'hp') {
-  .input_data <- .input_data[.input_data %in% c('hp', 'bp')]
-  valid_input <- .input_data %in% c('hp', 'bp')
+check_input_data <- function(.input_data) {
+  .input_data <- .input_data[.input_data %in% c("hp", "bp", "ilq", "cph", "bi")]
+  valid_input <- .input_data %in% c("hp", "bp", "ilq", "cph", "bi")
   match_input <- length(which(valid_input))
   if(match_input > 2) {
     .input_data <- .input_data[valid_input]
@@ -77,7 +77,7 @@ get_file_format <- function(.config, .input_data) {
 
 get_data_path <- function(
   .type,
-  .input_data = 'hp',
+  .input_data,
   .config = getOption('rcbms.config')
 ) {
   wd <- .config$working_directory

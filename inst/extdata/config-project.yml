@@ -72,3 +72,8 @@
       relation_to_hh_head: a02_relation_to_hh_head
       age: a07_age
       sex: a05_sex
+'2020':
+  reference_period: 2020-06-01
+  cph:
+    id: case_id
+    file_format: txt

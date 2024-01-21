@@ -30,10 +30,25 @@ create_case_id <- function(
   .data <- collect_first(.data)
 
   add_length <- .config$project$add_length
-
   if(is.null(add_length)) add_length <- 0
 
-  if(!("case_id" %in% names(.data))) {
+  if(.input_data == "cph") {
+    .data <- .data |>
+      dplyr::mutate(
+        case_id = paste0(
+          stringr::str_pad(region_code, width = 2, pad = "0"),
+          stringr::str_pad(province_code, width = 3, pad = "0"),
+          stringr::str_pad(city_mun_code, width = 2, pad = "0"),
+          stringr::str_pad(barangay_code, width = 9, pad = "0"),
+          urban_classification,
+          stringr::str_pad(husn, width = 6, pad = "0"),
+          stringr::str_pad(hsn, width = 6, pad = "0")
+        )
+      ) |>
+      dplyr::select(case_id, dplyr::everything())
+  }
+
+  if(!("case_id" %in% names(.data)) & .input_data == "hp") {
 
     .data <- .data |>
       dplyr::mutate(
