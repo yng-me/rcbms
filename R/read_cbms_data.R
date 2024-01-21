@@ -143,15 +143,15 @@ read_cbms_data <- function(
         if(.config$verbose) {
           if(identical(df_temp_dim_before, df_temp_dim_after)) {
             df_temp_dim <- paste0(
-              cli::col_br_cyan(df_temp_dim_before[1]), "×",
-              cli::col_br_cyan(df_temp_dim_before[2])
+              cli::col_br_cyan(format(df_temp_dim_before[1], big.mark = ",")), " × ",
+              cli::col_br_cyan(format(df_temp_dim_before[2], big.mark = ","))
             )
           } else {
             df_temp_dim <- paste0(
-              cli::col_br_cyan(df_temp_dim_before[1]), "×",
-              cli::col_br_cyan(df_temp_dim_before[2]), " → ",
-              cli::col_br_cyan(df_temp_dim_after[1]), "×",
-              cli::col_br_cyan(df_temp_dim_after[2])
+              cli::col_br_cyan(format(df_temp_dim_before[1], big.mark = ",")), " × ",
+              cli::col_br_cyan(format(df_temp_dim_before[2], big.mark = ",")), " → ",
+              cli::col_br_cyan(format(df_temp_dim_after[1], big.mark = ",")), " × ",
+              cli::col_br_cyan(format(df_temp_dim_after[2], big.mark = ","))
             )
           }
           df_temp_dim <- paste0("(", df_temp_dim, ") ")

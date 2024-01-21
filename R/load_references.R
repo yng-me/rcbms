@@ -11,16 +11,10 @@
 #'
 
 load_references <- function(
-  .config = getOption('rcbms.config'),
-  .update_config = TRUE,
-  .config_key = "references"
+    .config = getOption('rcbms.config'),
+    .update_config = TRUE,
+    .config_key = "references"
 ) {
-
-  gid_area_name <- "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
-  gid_valueset <- "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
-  gid_validation <- "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY"
-  gid_tabulation <- "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE"
-  gid_data_dictionary <- "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -28,86 +22,69 @@ load_references <- function(
     cli::cli_h1("Loading References")
   }
 
+  gid <- list()
+  gid$area_name <- "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
+  gid$valueset <- "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
+  gid$validation <- "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY"
+  gid$tabulation <- "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE"
+  gid$data_dictionary <- "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
+
   refs <- list()
+  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts")
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
-  pq_dcf <- paste0(wd_base_ref, '/ref_data_dictionary.parquet')
-  pq_cv <- paste0(wd_base_ref, '/ref_validation.parquet')
-  pq_ts <- paste0(wd_base_ref, '/ref_tabulation.parquet')
-  pq_vs <- paste0(wd_base_ref, '/ref_valueset.parquet')
-  pq_anm <- paste0(wd_base_ref, '/ref_area_name.parquet')
+  pq <- stats::setNames(
+    lapply(ref_list, \(x) paste0(wd_base_ref, '/ref_', x, '.parquet')),
+    ref_list
+  )
 
-  refs_exist <- file.exists(pq_dcf) &&
-    file.exists(pq_vs) &&
-    file.exists(pq_anm) &&
-    file.exists(pq_cv) &&
-    file.exists(pq_ts)
+  ref_reload <- .config$reload_references
 
-  reload_ref <- .config$reload_references
-
-  if(length(reload_ref) == 1) {
-    reload_dcf <- reload_ref
-    reload_vs <- reload_ref
-    reload_anm <- reload_ref
-    reload_cv <- reload_ref
-    reload_ts <- reload_ref
-  } else {
-    reload_dcf <- reload_ref$data_dictionary
-    reload_vs <- reload_ref$valueset
-    reload_anm <- reload_ref$area_name
-    reload_cv <- reload_ref$validation
-    reload_ts <- reload_ref$tabulation
-    reload_ref <- reload_dcf || reload_vs || reload_anm || reload_cv || reload_ts
-  }
-
-  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation")
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts")
-
-  if((!refs_exist || reload_ref) && is_online()) {
+  if(is_online()) {
 
     googlesheets4::gs4_deauth()
-    gid <- .config$references
 
     for(i in seq_along(ref_list)) {
 
-      ref <- ref_list[[i]]
-      ref_short <- ref_list_short[[i]]
+      ref_i <- ref_list[[i]]
+      ref_short_i <- ref_list_short[[i]]
+      pq_i <- pq[[ref_i]]
+      gid_i <- gid[[ref_i]]
 
-      if(eval(parse(text = paste0("reload_", ref_short)))) {
-        load_reference_fn <- eval(as.name(paste0("load_", ref, "_refs")))
+      if(length(ref_reload) == 1) {
+        ref_reload_i <- ref_reload
+      } else {
+        ref_reload_i <- ref_reload[[ref_i]]
+      }
+
+      if(ref_reload_i || !file.exists(pq_i)) {
+        load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
         arrow::write_parquet(
-          suppressWarnings(load_reference_fn(eval(as.name(paste0("gid_", ref))))),
-          eval(parse(text = paste0("pq_", ref_short)))
+          suppressWarnings(load_reference_fn(gid_i)),
+          pq_i
         )
       }
-    }
-  }
 
-  for(i in seq_along(ref_list)) {
-
-    ref <- ref_list[[i]]
-    ref_short <- ref_list_short[[i]]
-
-    if(.config$verbose) {
-      if(!eval(parse(text = paste0("reload_", ref_short)))) {
+      if(.config$verbose && !ref_reload_i) {
         cli::cli_alert_info(
-          paste0("Loading ", cli::col_br_yellow(ref), " reference ", cli::col_br_cyan("✓"))
+          paste0("Loading ", cli::col_br_yellow(ref_i), " reference ", cli::col_br_cyan("✓"))
         )
       }
+
+      refs[[ref_i]] <- arrow::open_dataset(pq_i)
+
+      if(!("survey_round" %in% names(refs[[ref_i]])) && "cbms_round" %in% names(refs[[ref_i]])) {
+        refs[[ref_i]] <- refs[[ref_i]] |>
+          dplyr::rename(survey_round = cbms_round)
+      }
+
+      set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))
+
     }
-
-    refs[[ref]] <- arrow::open_dataset(eval(parse(text = paste0("pq_", ref_short))))
-
-    if(!("survey_round" %in% names(refs[[ref]])) && "cbms_round" %in% names(refs[[ref]])) {
-      refs[[ref]] <- refs[[ref]] |>
-        dplyr::rename(survey_round = cbms_round)
-    }
-
-    set_class(refs[[ref]], paste0("rcbms_", ref_short, "_ref"))
-
   }
 
   refs$script_files <- NULL
@@ -146,7 +123,7 @@ load_references <- function(
 #' @examples
 #'
 fetch_gsheet <- function(.gid, ..., .range = NULL) {
-  sheet_pattern <- "^\\d{4}_[hb]p$"
+  sheet_pattern <- "^\\d{4}_(bp|hp|cph|bi|ilq)$"
   ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
 
   ss_names <- googlesheets4::sheet_names(ss) |>
@@ -163,12 +140,12 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     ss_name <- ss_names[i]
 
     ss_df_temp <- googlesheets4::read_sheet(
-        ss = ss,
-        sheet = ss_name,
-        range = .range,
-        trim_ws = TRUE,
-        ...
-      ) |>
+      ss = ss,
+      sheet = ss_name,
+      range = .range,
+      trim_ws = TRUE,
+      ...
+    ) |>
       clean_colnames()
 
     if(grepl(sheet_pattern, ss_name)) {
@@ -202,10 +179,10 @@ validate_required_cols <- function(.data, .required_cols) {
 
 
 load_refs_from_gsheet <- function(
-  .gid,
-  .required_cols,
-  ...,
-  .start_at = 1
+    .gid,
+    .required_cols,
+    ...,
+    .start_at = 1
 ) {
 
   range <- paste0(
@@ -251,8 +228,6 @@ load_data_dictionary_refs <- function(.gid) {
     .required_cols = required_cols,
     col_types = 'ccccccciiiii'
   )
-
-  set_class(df, "rcbms_dcf_ref")
 }
 
 
@@ -283,11 +258,11 @@ load_area_name_refs <- function(.gid) {
   )
 
   df <- load_refs_from_gsheet(
-      .gid,
-      .required_cols = required_cols,
-      col_types = 'ccciiciciii',
-      .start_at = 2
-    ) |>
+    .gid,
+    .required_cols = required_cols,
+    col_types = 'ccciiciciii',
+    .start_at = 2
+  ) |>
     dplyr::mutate(
       barangay_geo_new = stringr::str_pad(
         stringr::str_extract(barangay_geo_new, '\\d+'),
@@ -300,8 +275,6 @@ load_area_name_refs <- function(.gid) {
         pad = '0'
       )
     )
-
-  set_class(df, "rcbms_anm_ref")
 
 }
 
@@ -320,7 +293,6 @@ load_valueset_refs <- function(.gid) {
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
   )
-  set_class(df, "rcbms_vs_ref")
 }
 
 
@@ -359,8 +331,6 @@ load_validation_refs <- function(.gid) {
   attr(df$priority_level, 'label') <- 'Priority Level'
   attr(df$status, 'label') <- 'Status'
   attr(df$date_introduced, 'label') <- 'Date Introduced'
-
-  set_class(df, "rcbms_cv_ref")
 }
 
 
@@ -395,7 +365,5 @@ load_tabulation_refs <- function(.gid) {
     required_cols,
     col_types = 'cccccciiciiici'
   )
-
-  set_class(df, "rcbms_ts_ref")
 }
 
