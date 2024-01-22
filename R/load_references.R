@@ -45,44 +45,40 @@ load_references <- function(
 
   ref_reload <- .config$reload_references
 
-  if(is_online()) {
 
-    googlesheets4::gs4_deauth()
+  for(i in seq_along(ref_list)) {
 
-    for(i in seq_along(ref_list)) {
+    ref_i <- ref_list[[i]]
+    ref_short_i <- ref_list_short[[i]]
+    pq_i <- pq[[ref_i]]
+    gid_i <- gid[[ref_i]]
 
-      ref_i <- ref_list[[i]]
-      ref_short_i <- ref_list_short[[i]]
-      pq_i <- pq[[ref_i]]
-      gid_i <- gid[[ref_i]]
-
-      if(length(ref_reload) == 1) {
-        ref_reload_i <- ref_reload
-      } else {
-        ref_reload_i <- ref_reload[[ref_i]]
-      }
-
-      if(ref_reload_i | !file.exists(pq_i)) {
-        load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-        arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
-      }
-
-      if(.config$verbose && !ref_reload_i) {
-        cli::cli_alert_info(
-          paste0("Loading ", cli::col_br_yellow(ref_i), " reference ", cli::col_br_cyan("✓"))
-        )
-      }
-
-      refs[[ref_i]] <- arrow::open_dataset(pq_i)
-
-      if(!("survey_round" %in% names(refs[[ref_i]])) && "cbms_round" %in% names(refs[[ref_i]])) {
-        refs[[ref_i]] <- refs[[ref_i]] |>
-          dplyr::rename(survey_round = cbms_round)
-      }
-
-      set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))
-
+    if(length(ref_reload) == 1) {
+      ref_reload_i <- ref_reload
+    } else {
+      ref_reload_i <- ref_reload[[ref_i]]
     }
+
+    if(is_online() & (ref_reload_i | !file.exists(pq_i))) {
+      load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
+      arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
+    }
+
+    if(.config$verbose && !ref_reload_i) {
+      cli::cli_alert_info(
+        paste0("Loading ", cli::col_br_yellow(ref_i), " reference ", cli::col_br_cyan("✓"))
+      )
+    }
+
+    refs[[ref_i]] <- arrow::open_dataset(pq_i)
+
+    if(!("survey_round" %in% names(refs[[ref_i]])) && "cbms_round" %in% names(refs[[ref_i]])) {
+      refs[[ref_i]] <- refs[[ref_i]] |>
+        dplyr::rename(survey_round = cbms_round)
+    }
+
+    set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))
+
   }
 
   refs$script_files <- NULL
@@ -121,6 +117,9 @@ load_references <- function(
 #' @examples
 #'
 fetch_gsheet <- function(.gid, ..., .range = NULL) {
+
+  googlesheets4::gs4_deauth()
+
   sheet_pattern <- "^\\d{4}_(bp|hp|cph|bi|ilq)$"
   ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
 
@@ -177,10 +176,10 @@ validate_required_cols <- function(.data, .required_cols) {
 
 
 load_refs_from_gsheet <- function(
-    .gid,
-    .required_cols,
-    ...,
-    .start_at = 1
+  .gid,
+  .required_cols,
+  ...,
+  .start_at = 1
 ) {
 
   range <- paste0(
