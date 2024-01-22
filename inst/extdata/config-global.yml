@@ -11,7 +11,7 @@ working_directory: '.'
 complete_cases: yes
 harmonize_variable: yes
 input_data: hp
-execute_mode: yes
+execute_mode: no
 mode:
   type: validation
   edit: 1
@@ -34,7 +34,7 @@ portal: ~
 version:
   app: 3.0.0
   script: 0.0.1
-  package: 0.1.0
+  package: 0.1.4
   db: 0.0.1
 clear_objects: yes
 verbose: yes

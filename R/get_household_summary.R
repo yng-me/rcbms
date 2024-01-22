@@ -66,6 +66,11 @@ get_household_summary <- function(
       )
   }
 
+  hh_demog_list[["overall"]] <- .data |>
+    compute_hh_summary() |>
+    dplyr::bind_cols(compute_hhm_summary(.data)) |>
+    dplyr::mutate(area_code = "0", area_name = ":GRAND_SUMMARY:", level = "overall", .before = 1) |>
+    dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
 
   for(i in seq_along(.agg_levels)) {
 
@@ -83,13 +88,6 @@ get_household_summary <- function(
       dplyr::mutate(level = .agg_levels[i], .after = 2)
   }
 
-  hh_demog_list[["overall"]] <- .data |>
-    compute_hh_summary() |>
-    dplyr::bind_cols(compute_hhm_summary(.data)) |>
-    dplyr::mutate(area_code = "0", area_name = ":GRAND_SUMMARY:", level = "overall", .before = 1) |>
-    dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
-
-  print(names(hh_demog_list[["overall"]]))
 
   do.call("rbind", hh_demog_list)
 }
