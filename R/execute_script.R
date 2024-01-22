@@ -45,8 +45,23 @@ execute_mode <- function(
   .excluded_cases = NULL
 ) {
 
-  if(rlang::is_false(.config$execute_mode)) return(invisible())
   envir <- as.environment(1)
+  if(rlang::is_false(.config$execute_mode)) {
+    if(.config$mode$type == "validation") {
+      result_object <- "cv"
+    } else {
+      result_object <- "ts"
+    }
+    res_list <- list()
+    res_class <- paste0("rcbms_", result_object, "_list")
+
+    assign(
+      result_object,
+      set_class(res_list, res_class),
+      envir = envir
+    )
+    return(invisible())
+  }
 
   if(.config$verbose) {
     cli::cli_h1("Executing Scripts")
@@ -174,12 +189,17 @@ execute_mode <- function(
         suppressWarnings(source(script_files[i]))
       }
 
-      generate_output(
-        eval(as.name(result_object)),
-        .references,
-        .aggregation,
-        .config = .config
-      )
+      generate_o <- .config[[.config$type$mode]]$generate_output
+      if(is.null(generate_o)) generate_o <- FALSE
+
+      if(generate_o) {
+        generate_output(
+          eval(as.name(result_object)),
+          .references,
+          .aggregation,
+          .config = .config
+        )
+      }
 
       suppressWarnings(rm(list = "complete_cases", envir = envir))
     }

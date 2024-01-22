@@ -22,6 +22,7 @@ aggregation:
   level: 1
   areas: all
 validation:
+  generate_output: no
   detailed_output: no
   include_additional_info: no
   validate_signatures: no

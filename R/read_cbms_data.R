@@ -135,7 +135,10 @@ read_cbms_data <- function(
 
         df_temp <- df_temp |>
           add_metadata(.references$data_dictionary, .references$valueset) |>
-          dplyr::select(dplyr::any_of(c(uid, geo_cols, rov_var)), dplyr::everything())
+          dplyr::select(
+            dplyr::any_of(c(uid, geo_cols, rov_var, "sex", "age")),
+            sort(names(df_temp))
+          )
 
         df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
         attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
