@@ -22,12 +22,13 @@ load_references <- function(
     cli::cli_h1("Loading References")
   }
 
-  gid <- list()
-  gid$area_name <- "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE"
-  gid$valueset <- "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A"
-  gid$validation <- "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY"
-  gid$tabulation <- "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE"
-  gid$data_dictionary <- "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
+  gid <- list(
+    area_name = "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE",
+    valueset = "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
+    validation = "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
+    tabulation = "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
+    data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
+  )
 
   refs <- list()
   ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation")
@@ -61,12 +62,9 @@ load_references <- function(
         ref_reload_i <- ref_reload[[ref_i]]
       }
 
-      if(ref_reload_i || !file.exists(pq_i)) {
+      if(ref_reload_i | !file.exists(pq_i)) {
         load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-        arrow::write_parquet(
-          suppressWarnings(load_reference_fn(gid_i)),
-          pq_i
-        )
+        arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
       }
 
       if(.config$verbose && !ref_reload_i) {
@@ -223,7 +221,7 @@ load_data_dictionary_refs <- function(.gid) {
     'is_derived'
   )
 
-  df <- load_refs_from_gsheet(
+  load_refs_from_gsheet(
     .gid,
     .required_cols = required_cols,
     col_types = 'ccccccciiiii'
@@ -257,7 +255,7 @@ load_area_name_refs <- function(.gid) {
     'funding_source'
   )
 
-  df <- load_refs_from_gsheet(
+  load_refs_from_gsheet(
     .gid,
     .required_cols = required_cols,
     col_types = 'ccciiciciii',
@@ -288,7 +286,7 @@ load_area_name_refs <- function(.gid) {
 #' @examples
 #'
 load_valueset_refs <- function(.gid) {
-  df <- load_refs_from_gsheet(
+  load_refs_from_gsheet(
     .gid,
     .required_cols = c('name', 'value', 'label'),
     col_types = 'ccc'
@@ -331,6 +329,9 @@ load_validation_refs <- function(.gid) {
   attr(df$priority_level, 'label') <- 'Priority Level'
   attr(df$status, 'label') <- 'Status'
   attr(df$date_introduced, 'label') <- 'Date Introduced'
+
+  df
+
 }
 
 
@@ -360,7 +361,8 @@ load_tabulation_refs <- function(.gid) {
     'row_height_header',
     'row_reset_last'
   )
-  df <- load_refs_from_gsheet(
+
+  load_refs_from_gsheet(
     .gid,
     required_cols,
     col_types = 'cccccciiciiici'
