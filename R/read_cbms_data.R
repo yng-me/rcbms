@@ -36,35 +36,44 @@ read_cbms_data <- function(
   for(i in seq_along(input_data)) {
 
     df_input <- input_data[i]
-    rov_var <- config$project[[df_input]]$variable$result_of_visit
-    unfiltered_records <- .config$project[[df_input]]$unfiltered_records
-    if(is.null(unfiltered_records)) unfiltered_records <- ""
-
-    if(.config$verbose) {
-      if(length(input_data) > 1) {
-        progress_n <- paste0("[", i, "/", length(input_data), "]: ")
-      } else {
-        progress_n <- ""
-      }
-      cli::cli_h3(
-        paste0(progress_n, cli::col_br_cyan(get_input_data_label(df_input)))
-      )
-    }
 
     df_files <- list_data_files(df_input, .config)
 
-    uid <- "case_id"
-    if(df_input == "bp") uid <- "uuid"
+    if(!read_from_parquet) {
+      rov_var <- config$project[[df_input]]$variable$result_of_visit
+      unfiltered_records <- .config$project[[df_input]]$unfiltered_records
+      if(is.null(unfiltered_records)) unfiltered_records <- ""
 
-    summary_record <- NULL
+      if(.config$verbose) {
+        if(length(input_data) > 1) {
+          progress_n <- paste0("[", i, "/", length(input_data), "]: ")
+        } else {
+          progress_n <- ""
+        }
+        cli::cli_h3(
+          paste0(progress_n, cli::col_br_cyan(get_input_data_label(df_input)))
+        )
+      }
+
+      uid <- "case_id"
+      if(df_input == "bp") uid <- "uuid"
+
+      summary_record <- NULL
+    }
 
     for(j in seq_along(df_files$unique$value)) {
 
       p <- df_files$unique$value[j]
       file_format <- get_file_format(.config, df_input)
-      p_name <- stringr::str_remove(tolower(p), file_format)
       pq_folder <- create_new_folder(get_data_path('parquet', df_input))
-      pq_path <- file.path(pq_folder, paste0(p_name, '.parquet'))
+
+      if(read_from_parquet) {
+        p_name <- stringr::str_remove(tolower(p), "\\.parquet$")
+      } else {
+        p_name <- stringr::str_remove(tolower(p), file_format)
+      }
+
+      pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
 
       if(!read_from_parquet) {
 
@@ -136,7 +145,7 @@ read_cbms_data <- function(
         df_temp <- df_temp |>
           add_metadata(.references$data_dictionary, .references$valueset) |>
           dplyr::select(
-            dplyr::any_of(c(uid, geo_cols, rov_var, "sex", "age")),
+            dplyr::any_of(c(uid, geo_cols, rov_var, "ean", "bsn", "husn", "hsn", "line_number", "sex", "age")),
             sort(names(df_temp))
           )
 
