@@ -81,6 +81,10 @@ get_data_path <- function(
   .config = getOption('rcbms.config')
 ) {
   wd <- .config$working_directory
+
+  sub_directory <- .config$project[[.input_data]]$sub_directory
+  if(is.null(sub_directory)) sub_directory <- ""
+
   if(is.null(wd)) wd <- '.'
   full_path <- file.path(
     wd,
@@ -88,7 +92,8 @@ get_data_path <- function(
     .config$survey_round,
     'data',
     .type,
-    .input_data
+    .input_data,
+    sub_directory
   )
   return(full_path)
 }
