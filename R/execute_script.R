@@ -11,15 +11,20 @@
 
 execute_script <- function(.config_file, ...) {
 
+  with_config <- file.exists(.config_file)
+
   load_required_packages(...)
   set_config(.config_file)
   update_rcbms()
   load_references()
-  read_cbms_data()
-  set_aggregation()
-  execute_mode()
-  save_logs()
-  clear_objects()
+
+  if(isTRUE(with_config)) {
+    read_cbms_data()
+    set_aggregation()
+    execute_mode()
+    save_logs()
+    clear_objects()
+  }
 
 }
 

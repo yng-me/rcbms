@@ -9,7 +9,7 @@
 #' @examples
 #'
 
-db_migrate <- function(.output, ..., .name = NULL, .prefix = '') {
+db_migrate <- function(.output, .name = NULL, .prefix = '', .add_primary_key = TRUE, ...) {
 
   db_conn <- db_connect()
 
@@ -32,6 +32,15 @@ db_migrate <- function(.output, ..., .name = NULL, .prefix = '') {
           row.names = F,
           ...
         )
+
+        DBI::dbSendQuery(
+          db_conn,
+          paste0(
+            'ALTER TABLE ',
+            prefix, db_tables[i],
+            ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+          )
+        )
       }
     }
 
@@ -49,7 +58,20 @@ db_migrate <- function(.output, ..., .name = NULL, .prefix = '') {
       ...
     )
 
+    DBI::dbSendQuery(
+      db_conn,
+      paste0(
+        'ALTER TABLE ',
+        prefix, .name,
+        ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      )
+    )
+
+
   }
+
+  suppressWarnings(DBI::dbDisconnect(db_conn))
+
 }
 
 
