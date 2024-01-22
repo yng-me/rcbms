@@ -7,7 +7,13 @@ list_data_files <- function(
 
   file_format <- get_file_format(.config, .input_data)
 
-  input_data_path <- get_data_path('raw', .input_data)
+  if(.config$read_from_parquet) {
+    df_input_folder <- "parquet"
+  } else {
+    df_input_folder <- "raw"
+  }
+
+  input_data_path <- get_data_path(df_input_folder, .input_data)
 
   all_data_files <- list.files(
       input_data_path,
@@ -19,7 +25,7 @@ list_data_files <- function(
     dplyr::filter(grepl(file_format, value, ignore.case = T)) |>
     dplyr::mutate(file.info(value))
 
-  if(nrow(all_data_files) == 0) {
+  if(nrow(all_data_files) == 0 & !.config$read_from_parquet) {
     stop(paste0('No input data files found for ', .input_data))
   }
 
