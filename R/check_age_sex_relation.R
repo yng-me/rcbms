@@ -21,7 +21,7 @@ check_age_sex_relation <- function(
   .relation_to_primary_member,
   .threshold,
   .condition = "<",
-  .conjuction = "&",
+  .conjuction = NULL,
   .config = getOption("rcbms.config")
 ) {
 
