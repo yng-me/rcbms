@@ -7,7 +7,7 @@
 harmonize_variable(.data, .dictionary, .survey_round, .input_data)
 }
 \arguments{
-\item{.dictionary}{}
+\item{.input_data}{}
 }
 \description{
 Harmonize variable
