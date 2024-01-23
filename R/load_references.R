@@ -27,24 +27,30 @@ load_references <- function(
     valueset = "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
     validation = "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
     tabulation = "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
-    data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ"
+    data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
+    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0/edit?usp=sharing"
   )
 
   refs <- list()
-  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation")
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts")
+  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "record")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "rec")
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
   pq <- stats::setNames(
-    lapply(ref_list, \(x) paste0(wd_base_ref, '/ref_', x, '.parquet')),
+    lapply(ref_list, function(x) {
+      if(x == "record") {
+        paste0(wd_base_ref, '/ref_', x, '.xlsx')
+      } else {
+        paste0(wd_base_ref, '/ref_', x, '.parquet')
+      }
+    }),
     ref_list
   )
 
   ref_reload <- .config$reload_references
-
 
   for(i in seq_along(ref_list)) {
 
@@ -60,8 +66,13 @@ load_references <- function(
     }
 
     if(is_online() & (ref_reload_i | !file.exists(pq_i))) {
+
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-      arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
+      if(ref_short_i == "rec") {
+        openxlsx::write.xlsx(load_reference_fn(gid_i), pq_i)
+      } else {
+        arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
+      }
     }
 
     if(.config$verbose && !ref_reload_i) {
@@ -70,7 +81,11 @@ load_references <- function(
       )
     }
 
-    refs[[ref_i]] <- arrow::open_dataset(pq_i)
+    if(ref_short_i == "rec") {
+      refs[[ref_i]] <- openxlsx::read.xlsx(pq_i)
+    } else {
+      refs[[ref_i]] <- arrow::read_parquet(pq_i)
+    }
 
     if(!("survey_round" %in% names(refs[[ref_i]])) && "cbms_round" %in% names(refs[[ref_i]])) {
       refs[[ref_i]] <- refs[[ref_i]] |>
@@ -368,3 +383,28 @@ load_tabulation_refs <- function(.gid) {
   )
 }
 
+
+#' Load record references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+load_record_refs <- function(.gid) {
+  load_refs_from_gsheet(
+    .gid,
+    .required_cols = c(
+      "record_name",
+      "label",
+      "order",
+      "type",
+      "unfiltered",
+      "include",
+      "expect_equal_rows"
+    ),
+    col_types = 'cciiiii'
+  )
+}

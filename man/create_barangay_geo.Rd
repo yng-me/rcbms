@@ -7,7 +7,7 @@
 create_barangay_geo(.data, .config = getOption("rcbms.config"))
 }
 \arguments{
-\item{.add_length}{}
+\item{.config}{}
 }
 \description{
 Create barangay geo ID

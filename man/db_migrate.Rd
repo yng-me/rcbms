@@ -4,7 +4,7 @@
 \alias{db_migrate}
 \title{Title}
 \usage{
-db_migrate(.output, ..., .name = NULL, .prefix = "")
+db_migrate(.output, .name = NULL, .prefix = "", .add_primary_key = TRUE, ...)
 }
 \arguments{
 \item{...}{}
