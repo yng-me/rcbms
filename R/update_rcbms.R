@@ -20,6 +20,7 @@ update_rcbms <- function(.config = getOption("rcbms.config")) {
       config_updated$cbms_round <- NULL
       config_updated$project <- NULL
       config_updated$base <- NULL
+      config_updated$env <- NULL
       yaml::write_yaml(config_updated, file = paste0(wd, "/configs/global.yml"))
 
     } else {

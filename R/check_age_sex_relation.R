@@ -21,6 +21,7 @@ check_age_sex_relation <- function(
   .relation_to_primary_member,
   .threshold,
   .condition = "<",
+  .conjuction = "&",
   .config = getOption("rcbms.config")
 ) {
 
@@ -72,9 +73,16 @@ check_age_sex_relation <- function(
           for(i in seq_along(hh_relation_d)) {
 
             age_diff <- paste("abs(", hh_head_d[1], '-', hh_relation_d[i], ")")
-            expr <- paste(age_diff, .condition, .threshold)
 
-            if(eval(parse(text = expr))) {
+            expr <- NULL
+            .conjuction <- c(.conjuction, '')
+            for(j in seq_along(.condition)) {
+              expr_j <- paste(age_diff, .condition[j], .threshold[j], .conjuction[j])
+              expr <- c(expr, expr_j)
+            }
+
+            expr_c <- paste(expr, collapse = '')
+            if(eval(parse(text = expr_c))) {
               df_list[[i]] <- df_first |>
                 dplyr::mutate(
                   age_of_primary_member = eval(parse(text = hh_head_d[1])),
