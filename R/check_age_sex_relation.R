@@ -1,4 +1,4 @@
-#' Title
+#' Check sex and age based on relationship to household head
 #'
 #' @param .data
 #' @param .primary_member
@@ -6,6 +6,7 @@
 #' @param .relation_to_primary_member
 #' @param .threshold
 #' @param .condition
+#' @param .conjuction
 #' @param .config
 #'
 #' @return
