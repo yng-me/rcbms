@@ -25,6 +25,7 @@ import_data <- function(
   import_func <- eval(as.name(paste0("import_", file_format)))
 
   df <- import_func(.path, ...)
+
   set_class(df, "rcbms_df")
 }
 

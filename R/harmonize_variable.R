@@ -2,6 +2,8 @@
 #'
 #' @param .data
 #' @param .dictionary
+#' @param .survey_round
+#' @param .input_data
 #'
 #' @return
 #' @export
@@ -38,7 +40,7 @@ harmonize_variable <- function(
     dplyr::filter(is_included != 1) |>
     dplyr::pull(variable_name)
 
-  .data <- .data |>
+  .data |>
     dplyr::select(-dplyr::any_of(excluded)) |>
     convert_cols_from_dictionary(.dictionary) |>
     convert_col_names(.dictionary)

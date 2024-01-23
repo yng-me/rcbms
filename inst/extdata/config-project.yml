@@ -31,7 +31,7 @@
       age: a05_age
       sex: a03_sex
 '2022':
-  reference_period: 2022-06-30
+  reference_period: '2022-06-30'
   add_length: 0
   bp:
     id: uuid
@@ -44,7 +44,7 @@
       result_of_visit: verified
   hp:
     id: case_id
-    sub_directory: ~
+    sub_directory: 'Region I'
     file_format: txt
     summary_record: summary_of_visit
     roster_record: section_a_to_e
@@ -58,7 +58,7 @@
       age: a07_age
       sex: a05_sex
 '2021':
-  reference_period: 2021-10-01
+  reference_period: '2021-10-01'
   add_length: 0
   bp:
     id: uuid
@@ -78,7 +78,10 @@
       age: a07_age
       sex: a05_sex
 '2020':
-  reference_period: 2020-06-01
+  reference_period: '2020-05-01'
+  add_length: 0
   cph:
     id: case_id
     file_format: txt
+    summary_record: f3rt1
+    roster_record: f3rt2

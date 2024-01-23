@@ -51,6 +51,7 @@ load_references <- function(
   )
 
   ref_reload <- .config$reload_references
+  if(is.null(ref_reload$record)) ref_reload$record <- TRUE
 
   for(i in seq_along(ref_list)) {
 
@@ -235,11 +236,8 @@ load_data_dictionary_refs <- function(.gid) {
     'is_derived'
   )
 
-  load_refs_from_gsheet(
-    .gid,
-    .required_cols = required_cols,
-    col_types = 'ccccccciiiii'
-  )
+  load_refs_from_gsheet(.gid, .required_cols = required_cols, col_types = 'ccccccciiiii') |>
+    dplyr::filter(!is.na(variable_name))
 }
 
 

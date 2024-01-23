@@ -143,7 +143,12 @@ read_cbms_data <- function(
         if(exists("df_temp_tidy")) df_temp <- df_temp_tidy
 
         df_temp <- df_temp |>
-          add_metadata(.references$data_dictionary, .references$valueset) |>
+          add_metadata(
+            .dictionary = .references$data_dictionary,
+            .valueset = .references$valueset,
+            .survey_round = .config$survey_round,
+            .input_data = df_input
+          ) |>
           dplyr::select(
             dplyr::any_of(c(uid, geo_cols, rov_var, "ean", "bsn", "husn", "hsn", "line_number", "sex", "age")),
             sort(names(df_temp))
@@ -167,6 +172,13 @@ read_cbms_data <- function(
             )
           }
           df_temp_dim <- paste0("(", df_temp_dim, ") ")
+        }
+
+        if(df_input == "cph" & .config$survey_round == "2020") {
+          df_temp <- df_temp |>
+            dplyr::mutate(
+              province_code = stringr::str_sub(province_code, 2, 3)
+            )
         }
 
         arrow::write_parquet(df_temp, pq_path)

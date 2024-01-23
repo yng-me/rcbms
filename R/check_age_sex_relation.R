@@ -71,7 +71,7 @@ check_age_sex_relation <- function(
 
           for(i in seq_along(hh_relation_d)) {
 
-            age_diff <- paste(hh_head_d[1], '-', hh_relation_d[i])
+            age_diff <- paste("abs(", hh_head_d[1], '-', hh_relation_d[i], ")")
             expr <- paste(age_diff, .condition, .threshold)
 
             if(eval(parse(text = expr))) {
