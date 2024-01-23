@@ -12,7 +12,7 @@ create_case_id(
 )
 }
 \arguments{
-\item{.add_length}{}
+\item{.input_data}{}
 }
 \description{
 Create case ID

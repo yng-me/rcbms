@@ -1,6 +1,9 @@
 #' Title
 #'
 #' @param .output
+#' @param .name
+#' @param .prefix
+#' @param .add_primary_key
 #' @param ...
 #'
 #' @return
@@ -9,7 +12,13 @@
 #' @examples
 #'
 
-db_migrate <- function(.output, .name = NULL, .prefix = '', .add_primary_key = TRUE, ...) {
+db_migrate <- function(
+  .output,
+  ...,
+  .name = NULL,
+  .prefix = '',
+  .add_primary_key = TRUE
+) {
 
   db_conn <- db_connect()
 
@@ -66,6 +75,14 @@ db_migrate <- function(.output, .name = NULL, .prefix = '', .add_primary_key = T
         ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
       )
     )
+#
+#     DBI::dbWriteTable(
+#       conn = db_conn,
+#       name = "stat_tables",
+#       value = ,
+#       row.names = F,
+#       ...
+#     )
 
 
   }
@@ -77,7 +94,8 @@ db_migrate <- function(.output, .name = NULL, .prefix = '', .add_primary_key = T
 
 #' Title
 #'
-#' @param .env
+#' @param .config
+#' @param .db_name
 #' @param ...
 #'
 #' @return
@@ -86,29 +104,30 @@ db_migrate <- function(.output, .name = NULL, .prefix = '', .add_primary_key = T
 #' @examples
 
 db_connect <- function(
-  .env = getOption('rcbms.config')$env,
-  .stage = 'dev',
+  .config = getOption('rcbms.config'),
   .db_name = NULL,
   ...
 ) {
+  env <- .config$env
+  stage <- .config$portal$stage
 
-  if(is.null(.env)) stop('Environment variable not provided.')
-  if(!(.stage %in% c('dev', 'qa', 'test', 'prod', ''))) .stage <- 'dev'
+  if(is.null(env)) stop('Environment variable not provided.')
+  if(!(stage %in% c('dev', 'qa', 'test', 'prod', ''))) stage <- 'dev'
 
-  if(.stage == '') stage <- ''
-  else stage <- paste0(.stage, '_')
+  if(stage == '') stage <- ''
+  else stage <- paste0(stage, '_')
 
   if(is.null(.db_name)) {
-    .db_name <- .env[[paste0(toupper(stage), 'DB_DATABASE')]]
+    .db_name <- env[[paste0(toupper(stage), 'DB_DATABASE')]]
   }
 
   db_connection <- DBI::dbConnect(
     RMySQL::MySQL(),
-    port = as.integer(.env$DB_PORT),
+    port = as.integer(env$DB_PORT),
     dbname = .db_name,
-    host = .env[[paste0(toupper(stage), 'DB_HOST')]],
-    user = .env[[paste0(toupper(stage), 'DB_USERNAME')]],
-    password = .env[[paste0(toupper(stage), 'DB_PASSWORD')]],
+    host = env[[paste0(toupper(stage), 'DB_HOST')]],
+    user = env[[paste0(toupper(stage), 'DB_USERNAME')]],
+    password = env[[paste0(toupper(stage), 'DB_PASSWORD')]],
     ...
   )
 
