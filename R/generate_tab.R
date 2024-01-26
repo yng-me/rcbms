@@ -13,6 +13,7 @@
 #' @export
 #'
 #' @examples
+#'
 generate_tab <- function(
     .data,
     .x,
@@ -83,89 +84,9 @@ generate_tab <- function(
   tbl_all |>
     dplyr::bind_rows() |>
     dplyr::mutate(survey_round = .config$survey_round) |>
-    dplyr::rename(x_label = {{.x}}) |>
+    dplyr::rename(label = {{.x}}) |>
     janitor::clean_names()
 
-}
-
-#' Title
-#'
-#' @param .data
-#' @param .x
-#' @param .agg_levels
-#' @param .top_n
-#'
-#' @return
-#' @export
-#'
-#' @examples
-generate_tab_d1 <- function(.data, .x, .agg_levels = NULL, .top_n = NULL) {
-
-  if(is.null(.agg_levels)) {
-    .agg_levels <- c("region", "province", "city_mun", "barangay")
-  }
-
-  tbl_list <- list()
-
-  for(i in seq_along(.agg_levels)) {
-
-    agg_level <- .agg_levels[i]
-    agg <- paste0(agg_level, "_geo")
-
-    tbl_i <- .data |>
-      mutate(x = {{.x}}) |>
-      factor_cols({{.x}}) |>
-      rename(
-        area_code = !!as.name(agg),
-        x_label = {{.x}}
-      ) |>
-      add_count(area_code, name = "total_hhm") |>
-      group_by(area_code, x, x_label, total_hhm) |>
-      count(name = "count") |>
-      slice_max(n = 5, order_by = count) |>
-      ungroup() |>
-      mutate(
-        percent = 100 * (count / total_hhm),
-        level = agg_level,
-        survey_round = config$survey_round
-      )
-
-    # if(!is.null(.top_n)) {
-    #   tbl_i <- tbl_i |>
-    #     arrange(desc(count)) |>
-    #     head(.top_n)
-    # }
-
-    tbl_list[[i]] <- tbl_i
-  }
-
-  tbl_all <- .data |>
-    mutate(x = {{.x}}) |>
-    factor_cols({{.x}}) |>
-    rename(
-      x_label = {{.x}}
-    ) |>
-    add_count(name = "total_hhm") |>
-    group_by(x, x_label,  total_hhm) |>
-    count(name = "count") |>
-    ungroup() |>
-    mutate(
-      area_code = "0",
-      percent = 100 * (count / total_hhm),
-      level = "overall",
-      survey_round = config$survey_round
-    )
-
-  if(!is.null(.top_n)) {
-    tbl_all <- tbl_all |>
-      arrange(desc(count)) |>
-      head(.top_n)
-  }
-
-  tbl_list[["overall"]] <- tbl_all
-
-  bind_rows(tbl_list) |>
-    mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
 }
 
 
