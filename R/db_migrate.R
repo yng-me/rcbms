@@ -13,11 +13,11 @@
 #'
 
 db_migrate <- function(
-  .output,
-  ...,
-  .name = NULL,
-  .prefix = '',
-  .add_primary_key = TRUE
+    .output,
+    ...,
+    .name = NULL,
+    .prefix = '',
+    .add_primary_key = TRUE
 ) {
 
   db_conn <- db_connect()
@@ -31,25 +31,28 @@ db_migrate <- function(
 
     for(i in seq_along(db_tables)) {
 
-      ts <- .output[i]
+      ts <- .output[[i]] |>
+        dplyr::tibble()
+
+      ts_name <- paste0(prefix, db_tables[i])
       # if(inherits(ts, 'rcbms_ts_tbl')) {
 
-        DBI::dbWriteTable(
-          conn = db_conn,
-          name = paste0(prefix, db_tables[i]),
-          value = ts,
-          row.names = F,
-          ...
-        )
+      DBI::dbWriteTable(
+        conn = db_conn,
+        name = ts_name,
+        value = ts,
+        row.names = F,
+        ...
+      )
 
-        DBI::dbSendQuery(
-          db_conn,
-          paste0(
-            'ALTER TABLE ',
-            prefix, db_tables[i],
-            ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
-          )
+      DBI::dbSendQuery(
+        db_conn,
+        paste0(
+          'ALTER TABLE ',
+          ts_name,
+          ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
         )
+      )
       # }
     }
 
@@ -75,14 +78,14 @@ db_migrate <- function(
         ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
       )
     )
-#
-#     DBI::dbWriteTable(
-#       conn = db_conn,
-#       name = "stat_tables",
-#       value = ,
-#       row.names = F,
-#       ...
-#     )
+    #
+    #     DBI::dbWriteTable(
+    #       conn = db_conn,
+    #       name = "stat_tables",
+    #       value = ,
+    #       row.names = F,
+    #       ...
+    #     )
 
 
   }
@@ -104,9 +107,9 @@ db_migrate <- function(
 #' @examples
 
 db_connect <- function(
-  .config = getOption('rcbms.config'),
-  .db_name = NULL,
-  ...
+    .config = getOption('rcbms.config'),
+    .db_name = NULL,
+    ...
 ) {
   env <- .config$env
   stage <- .config$portal$stage
