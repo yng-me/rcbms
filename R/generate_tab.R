@@ -127,7 +127,6 @@ generate_tab_d2 <- function(.data, .x, .y, .agg_levels = NULL) {
       add_count(area_code, y, name = "total") |>
       group_by(area_code, x, x_label, y, y_label, total_hhm, total) |>
       count(name = "count") |>
-      head(5) |>
       ungroup() |>
       mutate(
         percent = 100 * (count / total),
