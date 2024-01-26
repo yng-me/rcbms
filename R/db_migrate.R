@@ -32,7 +32,7 @@ db_migrate <- function(
     for(i in seq_along(db_tables)) {
 
       ts <- .output[i]
-      if(inherits(ts, 'rcbms_ts_tbl')) {
+      # if(inherits(ts, 'rcbms_ts_tbl')) {
 
         DBI::dbWriteTable(
           conn = db_conn,
@@ -50,7 +50,7 @@ db_migrate <- function(
             ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
           )
         )
-      }
+      # }
     }
 
   } else {
