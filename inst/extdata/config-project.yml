@@ -80,6 +80,9 @@
 '2020':
   reference_period: '2020-05-01'
   add_length: 0
+  bs:
+    id: barangay_geo
+    file_format: txt
   cph:
     id: case_id
     file_format: txt

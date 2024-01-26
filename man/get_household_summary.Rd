@@ -6,9 +6,13 @@
 \usage{
 get_household_summary(
   .data,
+  .sex,
   .relation_to_hh_head,
   .nuclear_family,
-  .agg_levels = NULL
+  .agg_levels = NULL,
+  .include_overall = T,
+  .include_survey_round = T,
+  .include_individuals = T
 )
 }
 \arguments{

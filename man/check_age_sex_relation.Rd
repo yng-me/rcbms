@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_age_sex_relation.R
 \name{check_age_sex_relation}
 \alias{check_age_sex_relation}
-\title{Title}
+\title{Check sex and age based on relationship to household head}
 \usage{
 check_age_sex_relation(
   .data,
@@ -11,6 +11,7 @@ check_age_sex_relation(
   .relation_to_primary_member,
   .threshold,
   .condition = "<",
+  .conjuction = NULL,
   .config = getOption("rcbms.config")
 )
 }
@@ -18,5 +19,5 @@ check_age_sex_relation(
 \item{.config}{}
 }
 \description{
-Title
+Check sex and age based on relationship to household head
 }

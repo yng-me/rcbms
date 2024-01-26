@@ -174,7 +174,7 @@ read_cbms_data <- function(
           df_temp_dim <- paste0("(", df_temp_dim, ") ")
         }
 
-        if(df_input == "cph" & .config$survey_round == "2020") {
+        if(df_input %in% c("cph", "bs") & .config$survey_round == "2020") {
           df_temp <- df_temp |>
             dplyr::mutate(
               province_code = stringr::str_sub(province_code, 2, 3)

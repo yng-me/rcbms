@@ -75,8 +75,8 @@ get_summary_record <- function(.input_data, .type = 'summary_record') {
 }
 
 check_input_data <- function(.input_data) {
-  .input_data <- .input_data[.input_data %in% c("hp", "bp", "ilq", "cph", "bi")]
-  valid_input <- .input_data %in% c("hp", "bp", "ilq", "cph", "bi")
+  .input_data <- .input_data[.input_data %in% c("hp", "bp", "ilq", "cph", "bs")]
+  valid_input <- .input_data %in% c("hp", "bp", "ilq", "cph", "bs")
   match_input <- length(which(valid_input))
   if(match_input > 2) {
     .input_data <- .input_data[valid_input]
