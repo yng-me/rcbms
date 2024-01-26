@@ -1,3 +1,15 @@
+#' Title
+#'
+#' @param .data
+#' @param ...
+#' @param .ref_vs
+#' @param .agg_levels
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 generate_tab_multiple <- function(.data, ..., .ref_vs = NULL, .agg_levels = NULL) {
 
   if(is.null(.agg_levels)) {

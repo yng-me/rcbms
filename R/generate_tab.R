@@ -159,3 +159,67 @@ generate_tab_d2 <- function(.data, .x, .y, .agg_levels = NULL) {
   bind_rows(tbl_list) |>
     mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
 }
+
+
+#' Title
+#'
+#' @param .data
+#' @param .x
+#' @param .agg_levels
+#' @param .top_n
+#'
+#' @return
+#' @export
+#'
+#' @examples
+generate_tab_d1 <- function(.data, .x, .agg_levels = NULL) {
+
+  if(is.null(.agg_levels)) {
+    .agg_levels <- c("region", "province", "city_mun", "barangay")
+  }
+
+  tbl_list <- list()
+
+  for(i in seq_along(.agg_levels)) {
+
+    agg_level <- .agg_levels[i]
+    agg <- paste0(agg_level, "_geo")
+
+    tbl_list[[i]] <- .data |>
+      mutate(x = {{.x}}) |>
+      factor_cols({{.x}}) |>
+      rename(
+        area_code = !!as.name(agg),
+        x_label = {{.x}}
+      ) |>
+      add_count(area_code, name = "total_hhm") |>
+      group_by(area_code, x, x_label, total_hhm) |>
+      count(name = "count") |>
+      ungroup() |>
+      mutate(
+        percent = 100 * (count / total_hhm),
+        level = agg_level,
+        survey_round = config$survey_round
+      )
+  }
+
+  tbl_list[["overall"]] <- .data |>
+    mutate(x = {{.x}}) |>
+    factor_cols({{.x}}) |>
+    rename(
+      x_label = {{.x}}
+    ) |>
+    add_count(name = "total_hhm") |>
+    group_by(x, x_label,  total_hhm) |>
+    count(name = "count") |>
+    ungroup() |>
+    mutate(
+      area_code = "0",
+      percent = 100 * (count / total_hhm),
+      level = "overall",
+      survey_round = config$survey_round
+    )
+
+  bind_rows(tbl_list) |>
+    mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
+}
