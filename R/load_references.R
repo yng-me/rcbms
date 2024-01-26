@@ -136,7 +136,7 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
 
   googlesheets4::gs4_deauth()
 
-  sheet_pattern <- "^\\d{4}_(bp|hp|cph|bi|ilq)$"
+  sheet_pattern <- "^\\d{4}_(bp|hp|cph|bs|ilq)$"
   ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
 
   ss_names <- googlesheets4::sheet_names(ss) |>
