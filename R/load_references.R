@@ -388,6 +388,7 @@ load_tabulation_refs <- function(.gid) {
 load_macrodata_refs <- function(.gid) {
   required_cols <- c(
     'table_id',
+    'category',
     'title',
     'subtitle',
     'description'
@@ -396,7 +397,7 @@ load_macrodata_refs <- function(.gid) {
   load_refs_from_gsheet(
     .gid,
     required_cols,
-    col_types = 'cccc'
+    col_types = 'ccccc'
   )
 }
 
