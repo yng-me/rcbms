@@ -27,7 +27,7 @@ generate_tabs <- function(
 ) {
 
   if(is.null(.agg_levels)) {
-    .agg_levels <- c("region", "province", "city_mun", "barangay")
+    .agg_levels <- c("city_mun", "barangay")
   }
 
   if(.multiple_response) {

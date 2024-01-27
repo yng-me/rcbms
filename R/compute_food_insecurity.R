@@ -2,7 +2,7 @@
 #'
 #' @param .data
 #' @param ...
-#' @param .results
+#' @param .type
 #' @param .agg_levels
 #' @param .config
 #'
@@ -15,7 +15,7 @@
 compute_food_insecurity <- function(
   .data,
   ...,
-  .results = 1,
+  .type = 1,
   .agg_levels = NULL,
   .valueset = get_config("references")$valueset,
   .extract_name_position = 5,
@@ -159,7 +159,7 @@ compute_food_insecurity <- function(
   )
 
   return(
-    v[[.results]] |>
+    v[[.type]] |>
       dplyr::mutate(survey_round = .config$survey_round, .before = 1) |>
       dplyr::select(area_code, level, survey_round, everything())
   )
