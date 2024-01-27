@@ -28,12 +28,13 @@ load_references <- function(
     validation = "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
     tabulation = "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
     data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
-    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0/edit?usp=sharing"
+    macrodata = "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
+    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0"
   )
 
   refs <- list()
-  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "record")
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "rec")
+  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "macrodata", "record")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "rec")
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
@@ -51,7 +52,9 @@ load_references <- function(
   )
 
   ref_reload <- .config$reload_references
+
   if(is.null(ref_reload$record)) ref_reload$record <- TRUE
+  if(is.null(ref_reload$macrodata)) ref_reload$macrodata <- TRUE
 
   for(i in seq_along(ref_list)) {
 
@@ -381,6 +384,22 @@ load_tabulation_refs <- function(.gid) {
   )
 }
 
+
+load_macrodata_refs <- function(.gid) {
+  required_cols <- c(
+    'table_id',
+    'category',
+    'title',
+    'subtitle',
+    'description'
+  )
+
+  load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'ccccc'
+  )
+}
 
 #' Load record references
 #'

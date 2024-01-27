@@ -1,29 +1,35 @@
-#' Title
-#'
-#' @param .df
-#' @param .col
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-factor_cols <- function(.df, .col) {
+factor_cols <- function(.data, ..., .keep_cols = TRUE) {
+  cols <-  sapply(substitute(list(...))[-1], deparse)
+  for(i in seq_along(cols)) {
+    .data <- .data |>
+      factor_col(
+        as.character(cols[[i]]),
+        .keep_cols = .keep_cols
+      )
+  }
 
-  col <- stringr::str_remove(rlang::expr_text(rlang::enquo(.col)), '~')
+  .data
+}
 
-  attr_i <- attributes(.df[[col]])
+
+factor_col <- function(.data, .col, .keep_cols = TRUE) {
+
+  attr_i <- attributes(.data[[.col]])
 
   if(!is.null(attr_i$valueset)) {
-    .df <- .df |>
+
+    col_fct <- .col
+    if(.keep_cols) col_fct <- paste0(.col, "_fct")
+    .data <- .data |>
       dplyr::mutate(
-        !!as.name(col) := factor(
-          as.integer(!!as.name(col)),
+        !!as.name(col_fct) := factor(
+          as.integer(!!as.name(.col)),
           as.integer(attr_i$valueset$value),
           attr_i$valueset$label
         )
       )
-    attr(.df[[col]], "label") <- attr_i$label
+    attr(.data[[col_fct]], "label") <- attr_i$label
   }
-  .df
+  .data
 }
+

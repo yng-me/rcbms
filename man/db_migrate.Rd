@@ -4,7 +4,16 @@
 \alias{db_migrate}
 \title{Title}
 \usage{
-db_migrate(.output, ..., .name = NULL, .prefix = "", .add_primary_key = TRUE)
+db_migrate(
+  .output,
+  ...,
+  .name = NULL,
+  .prefix = "",
+  .suffix = "",
+  .add_primary_key = TRUE,
+  .references = get_config("references")$macrodata,
+  .config = getOption("rcbms.config")
+)
 }
 \arguments{
 \item{...}{}
