@@ -1,16 +1,4 @@
-#' Title
-#'
-#' @param .data
-#' @param ...
-#' @param .ref_vs
-#' @param .agg_levels
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-generate_tab_multiple <- function(.data, ..., .ref_vs = NULL, .agg_levels = NULL) {
+generate_tab_multiple <- function(.data, ..., .ref_vs = NULL, .agg_levels = NULL, .multiple_response = FALSE) {
 
   if(is.null(.agg_levels)) {
     .agg_levels <- c("region", "province", "city_mun", "barangay")

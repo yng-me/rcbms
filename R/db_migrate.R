@@ -31,11 +31,9 @@ db_migrate <- function(
 
     for(i in seq_along(db_tables)) {
 
-      ts <- .output[[i]] |>
-        dplyr::tibble()
+      ts <- .output[[i]] |> dplyr::tibble()
 
       ts_name <- paste0(prefix, db_tables[i])
-      # if(inherits(ts, 'rcbms_ts_tbl')) {
 
       DBI::dbWriteTable(
         conn = db_conn,
@@ -43,6 +41,11 @@ db_migrate <- function(
         value = ts,
         row.names = F,
         ...
+      )
+
+      DBI::dbWriteTable(
+        conn = db_conn,
+        name = "stat_tables",
       )
 
       DBI::dbSendQuery(
@@ -53,7 +56,6 @@ db_migrate <- function(
           ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
         )
       )
-      # }
     }
 
   } else {
@@ -78,16 +80,6 @@ db_migrate <- function(
         ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
       )
     )
-    #
-    #     DBI::dbWriteTable(
-    #       conn = db_conn,
-    #       name = "stat_tables",
-    #       value = ,
-    #       row.names = F,
-    #       ...
-    #     )
-
-
   }
 
   suppressWarnings(DBI::dbDisconnect(db_conn))
