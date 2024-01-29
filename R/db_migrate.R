@@ -95,8 +95,7 @@ db_migrate <- function(
     stat_tables <- .references |>
       dplyr::filter(table_name %in% table_ids) |>
       dplyr::distinct(table_name, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
-      dplyr::mutate(id = 1:dplyr::n())
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
 
     DBI::dbWriteTable(
       conn = db_conn,
