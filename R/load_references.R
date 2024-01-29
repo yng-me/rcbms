@@ -387,7 +387,7 @@ load_tabulation_refs <- function(.gid) {
 
 load_macrodata_refs <- function(.gid) {
   required_cols <- c(
-    'table_id',
+    'table_name',
     'category',
     'title',
     'subtitle',

@@ -32,4 +32,3 @@ factor_col <- function(.data, .col, .keep_cols = TRUE) {
   }
   .data
 }
-

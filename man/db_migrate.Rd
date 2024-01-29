@@ -16,7 +16,7 @@ db_migrate(
 )
 }
 \arguments{
-\item{...}{}
+\item{.config}{}
 }
 \description{
 Title

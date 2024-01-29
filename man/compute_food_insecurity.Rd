@@ -15,7 +15,7 @@ compute_food_insecurity(
 )
 }
 \arguments{
-\item{.config}{}
+\item{.extract_name_position}{}
 }
 \description{
 Title
