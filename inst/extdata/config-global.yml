@@ -8,6 +8,7 @@ reload_references:
   tabulation: yes
   data_dictionary: yes
   macrodata: yes
+  score_card: yes
   record: yes
 working_directory: '.'
 complete_cases: yes
