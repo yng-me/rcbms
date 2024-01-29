@@ -12,11 +12,12 @@ get_household_summary(
   .agg_levels = NULL,
   .include_overall = T,
   .include_survey_round = T,
-  .include_individuals = T
+  .include_individuals = T,
+  .config = getOption("rcbms.config")
 )
 }
 \arguments{
-\item{.agg_levels}{}
+\item{.config}{}
 }
 \description{
 Title

@@ -6,6 +6,10 @@
 #' @param .total_by_cols
 #' @param .keep_col_names
 #' @param .sort
+#' @param .multiple_response
+#' @param .valueset
+#' @param .extract_name_position
+#' @param .config
 #'
 #' @return
 #' @export
@@ -37,7 +41,8 @@ generate_tabs <- function(
           ...,
           .agg_levels = .agg_levels,
           .valueset = .valueset,
-          .extract_name_position = .extract_name_position
+          .extract_name_position = .extract_name_position,
+          .config = .config
         )
     )
   }
@@ -60,11 +65,12 @@ generate_tabs <- function(
         .total_by_cols = .total_by_cols,
         .sort = .sort
       ) |>
+      factor_cols(...) |>
       dplyr::mutate(level = agg_level)
 
   }
 
-  tbl_all <- .data |>
+  tbl_list[["overall"]] <- .data |>
     dplyr::add_count(name = "total_hhm") |>
     generate_tab(
       .cols = cols,
@@ -74,26 +80,24 @@ generate_tabs <- function(
     factor_cols(...) |>
     dplyr::mutate(area_code = "0", level = "overall")
 
-  df <- tbl_list |>
-    bind_rows() |>
-    factor_cols(...) |>
-    bind_rows(tbl_all)
+
+  tbl_list <- bind_rows(tbl_list)
 
   if(.keep_col_names) {
-    df <- df |>
+    tbl_list <- tbl_list |>
       dplyr::rename_with(
         ~ stringr::str_remove(., "^[a-r]\\d{2}_"),
         dplyr::matches("^[a-r]\\d{2}_.*")
       )
   } else {
-    df <- df |>
+    tbl_list <- tbl_list |>
       dplyr::rename_with(
         ~ paste0("x", stringr::str_remove(., col_x)),
         dplyr::matches(paste0("^", col_x))
       )
 
     if(length(cols) == 2) {
-      df <- df |>
+      tbl_list <- tbl_list |>
         dplyr::rename_with(
           ~ paste0("y", stringr::str_remove(., col_y)),
           dplyr::matches(paste0("^", col_y))
@@ -101,7 +105,7 @@ generate_tabs <- function(
     }
   }
 
-  df |>
+  tbl_list |>
     dplyr::mutate(
       area_code = stringr::str_pad(
         area_code,
@@ -109,7 +113,7 @@ generate_tabs <- function(
         side = "right",
         pad = "0"
       ),
-      survey_round = .config$survey_round
+      survey_round = as.integer(.config$survey_round)
     ) |>
     dplyr::select(
       area_code,
@@ -125,25 +129,22 @@ generate_tabs <- function(
 
 generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE) {
 
-  tbl <- .data |>
-    dplyr::add_count(..., name = "total_hhm")
+  if(.total_by_cols & length(.cols) > 1) {
 
-  if(.total_by_cols & length(cols) > 1) {
-
-    tbl <- tbl |>
+    .data |>
+      dplyr::add_count(..., name = "total_hhm") |>
       dplyr::add_count(..., !!as.name(.cols[2]), name = "total") |>
       dplyr::group_by(..., total_hhm, total, dplyr::pick(dplyr::any_of(.cols))) |>
       dplyr::count(name = "count",  sort = .sort)  |>
       dplyr::mutate(percent = 100 * (count / total))
 
   } else {
-    tbl <- tbl |>
+    .data |>
+      dplyr::add_count(..., name = "total_hhm") |>
       dplyr::group_by(..., total_hhm, dplyr::pick(dplyr::any_of(.cols))) |>
       dplyr::count(name = "count", sort = .sort) |>
       dplyr::mutate(percent = 100 * (count / total_hhm))
   }
-
-  tbl
 
 }
 
@@ -153,7 +154,8 @@ generate_tab_multiple <- function(
   ...,
   .agg_levels = NULL,
   .valueset = NULL,
-  .extract_name_position = 5
+  .extract_name_position = 5,
+  .config = getOption('rcbms.config')
 ) {
 
   if(is.null(.agg_levels)) {
@@ -248,7 +250,7 @@ generate_tab_multiple <- function(
         side = "right",
         pad = "0"
       ),
-      survey_round = .config$survey_round
+      survey_round = as.integer(.config$survey_round)
     ) |>
     dplyr::select(
       area_code,

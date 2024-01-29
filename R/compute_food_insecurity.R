@@ -5,6 +5,8 @@
 #' @param .type
 #' @param .agg_levels
 #' @param .config
+#' @param .valueset
+#' @param .extract_name_position
 #'
 #' @return
 #' @export
@@ -160,7 +162,7 @@ compute_food_insecurity <- function(
 
   return(
     v[[.type]] |>
-      dplyr::mutate(survey_round = .config$survey_round, .before = 1) |>
+      dplyr::mutate(survey_round = as.integer(.config$survey_round), .before = 1) |>
       dplyr::select(area_code, level, survey_round, everything())
   )
 }

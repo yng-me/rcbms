@@ -1,10 +1,13 @@
 #' Title
 #'
 #' @param .output
+#' @param ...
 #' @param .name
 #' @param .prefix
 #' @param .add_primary_key
-#' @param ...
+#' @param .suffix
+#' @param .references
+#' @param .config
 #'
 #' @return
 #' @export
@@ -32,6 +35,8 @@ db_migrate <- function(
   else suffix <- ''
 
   table_ids <- .name
+  tb_overwrite <- rlang::list2(...)$overwrite
+  if(is.null(tb_overwrite)) tb_overwrite <- FALSE
 
   if(inherits(.output, 'rcbms_ts_list')) {
 
@@ -41,25 +46,23 @@ db_migrate <- function(
     for(i in seq_along(db_tables)) {
 
       ts <- .output[[i]] |> dplyr::tibble()
-
       ts_name <- paste0(prefix, db_tables[i], suffix)
 
       DBI::dbWriteTable(
         conn = db_conn,
         name = ts_name,
         value = ts,
-        row.names = F,
-        ...
+        ...,
+        row.names = F
       )
 
-      DBI::dbSendQuery(
-        db_conn,
-        paste0(
-          'ALTER TABLE ',
-          ts_name,
-          ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      if(.add_primary_key) {
+        DBI::dbSendQuery(
+          db_conn,
+          paste0('ALTER TABLE ', ts_name, ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;')
         )
-      )
+      }
+
     }
 
   } else {
@@ -68,48 +71,39 @@ db_migrate <- function(
       stop('Table name is required')
     }
 
+    tb_name <- paste0(prefix, .name, suffix)
+
     DBI::dbWriteTable(
       conn = db_conn,
-      paste0(prefix, .name, suffix),
-      value = .output,
-      row.names = F,
-      ...
+      name = tb_name,
+      value = .output |> dplyr::tibble(),
+      ...,
+      row.names = F
     )
 
-    DBI::dbSendQuery(
-      db_conn,
-      paste0(
-        'ALTER TABLE ',
-        prefix, .name,
-        ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
-      )
-    )
+    if(.add_primary_key) {
 
-    if(!is.null(.references)) {
-      stat_tables <- .references |>
-        dplyr::filter(table_id == .name)
-
-      DBI::dbWriteTable(
-        conn = db_conn,
-        name = 'stat_tables',
-        value = stat_tables,
-        row.names = F,
-        ...
+      DBI::dbSendQuery(
+        db_conn,
+        paste0('ALTER TABLE ', tb_name, ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;')
       )
     }
   }
 
-  if(!is.null(.references)) {
+  if(!is.null(.references) && tb_overwrite) {
 
     stat_tables <- .references |>
-      dplyr::filter(table_id %in% table_ids)
+      dplyr::filter(table_name %in% table_ids) |>
+      dplyr::distinct(table_name, .keep_all = T) |>
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
+      dplyr::mutate(id = 1:dplyr::n())
 
     DBI::dbWriteTable(
       conn = db_conn,
       name = 'stat_tables',
       value = stat_tables,
-      row.names = F,
-      ...
+      ...,
+      row.names = F
     )
   }
 
@@ -128,6 +122,7 @@ db_migrate <- function(
 #' @export
 #'
 #' @examples
+#'
 
 db_connect <- function(
   .config = getOption('rcbms.config'),

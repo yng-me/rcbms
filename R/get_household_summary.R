@@ -4,6 +4,11 @@
 #' @param .relation_to_hh_head
 #' @param .nuclear_family
 #' @param .agg_levels
+#' @param .sex
+#' @param .include_overall
+#' @param .include_survey_round
+#' @param .include_individuals
+#' @param .config
 #'
 #' @return
 #' @export
@@ -19,7 +24,8 @@ get_household_summary <- function(
   .agg_levels = NULL,
   .include_overall = T,
   .include_survey_round = T,
-  .include_individuals = T
+  .include_individuals = T,
+  .config = getOption("rcbms.config")
 ) {
 
   hh_demog_list <- list()
@@ -112,7 +118,7 @@ get_household_summary <- function(
 
   if(.include_survey_round) {
     df_final <- df_final |>
-      dplyr::mutate(survery_round = getOption("rcbms.config")$survey_round, .after = 3)
+      dplyr::mutate(survey_round = as.integer(.config$survey_round), .after = 3)
   }
 
   df_final

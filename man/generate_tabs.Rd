@@ -18,7 +18,7 @@ generate_tabs(
 )
 }
 \arguments{
-\item{.sort}{}
+\item{.config}{}
 }
 \description{
 Title
