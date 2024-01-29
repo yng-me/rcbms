@@ -29,12 +29,13 @@ load_references <- function(
     tabulation = "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
     data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
     macrodata = "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
+    score_card = "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0",
     record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0"
   )
 
   refs <- list()
-  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "macrodata", "record")
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "rec")
+  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "macrodata", "score_card", "record")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec")
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- ''
@@ -55,6 +56,7 @@ load_references <- function(
 
   if(is.null(ref_reload$record)) ref_reload$record <- TRUE
   if(is.null(ref_reload$macrodata)) ref_reload$macrodata <- TRUE
+  if(is.null(ref_reload$score_card)) ref_reload$score_card <- TRUE
 
   for(i in seq_along(ref_list)) {
 
@@ -400,6 +402,42 @@ load_macrodata_refs <- function(.gid) {
     col_types = 'ccccc'
   )
 }
+
+
+
+load_score_card_refs <- function(.gid) {
+  required_cols <- c(
+    'variable_name',
+    'table_name',
+    'type',
+    'category',
+    'title',
+    'subtitle',
+    'description',
+    'group',
+    'order',
+    'position',
+    'display',
+    'value_prefix',
+    'value_suffix',
+    'unit_of_measure',
+    'icon_primary',
+    'icon_primary_position',
+    'icon_secondary',
+    'icon_secondary_position',
+    'is_published'
+  )
+
+  load_refs_from_gsheet(
+    .gid,
+    required_cols,
+    col_types = 'ccicccciiiiccccccci'
+  )
+}
+
+
+
+
 
 #' Load record references
 #'

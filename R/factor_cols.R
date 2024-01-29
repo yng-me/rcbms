@@ -7,7 +7,6 @@ factor_cols <- function(.data, ..., .keep_cols = TRUE) {
         .keep_cols = .keep_cols
       )
   }
-
   .data
 }
 

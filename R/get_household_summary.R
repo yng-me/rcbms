@@ -48,7 +48,7 @@ get_household_summary <- function(
       ) |>
       dplyr::mutate(
         percent_male = 100 * (frequency_male / (frequency_male + frequency_female)),
-        fepercent_male = 100 * (frequency_female / (frequency_male + frequency_female)),
+        percent_female = 100 * (frequency_female / (frequency_male + frequency_female)),
         sex_ratio = paste0(round((100 *(frequency_male / frequency_female)), 0), ":", 100)
       )
   }

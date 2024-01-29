@@ -22,7 +22,7 @@ db_migrate <- function(
   .prefix = "",
   .suffix = "",
   .add_primary_key = TRUE,
-  .references = get_config("references")$macrodata,
+  .references = get_config("references"),
   .config = getOption("rcbms.config")
 ) {
 
@@ -90,20 +90,49 @@ db_migrate <- function(
     }
   }
 
-  if(!is.null(.references) && tb_overwrite) {
+  if(tb_overwrite) {
 
-    stat_tables <- .references |>
-      dplyr::filter(table_name %in% table_ids) |>
-      dplyr::distinct(table_name, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+    if(!is.null(.references$macrodata)) {
 
-    DBI::dbWriteTable(
-      conn = db_conn,
-      name = 'stat_tables',
-      value = stat_tables,
-      ...,
-      row.names = F
-    )
+      stat_tables <- .references$macrodata |>
+        dplyr::filter(table_name %in% table_ids) |>
+        dplyr::distinct(table_name, .keep_all = T) |>
+        dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+
+      DBI::dbWriteTable(
+        conn = db_conn,
+        name = 'stat_tables',
+        value = stat_tables,
+        ...,
+        row.names = F
+      )
+
+      DBI::dbSendQuery(
+        db_conn,
+        'ALTER TABLE stat_tables ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      )
+    }
+
+
+    if(!is.null(.references$score_card)) {
+
+      score_cards <- .references$score_card |>
+        dplyr::distinct(variable_name, category, .keep_all = T) |>
+        dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+
+      DBI::dbWriteTable(
+        conn = db_conn,
+        name = 'score_cards',
+        value = score_cards,
+        ...,
+        row.names = F
+      )
+
+      DBI::dbSendQuery(
+        db_conn,
+        'ALTER TABLE score_cards ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      )
+    }
   }
 
   suppressWarnings(DBI::dbDisconnect(db_conn))

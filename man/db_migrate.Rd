@@ -11,7 +11,7 @@ db_migrate(
   .prefix = "",
   .suffix = "",
   .add_primary_key = TRUE,
-  .references = get_config("references")$macrodata,
+  .references = get_config("references"),
   .config = getOption("rcbms.config")
 )
 }
