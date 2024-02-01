@@ -11,9 +11,9 @@
 #'
 
 load_references <- function(
-    .config = getOption('rcbms.config'),
-    .update_config = TRUE,
-    .config_key = "references"
+  .config = getOption('rcbms.config'),
+  .update_config = TRUE,
+  .config_key = "references"
 ) {
 
   if(is.null(.config)) stop('Config not found.')

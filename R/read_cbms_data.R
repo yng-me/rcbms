@@ -37,7 +37,7 @@ read_cbms_data <- function(
 
     df_input <- input_data[i]
 
-    df_files <- list_data_files(df_input, .config)
+    df_files <- list_data_files(df_input, .references, .config)
 
     if(!read_from_parquet) {
       rov_var <- config$project[[df_input]]$variable$result_of_visit
@@ -94,7 +94,7 @@ read_cbms_data <- function(
           )
         })
 
-        df_temp <- do.call('rbind', df_list) |> dplyr::tibble()
+        df_temp <- dplyr::bind_rows(df_list)
 
         df_temp_dim_before <- c(nrow(df_temp), ncol(df_temp))
         attr(df_temp, "dim_before_tidy") <- df_temp_dim_before

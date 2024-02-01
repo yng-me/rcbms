@@ -15,17 +15,19 @@
 #'
 
 compute_food_insecurity <- function(
-    .data,
-    ...,
-    .type = 1,
-    .agg_levels = NULL,
-    .valueset = get_config("references")$valueset,
-    .extract_name_position = 5,
-    .config = getOption("rcbms.config")
+  .data,
+  ...,
+  .type = 1,
+  .agg_levels = NULL,
+  .valueset = get_config("references")$valueset,
+  .extract_name_position = 5,
+  .config = getOption("rcbms.config")
 ) {
 
+  agg_labels <- c("region", "province", "city_mun", "barangay")
+
   if(is.null(.agg_levels)) {
-    .agg_levels <- c("region", "province", "city_mun")
+    .agg_levels <- c(3, 4)
   }
 
   rm_by_item_all <- list()
@@ -38,7 +40,8 @@ compute_food_insecurity <- function(
     rm_by_score <- list()
     rm_by_prevalence <- list()
 
-    agg <- .agg_levels[i]
+    level_i <- .agg_levels[i]
+    agg <- agg_labels[level_i]
     agg_geo <- paste0(agg, "_geo")
     area_codes <- unique(.data[[agg_geo]])
 
@@ -59,9 +62,14 @@ compute_food_insecurity <- function(
         dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = 9, side = "right", pad = "0"))
     }
 
-    rm_by_item_all[[i]] <- dplyr::bind_rows(rm_by_item) |> dplyr::mutate(level = agg)
-    rm_by_score_all[[i]] <-  dplyr::bind_rows(rm_by_score) |> dplyr::mutate(level = agg)
-    rm_by_prevalence_all[[i]] <- dplyr::bind_rows(rm_by_prevalence) |> dplyr::mutate(level = agg)
+    rm_by_item_all[[i]] <- dplyr::bind_rows(rm_by_item) |>
+      dplyr::mutate(level = as.integer(level_i))
+
+    rm_by_score_all[[i]] <-  dplyr::bind_rows(rm_by_score) |>
+      dplyr::mutate(level = as.integer(level_i))
+
+    rm_by_prevalence_all[[i]] <- dplyr::bind_rows(rm_by_prevalence) |>
+      dplyr::mutate(level = as.integer(level_i))
 
   }
 
@@ -72,19 +80,19 @@ compute_food_insecurity <- function(
   rm_by_prevalence_all$overall <- rm_all$prevalence |>
     dplyr::mutate(
       area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
-      level = "overall"
+      level = 0L
     )
 
   rm_by_score_all$overall <- rm_all$score |>
     dplyr::mutate(
       area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
-      level = "overall"
+      level = 0L
     )
 
   rm_by_item_all$overall <- rm_all$item |>
     dplyr::mutate(
       area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
-      level = "overall"
+      level = 0L
     )
 
   by_item <- dplyr::bind_rows(rm_by_item_all)

@@ -4,10 +4,16 @@
 \alias{harmonize_variable}
 \title{Harmonize variable}
 \usage{
-harmonize_variable(.data, .dictionary, .survey_round, .input_data)
+harmonize_variable(
+  .data,
+  .dictionary,
+  .survey_round,
+  .input_data,
+  .config = getOption("rcbms.config")
+)
 }
 \arguments{
-\item{.input_data}{}
+\item{.config}{}
 }
 \description{
 Harmonize variable

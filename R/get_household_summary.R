@@ -30,8 +30,9 @@ get_household_summary <- function(
 
   hh_demog_list <- list()
 
+  agg_labels <- c("region", "province", "city_mun", "barangay")
   if(is.null(.agg_levels)) {
-    .agg_levels <- c("region", "province", "city_mun", "barangay")
+    .agg_levels <- c(3, 4)
   }
 
   compute_hhm_summary <- function(.df, ...) {
@@ -80,8 +81,9 @@ get_household_summary <- function(
 
   for(i in seq_along(.agg_levels)) {
 
-    agg_geo <- paste0(.agg_levels[i], "_geo")
-    agg_name <- paste0(.agg_levels[i], "_agg")
+    level_i <- .agg_levels[i]
+    agg_geo <- paste0(agg_labels[level_i], "_geo")
+    agg_name <- paste0(agg_labels[level_i], "_agg")
 
     df <- .data |>
       compute_hh_summary(!!as.name(agg_geo), !!as.name(agg_name))
@@ -97,7 +99,7 @@ get_household_summary <- function(
     hh_demog_list[[i]] <- df |>
       rename(area_code = 1, area_name = 2) |>
       dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0")) |>
-      dplyr::mutate(level = .agg_levels[i], .after = 2)
+      dplyr::mutate(level = as.integer(level_i), .after = 2)
   }
 
   if(.include_overall) {
@@ -109,7 +111,7 @@ get_household_summary <- function(
     }
 
     hh_demog_list[["overall"]] <- df |>
-      dplyr::mutate(area_code = "0", area_name = ":GRAND_SUMMARY:", level = "overall", .before = 1) |>
+      dplyr::mutate(area_code = "0", area_name = ":GRAND_SUMMARY:", level = 0L, .before = 1) |>
       dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
 
   }

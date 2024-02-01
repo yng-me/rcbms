@@ -4,6 +4,7 @@
 #' @param .dictionary
 #' @param .survey_round
 #' @param .input_data
+#' @param .config
 #'
 #' @return
 #' @export
@@ -14,7 +15,8 @@ harmonize_variable <- function(
   .data,
   .dictionary,
   .survey_round,
-  .input_data
+  .input_data,
+  .config = getOption("rcbms.config")
 ) {
 
   if(is.null(.dictionary)) return(.data)
@@ -35,6 +37,11 @@ harmonize_variable <- function(
       type = stringr::str_trim(type),
       length = as.integer(length)
     )
+
+  if(tolower(.config$mode$stage[1]) == 'final') {
+    .dictionary <- .dictionary |>
+      dplyr::mutate(variable_name = variable_name_new)
+  }
 
   excluded <- .dictionary |>
     dplyr::filter(is_included != 1) |>
@@ -93,6 +100,17 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
     as_type <- .dictionary$variable_name[.dictionary$type == .type]
     nc_names <- as_type[as_type %in% names(.data)]
     return(nc_names)
+  }
+
+
+  # convert to integer
+  as_char <- get_col_type('c')
+  if(length(as_char) > 0) {
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_char)),
+        as.character
+      )
   }
 
   # convert to integer

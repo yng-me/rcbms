@@ -1,5 +1,6 @@
 list_data_files <- function(
   .input_data,
+  .references = get_config('references'),
   .config = getOption('rcbms.config')
 ) {
 
@@ -60,6 +61,20 @@ list_data_files <- function(
       n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
     ) |>
     dplyr::arrange(n)
+
+
+  if(!is.null(.references$record)) {
+    ref_record <- .references$record |>
+      dplyr::filter(
+        input_data == .input_data,
+        survey_round == .config$survey_round,
+        type > 0 | include == 1
+      )
+    data_files <- data_files |>
+      dplyr::filter(tolower(name) %in% ref_record$record_name)
+  }
+
+  print(data_files)
 
   return(
     list(
