@@ -5,6 +5,7 @@
 #' @param .name
 #' @param .prefix
 #' @param .add_primary_key
+#' @param .add_table_ref
 #' @param .suffix
 #' @param .references
 #' @param .config
@@ -22,6 +23,7 @@ db_migrate <- function(
   .prefix = "",
   .suffix = "",
   .add_primary_key = TRUE,
+  .add_table_ref = FALSE,
   .references = get_config("references"),
   .config = getOption("rcbms.config")
 ) {
@@ -65,6 +67,13 @@ db_migrate <- function(
 
     }
 
+    if(tb_overwrite) {
+
+      add_stat_table_ref(db_conn, .references, table_ids, ..., .add_primary_key)
+      add_score_card_ref(db_conn, .references, ..., .add_primary_key)
+
+    }
+
   } else {
 
     if(is.null(.name)) {
@@ -81,56 +90,16 @@ db_migrate <- function(
       row.names = F
     )
 
+    if(.add_table_ref) {
+      add_stat_table_ref(db_conn, .references, table_ids, append = T, .add_primary_key)
+      add_score_card_ref(db_conn, .references, append = T, .add_primary_key)
+    }
+
     if(.add_primary_key) {
 
       DBI::dbSendQuery(
         db_conn,
         paste0('ALTER TABLE ', tb_name, ' ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;')
-      )
-    }
-  }
-
-  if(tb_overwrite) {
-
-    if(!is.null(.references$macrodata)) {
-
-      stat_tables <- .references$macrodata |>
-        dplyr::filter(table_name %in% table_ids) |>
-        dplyr::distinct(table_name, category, .keep_all = T) |>
-        dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
-
-      DBI::dbWriteTable(
-        conn = db_conn,
-        name = 'stat_tables',
-        value = stat_tables,
-        ...,
-        row.names = F
-      )
-
-      DBI::dbSendQuery(
-        db_conn,
-        'ALTER TABLE stat_tables ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
-      )
-    }
-
-
-    if(!is.null(.references$score_card)) {
-
-      score_cards <- .references$score_card |>
-        dplyr::distinct(variable_name, category, .keep_all = T) |>
-        dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
-
-      DBI::dbWriteTable(
-        conn = db_conn,
-        name = 'score_cards',
-        value = score_cards,
-        ...,
-        row.names = F
-      )
-
-      DBI::dbSendQuery(
-        db_conn,
-        'ALTER TABLE score_cards ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
       )
     }
   }
@@ -185,3 +154,56 @@ db_connect <- function(
   return(db_connection)
 
 }
+
+
+add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary_key = T) {
+
+  if(!is.null(.references$macrodata)) {
+
+    stat_tables <- .references$macrodata |>
+      dplyr::filter(table_name %in% .table_ids) |>
+      dplyr::distinct(table_name, category, .keep_all = T) |>
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+
+    DBI::dbWriteTable(
+      conn = .conn,
+      name = 'stat_tables',
+      value = stat_tables,
+      ...,
+      row.names = F
+    )
+
+    if(.add_primary_key) {
+      DBI::dbSendQuery(
+        .conn,
+        'ALTER TABLE stat_tables ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      )
+    }
+  }
+}
+
+add_score_card_ref <- function(.conn, .references, ..., .add_primary_key = T) {
+
+  if(!is.null(.references$score_card)) {
+
+    score_cards <- .references$score_card |>
+      dplyr::distinct(variable_name, category, .keep_all = T) |>
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+
+    DBI::dbWriteTable(
+      conn = .conn,
+      name = 'score_cards',
+      value = score_cards,
+      ...,
+      row.names = F
+    )
+
+    if(.add_primary_key) {
+      DBI::dbSendQuery(
+        .conn,
+        'ALTER TABLE score_cards ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;'
+      )
+    }
+  }
+}
+

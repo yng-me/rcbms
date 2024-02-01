@@ -11,6 +11,7 @@ db_migrate(
   .prefix = "",
   .suffix = "",
   .add_primary_key = TRUE,
+  .add_table_ref = FALSE,
   .references = get_config("references"),
   .config = getOption("rcbms.config")
 )

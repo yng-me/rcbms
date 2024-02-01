@@ -30,8 +30,10 @@ generate_tabs <- function(
   .config = getOption("rcbms.config")
 ) {
 
+  agg_labels <- c("region", "province", "city_mun", "barangay")
+
   if(is.null(.agg_levels)) {
-    .agg_levels <- c("city_mun", "barangay")
+    .agg_levels <- c(3, 4)
   }
 
   if(.multiple_response) {
@@ -54,7 +56,8 @@ generate_tabs <- function(
 
   for(i in seq_along(.agg_levels)) {
 
-    agg_level <- .agg_levels[i]
+    level_i <- .agg_levels[i]
+    agg_level <- agg_labels[level_i]
     agg <- paste0(agg_level, "_geo")
 
     tbl_list[[i]] <- .data |>
@@ -66,7 +69,7 @@ generate_tabs <- function(
         .sort = .sort
       ) |>
       factor_cols(...) |>
-      dplyr::mutate(level = agg_level)
+      dplyr::mutate(level = as.integer(level_i))
 
   }
 
@@ -78,8 +81,7 @@ generate_tabs <- function(
       .sort = .sort
     ) |>
     factor_cols(...) |>
-    dplyr::mutate(area_code = "0", level = "overall")
-
+    dplyr::mutate(area_code = "0", level = 0L)
 
   tbl_list <- bind_rows(tbl_list)
 
@@ -158,8 +160,10 @@ generate_tab_multiple <- function(
   .config = getOption('rcbms.config')
 ) {
 
+  agg_labels <- c("region", "province", "city_mun", "barangay")
+
   if(is.null(.agg_levels)) {
-    .agg_levels <- c("region", "province", "city_mun", "barangay")
+    .agg_levels <- c(3, 4)
   }
 
   # if(rlang::dots_n(...) == 1) {
@@ -195,7 +199,8 @@ generate_tab_multiple <- function(
 
   for(i in seq_along(.agg_levels)) {
 
-    agg_level <- .agg_levels[i]
+    level_i <- .agg_levels[i]
+    agg_level <- agg_labels[level_i]
     agg <- paste0(agg_level, "_geo")
 
     tbl_list[[i]] <- .data |>
@@ -204,7 +209,7 @@ generate_tab_multiple <- function(
       dplyr::mutate_at(dplyr::vars(...), ~ dplyr::if_else(. == 1, 1L, 0L, 0L)) |>
       dplyr::group_by(area_code, total) |>
       dplyr::summarise_at(dplyr::vars(...), ~ sum(., na.rm = TRUE)) |>
-      dplyr::mutate(level = agg_level)
+      dplyr::mutate(level = as.integer(level_i))
   }
 
   tbl_list[["overall"]] <- .data |>
@@ -212,7 +217,7 @@ generate_tab_multiple <- function(
     dplyr::mutate_at(dplyr::vars(...), ~ dplyr::if_else(. == 1, 1L, 0L, 0L)) |>
     dplyr::group_by(total) |>
     dplyr::summarise_at(dplyr::vars(...), ~ sum(., na.rm = TRUE)) |>
-    dplyr::mutate(area_code = "0", level = "overall")
+    dplyr::mutate(area_code = "0", level = 0L)
 
   tbl <- tbl_list |>
     dplyr::bind_rows() |>
@@ -261,4 +266,79 @@ generate_tab_multiple <- function(
       dplyr::matches("_fct$"),
       everything()
     )
+}
+
+
+
+#' Title
+#'
+#' @param .data
+#' @param .col
+#' @param ...
+#' @param .col_value
+#' @param .agg_levels
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NULL) {
+
+  agg_labels <- c("region", "province", "city_mun", "barangay")
+
+  cols <- sapply(substitute(list(...))[-1], deparse)
+
+  if(is.null(.agg_levels)) {
+    .agg_levels <- c(3, 4)
+  }
+
+  tbl_list <- list()
+
+  for(i in seq_along(.agg_levels)) {
+
+    level_i <- .agg_levels[i]
+    agg_name <- agg_labels[level_i]
+    agg_geo <- paste0(agg_name, "_geo")
+
+    tbl_list[[i]] <- .data |>
+      dplyr::filter({{.col}} == .col_value) |>
+      dplyr::mutate(area_code = !!as.name(agg_geo)) |>
+      dplyr::group_by(area_code, ...) |>
+      dplyr::count(name = "total_qualified") |>
+      dplyr::left_join(
+        .data |>
+          dplyr::mutate(area_code = !!as.name(agg_geo)) |>
+          dplyr::group_by(area_code, ...) |>
+          dplyr::count(name = "total"),
+        by = c('area_code', cols)
+      ) |>
+      dplyr::mutate(
+        level = as.integer(level_i),
+        percent = 100 * (total_qualified / total)
+      )
+  }
+
+  tbl_list[['overall']] <- .data |>
+    dplyr::filter({{.col}} == .col_value) |>
+    dplyr::group_by(...) |>
+    dplyr::count(name = "total_qualified") |>
+    dplyr::left_join(
+      .data |>
+        dplyr::group_by(...) |>
+        dplyr::count(name = "total"),
+      by = cols
+    ) |>
+    dplyr::mutate(
+      area_code = '0',
+      level = 0L,
+      percent = 100 * (total_qualified / total)
+    )
+
+  dplyr::bind_rows(tbl_list) |>
+    dplyr::mutate(
+      survey_round = as.integer(config$survey_round),
+      area_code = stringr::str_pad(area_code, width = 9, pad = "0", side = "right")
+    ) |>
+    dplyr::select(area_code, survey_round, level, dplyr::everything())
 }
