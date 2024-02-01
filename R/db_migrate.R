@@ -17,15 +17,15 @@
 #'
 
 db_migrate <- function(
-  .output,
-  ...,
-  .name = NULL,
-  .prefix = "",
-  .suffix = "",
-  .add_primary_key = TRUE,
-  .add_table_ref = FALSE,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
+    .output,
+    ...,
+    .name = NULL,
+    .prefix = "",
+    .suffix = "",
+    .add_primary_key = TRUE,
+    .add_table_ref = FALSE,
+    .references = get_config("references"),
+    .config = getOption("rcbms.config")
 ) {
 
   db_conn <- db_connect()
@@ -69,8 +69,8 @@ db_migrate <- function(
 
     if(tb_overwrite) {
 
-      add_stat_table_ref(db_conn, .references, table_ids, ..., .add_primary_key)
-      add_score_card_ref(db_conn, .references, ..., .add_primary_key)
+      add_stat_table_ref(db_conn, .references, table_ids, ..., .add_primary_key = .add_primary_key)
+      add_score_card_ref(db_conn, .references, ..., .add_primary_key = .add_primary_key)
 
     }
 
@@ -91,8 +91,8 @@ db_migrate <- function(
     )
 
     if(.add_table_ref) {
-      add_stat_table_ref(db_conn, .references, table_ids, append = T, .add_primary_key)
-      add_score_card_ref(db_conn, .references, append = T, .add_primary_key)
+      add_stat_table_ref(db_conn, .references, table_ids, append = T, .add_primary_key = .add_primary_key)
+      add_score_card_ref(db_conn, .references, append = T, .add_primary_key = .add_primary_key)
     }
 
     if(.add_primary_key) {
@@ -122,9 +122,9 @@ db_migrate <- function(
 #'
 
 db_connect <- function(
-  .config = getOption('rcbms.config'),
-  .db_name = NULL,
-  ...
+    .config = getOption('rcbms.config'),
+    .db_name = NULL,
+    ...
 ) {
   env <- .config$env
   stage <- .config$portal$stage
@@ -161,9 +161,11 @@ add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary
   if(!is.null(.references$macrodata)) {
 
     stat_tables <- .references$macrodata |>
+      dplyr::collect() |>
       dplyr::filter(table_name %in% .table_ids) |>
       dplyr::distinct(table_name, category, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
+      dplyr::tibble()
 
     DBI::dbWriteTable(
       conn = .conn,
@@ -187,8 +189,10 @@ add_score_card_ref <- function(.conn, .references, ..., .add_primary_key = T) {
   if(!is.null(.references$score_card)) {
 
     score_cards <- .references$score_card |>
+      dplyr::collect() |>
       dplyr::distinct(variable_name, category, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round")))
+      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
+      dplyr::tibble()
 
     DBI::dbWriteTable(
       conn = .conn,
