@@ -10,8 +10,8 @@
 #'
 
 tidy_geojson <- function(
-  .path,
-  .subfolders = c("region", "province", "city-mun", "barangay")
+    .path,
+    .subfolders = c("region", "province", "city-mun", "barangay")
 ) {
 
   to_camel_case <- function(x) {
@@ -81,9 +81,9 @@ tidy_geojson <- function(
                 purrr::pluck("coordinates")
 
               if(length(coordinates) > 0) {
-                coordinates <- as.character(jsonlite::toJSON(coordinates))
+                coordinates <- as.character(jsonlite::toJSON(coordinates, auto_unbox = T))
               } else {
-                coordinates <- ""
+                coordinates <- "[]"
               }
 
               coordinates |>

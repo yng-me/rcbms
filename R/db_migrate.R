@@ -17,15 +17,15 @@
 #'
 
 db_migrate <- function(
-    .output,
-    ...,
-    .name = NULL,
-    .prefix = "",
-    .suffix = "",
-    .add_primary_key = TRUE,
-    .add_table_ref = FALSE,
-    .references = get_config("references"),
-    .config = getOption("rcbms.config")
+  .output,
+  ...,
+  .name = NULL,
+  .prefix = "",
+  .suffix = "",
+  .add_primary_key = TRUE,
+  .add_table_ref = FALSE,
+  .references = get_config("references"),
+  .config = getOption("rcbms.config")
 ) {
 
   db_conn <- db_connect()
@@ -156,6 +156,19 @@ db_connect <- function(
 }
 
 
+#' Title
+#'
+#' @param .conn
+#' @param .references
+#' @param .table_ids
+#' @param ...
+#' @param .add_primary_key
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary_key = T) {
 
   if(!is.null(.references$macrodata)) {
@@ -184,6 +197,18 @@ add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary
   }
 }
 
+#' Title
+#'
+#' @param .conn
+#' @param .references
+#' @param ...
+#' @param .add_primary_key
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 add_score_card_ref <- function(.conn, .references, ..., .add_primary_key = T) {
 
   if(!is.null(.references$score_card)) {

@@ -1,6 +1,7 @@
 #' Title
 #'
-#' @param name
+#' @param .dir
+#' @param .rm
 #'
 #' @return
 #' @export
@@ -8,7 +9,12 @@
 #' @examples
 #'
 
-create_new_folder <- function(.dir) {
+create_new_folder <- function(.dir, .rm = FALSE) {
+
+  if(dir.exists(.dir) & .rm) {
+    unlink(.dir, recursive = TRUE)
+  }
+
   if(!dir.exists(.dir)){
     dir.create(.dir, recursive = TRUE)
   }

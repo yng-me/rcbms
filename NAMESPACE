@@ -3,6 +3,8 @@
 export(add_age_groups)
 export(add_ip_group)
 export(add_metadata)
+export(add_score_card_ref)
+export(add_stat_table_ref)
 export(add_uuid)
 export(add_wgss)
 export(check_age_sex_relation)
