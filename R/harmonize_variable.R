@@ -43,12 +43,12 @@ harmonize_variable <- function(
       dplyr::mutate(variable_name = variable_name_new)
   }
 
-  excluded <- .dictionary |>
-    dplyr::filter(is_included != 1) |>
+  included <- .dictionary |>
+    dplyr::filter(is_included == 1) |>
     dplyr::pull(variable_name)
 
   .data |>
-    dplyr::select(-dplyr::any_of(excluded)) |>
+    dplyr::select(dplyr::any_of(included)) |>
     convert_cols_from_dictionary(.dictionary) |>
     convert_col_names(.dictionary)
 }
@@ -103,13 +103,23 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
   }
 
 
-  # convert to integer
+  # convert to character
   as_char <- get_col_type('c')
   if(length(as_char) > 0) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_char)),
         as.character
+      )
+  }
+
+  # convert to double
+  as_dbl <- get_col_type('d')
+  if(length(as_dbl) > 0) {
+    .data <- .data |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_dbl)),
+        as.double
       )
   }
 

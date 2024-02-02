@@ -74,8 +74,6 @@ list_data_files <- function(
       dplyr::filter(tolower(name) %in% ref_record$record_name)
   }
 
-  print(data_files)
-
   return(
     list(
       all = all_data_files,

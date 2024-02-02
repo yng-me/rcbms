@@ -4,10 +4,10 @@
 \alias{create_new_folder}
 \title{Title}
 \usage{
-create_new_folder(.dir)
+create_new_folder(.dir, .rm = FALSE)
 }
 \arguments{
-\item{name}{}
+\item{.rm}{}
 }
 \description{
 Title
