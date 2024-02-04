@@ -1,51 +1,48 @@
 #' Title
 #'
 #' @param ...
-#' @param code_ref
-#' @param input_data
-#' @param is_char
-#' @param ordered
+#' @param .code_ref
+#' @param .is_char
+#' @param .ordered
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
+
 convert_to_factor <- function(
-  ..., code_ref = NULL,
-  input_data = 'hp',
-  is_char = F,
-  ordered = F
+  .x,
+  ...,
+  .code_ref = NULL,
+  .is_char = FALSE,
+  .ordered = FALSE
 ) {
 
-  if(is.null(code_ref) & !exists('refs')) {
-    stop('References code does not exist.')
+  refs <- get_config('references')
+  if(is.null(refs)) return(.x)
+
+  vs <- refs$valueset |>
+    dplyr::filter(name == .code_ref) |>
+    dplyr::distinct(label, .keep_all = T)
+
+  if(.is_char == T) {
+    vs <- vs |> dplyr::mutate(value = stringr::str_trim(value))
+  } else {
+    vs <- vs |> dplyr::mutate(value = as.integer(value))
   }
 
-  if(!is.null(code_ref)) {
-
-    if(exists('refs')) {
-      code_refs <- eval(as.name('refs'))
-      refs_vs <- code_refs[[input_data]]$valueset |>
-        dplyr::filter(name == code_ref)
-    }
-
-    if(is_char == T) {
-      code <- refs_vs |>
-        dplyr::mutate(level = stringr::str_trim(value))
-    } else {
-      code <- refs_vs |>
-        dplyr::mutate(level = as.integer(value))
-    }
-
+  if(!is.null(.code_ref)) {
     factor(
+      .x,
       ...,
-      levels = code$level,
-      labels = code$label,
-      ordered = ordered
+      levels = vs$value,
+      labels = vs$label,
+      ordered = .ordered
     )
 
   } else {
-    factor(..., ordered = ordered)
+    factor(.x, ..., ordered = .ordered)
   }
 
 }

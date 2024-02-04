@@ -5,15 +5,15 @@
 \title{Title}
 \usage{
 convert_to_factor(
+  .x,
   ...,
-  code_ref = NULL,
-  input_data = "hp",
-  is_char = F,
-  ordered = F
+  .code_ref = NULL,
+  .is_char = FALSE,
+  .ordered = FALSE
 )
 }
 \arguments{
-\item{ordered}{}
+\item{.ordered}{}
 }
 \description{
 Title
