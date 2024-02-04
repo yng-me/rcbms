@@ -74,7 +74,7 @@ generate_tabs <- function(
   }
 
   tbl_list[["overall"]] <- .data |>
-    dplyr::add_count(name = "total_hhm") |>
+    dplyr::add_count(name = "total") |>
     generate_tab(
       .cols = cols,
       .total_by_cols = .total_by_cols,
@@ -134,18 +134,18 @@ generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE
   if(.total_by_cols & length(.cols) > 1) {
 
     .data |>
-      dplyr::add_count(..., name = "total_hhm") |>
-      dplyr::add_count(..., !!as.name(.cols[2]), name = "total") |>
-      dplyr::group_by(..., total_hhm, total, dplyr::pick(dplyr::any_of(.cols))) |>
+      dplyr::add_count(..., name = "total") |>
+      dplyr::add_count(..., !!as.name(.cols[2]), name = "total_y") |>
+      dplyr::group_by(..., total, total_y, dplyr::pick(dplyr::any_of(.cols))) |>
       dplyr::count(name = "count",  sort = .sort)  |>
-      dplyr::mutate(percent = 100 * (count / total))
+      dplyr::mutate(percent = 100 * (count / total_y))
 
   } else {
     .data |>
-      dplyr::add_count(..., name = "total_hhm") |>
-      dplyr::group_by(..., total_hhm, dplyr::pick(dplyr::any_of(.cols))) |>
+      dplyr::add_count(..., name = "total") |>
+      dplyr::group_by(..., total, dplyr::pick(dplyr::any_of(.cols))) |>
       dplyr::count(name = "count", sort = .sort) |>
-      dplyr::mutate(percent = 100 * (count / total_hhm))
+      dplyr::mutate(percent = 100 * (count / total))
   }
 
 }
