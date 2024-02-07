@@ -77,14 +77,15 @@ read_cbms_data <- function(
 
       pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
 
+      df_src_files <- df_files$all |>
+        dplyr::filter(grepl(paste0(p, '$'), value))
+
+      file_size <- sum(df_src_files$size) / 1000000
+      n_files <- length(df_src_files$value)
+      n_chunks <- as.integer(round(file_size / (n_files * 7)))
+
       if(!read_from_parquet) {
 
-        df_src_files <- df_files$all |>
-          dplyr::filter(grepl(paste0(p, '$'), value))
-
-        file_size <- sum(df_src_files$size) / 1000000
-        n_files <- length(df_src_files$value)
-        n_chunks <- as.integer(round(file_size / (n_files * 7)))
 
         if(file_size <  5000 || n_chunks < 2) {
 
@@ -96,8 +97,6 @@ read_cbms_data <- function(
             .pq_path = pq_path,
             .p_name = p_name,
           )
-
-          df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
 
         } else {
 
@@ -134,6 +133,10 @@ read_cbms_data <- function(
 
       } else {
         df_temp_dim <- ""
+      }
+
+      if(file_size <  5000 || n_chunks < 2) {
+        df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
       }
     }
   }
