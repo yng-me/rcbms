@@ -152,6 +152,11 @@ validate_select <- function(.data, ...) {
     }
   }
 
-  .data |> dplyr::select(dplyr::any_of(c(uid, geo_cols)), ...)
+  .data |> dplyr::select(
+    dplyr::any_of(uid),
+    dplyr::matches(paste0("^", geo_name_cols)),
+    dplyr::any_of(c("ean", "line_number")),
+    ...
+  )
 
 }

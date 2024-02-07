@@ -1,3 +1,15 @@
+#' Title
+#'
+#' @param .input_data
+#' @param .references
+#' @param .config
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
 list_data_files <- function(
   .input_data,
   .references = get_config('references'),
@@ -70,8 +82,10 @@ list_data_files <- function(
         survey_round == .config$survey_round,
         type > 0 | include == 1
       )
-    data_files <- data_files |>
-      dplyr::filter(tolower(name) %in% ref_record$record_name)
+    if(nrow(ref_record) > 0) {
+      data_files <- data_files |>
+        dplyr::filter(tolower(name) %in% ref_record$record_name)
+    }
   }
 
   return(
