@@ -135,7 +135,7 @@ read_cbms_data <- function(
         df_temp_dim <- ""
       }
 
-      if(file_size <  5000 || n_chunks < 2) {
+      if(file.exists(pq_path)) {
         df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
       }
     }
