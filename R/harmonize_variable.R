@@ -43,12 +43,12 @@ harmonize_variable <- function(
       dplyr::mutate(variable_name = variable_name_new)
   }
 
-  included <- .dictionary |>
-    dplyr::filter(is_included == 1) |>
+  excluded <- .dictionary |>
+    dplyr::filter(is_included != 1) |>
     dplyr::pull(variable_name)
 
   .data |>
-    dplyr::select(dplyr::any_of(included)) |>
+    dplyr::select(-dplyr::any_of(excluded)) |>
     convert_cols_from_dictionary(.dictionary) |>
     convert_col_names(.dictionary)
 }

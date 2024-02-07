@@ -194,7 +194,7 @@ execute_mode <- function(
         suppressWarnings(source(script_files[i]))
       }
 
-      generate_o <- .config[[.config$type$mode]]$generate_output
+      generate_o <- .config[[.config$mode$type]]$generate_output
       if(is.null(generate_o)) generate_o <- FALSE
 
       if(generate_o) {

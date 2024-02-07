@@ -43,6 +43,7 @@ generate_output <- function(
   mode_types <- mode_types[mode_types %in% valid_modes]
 
   for(i in seq_along(mode_types)) {
+
     mode_fn <- paste0("generate_", mode_types[i])
     generate_output_fn <- eval(as.name(mode_fn))
     generate_output_fn(.result, .config, ...)

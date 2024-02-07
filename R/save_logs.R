@@ -1,3 +1,13 @@
+#' Title
+#'
+#' @param .config
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
 save_logs <- function(.config = getOption("rcbms.config")) {
 
   if(rlang::is_false(.config$execute_mode)) return(invisible())

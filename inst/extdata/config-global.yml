@@ -12,6 +12,7 @@ reload_references:
   record: yes
 working_directory: '.'
 complete_cases: yes
+chunk_threshold: 5000 # in MB
 harmonize_variable: yes
 input_data: hp
 execute_mode: no

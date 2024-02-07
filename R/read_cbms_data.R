@@ -25,6 +25,10 @@ read_cbms_data <- function(
 
   input_data <- check_input_data(.config$input_data)
   mode <- tolower(.config$mode$type)
+  chunk_threshold <- .config$chunk_threshold
+  if(is.null(chunk_threshold)) {
+    chunk_threshold <- 4
+  }
 
   read_from_parquet <- FALSE
   if(!is.null(.config$read_from_parquet)) {
@@ -57,8 +61,6 @@ read_cbms_data <- function(
 
       uid <- "case_id"
       if(df_input == "bp") uid <- "uuid"
-
-      summary_record <- NULL
     }
 
     for(j in seq_along(df_files$unique$value)) {
@@ -77,128 +79,62 @@ read_cbms_data <- function(
 
       if(!read_from_parquet) {
 
-        df_src_files <- dplyr::as_tibble(df_files$all$value) |>
-          dplyr::filter(grepl(paste0(p, '$'), value)) |>
-          dplyr::pull(value)
+        df_src_files <- df_files$all |>
+          dplyr::filter(grepl(paste0(p, '$'), value))
 
-        df_list <- lapply(df_src_files, function(x) {
+        file_size <- sum(df_src_files$size) / 1000000
+        n_files <- length(df_src_files$value)
+        n_chunks <- as.integer(round(file_size / (n_files * 7)))
 
-          suppressWarnings(
-            import_data(x, .input_data = df_input) |>
-              clean_colnames() |>
-              harmonize_variable(
-                .references$data_dictionary,
-                .survey_round = .config$survey_round,
-                .input_data = df_input
-              )
-          )
-        })
+        if(file_size <  5000 || n_chunks < 2) {
 
-        df_temp <- dplyr::bind_rows(df_list)
-
-        df_temp_dim_before <- c(nrow(df_temp), ncol(df_temp))
-        attr(df_temp, "dim_before_tidy") <- df_temp_dim_before
-
-        if(j == 1 && df_files$unique$n[j] == 0) {
-          summary_record <- df_temp |>
-            create_case_id(.input_data = df_input) |>
-            dplyr::select(dplyr::any_of(c(uid, geo_cols, rov_var)))
-        }
-
-        if(!is.null(summary_record) && df_files$unique$n[j] > 0) {
-          with_geo_code <- which(geo_cols %in% names(df_temp))
-          if(length(with_geo_code) == 4) {
-            summary_record_only <- summary_record |>
-              dplyr::select(-dplyr::any_of(geo_cols))
-
-          } else {
-            summary_record_only <- summary_record
-          }
-
-          df_temp <- df_temp |>
-            create_case_id(.input_data = df_input) |>
-            dplyr::left_join(summary_record_only, by = uid)
-
-          if(.config$complete_cases && !(p_name %in% unfiltered_records)) {
-
-            if(rov_var %in% names(df_temp)) {
-              df_temp <- df_temp |>
-                dplyr::filter(!!as.name(rov_var) == 1)
-            }
-
-            if("hsn" %in% names(df_temp)) {
-              df_temp <- df_temp |>
-                dplyr::filter(
-                  as.integer(hsn) < as.integer(paste(rep(7, 4 + .config$project$add_length), collapse = ''))
-                )
-            }
-          }
-        }
-
-        assign("df_temp", df_temp, envir = envir)
-
-        src_file <- join_path(.config$base, 'tidy', df_input, paste0(p_name, '.R'))
-        if(file.exists(src_file)) source(src_file)
-
-        if(exists("df_temp_tidy")) df_temp <- df_temp_tidy
-
-        df_temp <- df_temp |>
-          add_metadata(
-            .dictionary = .references$data_dictionary,
-            .valueset = .references$valueset,
-            .survey_round = .config$survey_round,
-            .input_data = df_input
-          ) |>
-          dplyr::select(
-            dplyr::any_of(c(uid, geo_cols, rov_var, "ean", "bsn", "husn", "hsn", "line_number", "sex", "age")),
-            sort(names(df_temp))
+          save_cbms_data(
+            .df_files = df_files,
+            .df_src_files = df_src_files$value,
+            .index = j,
+            .input_data = df_input,
+            .pq_path = pq_path,
+            .p_name = p_name,
           )
 
-        df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
-        attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
+          df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
 
-        if(.config$verbose) {
-          if(identical(df_temp_dim_before, df_temp_dim_after)) {
-            df_temp_dim <- paste0(
-              cli::col_br_cyan(format(df_temp_dim_before[1], big.mark = ",")), " × ",
-              cli::col_br_cyan(format(df_temp_dim_before[2], big.mark = ","))
+        } else {
+
+          chuck_start <- 1
+          pq_path_chunck <- create_new_folder(file.path(pq_folder, "chunk"))
+
+          for(k in seq_len(n_chunks)) {
+
+            chunk_counter <- stringr::str_pad(k, width = 4, pad = "0")
+            chunk_name <- paste0(p_name, '__', chunk_counter)
+            chunk_pq <- paste0(pq_path_chunck, '/', chunk_name)
+
+            chuck_end <- round((n_files / n_chunks) * k)
+            if(k == n_chunks) chuck_end <- n_files
+
+            files_to_chunk <- df_src_files$value[chuck_start:chuck_end]
+
+            save_cbms_data(
+              .df_files = df_files,
+              .df_src_files = files_to_chunk,
+              .index = j,
+              .input_data = df_input,
+              .pq_path = chunk_pq,
+              .chunk = k,
+              .chunk_size = n_chunks,
+              .p_name = p_name
             )
-          } else {
-            df_temp_dim <- paste0(
-              cli::col_br_cyan(format(df_temp_dim_before[1], big.mark = ",")), " × ",
-              cli::col_br_cyan(format(df_temp_dim_before[2], big.mark = ",")), " → ",
-              cli::col_br_cyan(format(df_temp_dim_after[1], big.mark = ",")), " × ",
-              cli::col_br_cyan(format(df_temp_dim_after[2], big.mark = ","))
-            )
+
+            chuck_start <- chuck_end + 1
+
+            df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_pq)
           }
-          df_temp_dim <- paste0("(", df_temp_dim, ") ")
         }
-
-        if(df_input %in% c("cph", "bs") & .config$survey_round == "2020") {
-          df_temp <- df_temp |>
-            dplyr::mutate(
-              province_code = stringr::str_sub(province_code, 2, 3)
-            )
-        }
-
-        arrow::write_parquet(df_temp, pq_path)
-        suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))
-        suppressWarnings(rm(list = 'df_temp', envir = envir))
 
       } else {
         df_temp_dim <- ""
       }
-
-      if(.config$verbose) {
-        cli::cli_alert_info(
-          paste0(
-            "Importing ", cli::col_br_yellow(p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
-          )
-        )
-      }
-
-      df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
-
     }
   }
 

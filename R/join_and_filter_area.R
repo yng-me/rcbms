@@ -81,7 +81,7 @@ join_area <- function(.data, .aggregation) {
 
   .data <- .data |>
     create_barangay_geo() |>
-    dplyr::left_join(area_name, by = 'barangay_geo') |>
+    dplyr::left_join(area_name, by = 'barangay_geo', multiple = 'first') |>
     dplyr::mutate(aggregate_level = !!as.name(paste0(.aggregation$value, "_agg"))) |>
     dplyr::filter(!is.na(aggregate_level))
 }
