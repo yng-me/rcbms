@@ -38,7 +38,7 @@ harmonize_variable <- function(
       length = as.integer(length)
     )
 
-  if(tolower(.config$mode$stage[1]) == 'final') {
+  if(tolower(.config$mode$stage[1]) == 'final' | tolower(.config$mode$stage[1]) == 'prod') {
     .dictionary <- .dictionary |>
       dplyr::mutate(variable_name = variable_name_new)
   }
@@ -60,39 +60,11 @@ join_data_with_dictionary <- function(.data, .dictionary) {
     dplyr::rename(variable_name = value) |>
     dplyr::left_join(
       dplyr::distinct(.dictionary, variable_name, .keep_all = T),
-      by = 'variable_name'
+      by = 'variable_name',
+      multiple = 'first'
     )
 
 }
-
-convert_col_names <- function(.data, .dictionary) {
-
-  df_names <- .data |>
-    join_data_with_dictionary(.dictionary) |>
-    dplyr::mutate(
-      variable_name = dplyr::if_else(
-        is.na(variable_name_new),
-        variable_name,
-        stringr::str_trim(variable_name_new)
-      )
-    ) |>
-    dplyr::group_by(variable_name) |>
-    dplyr::mutate(n = 1:dplyr::n()) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(
-      variable_name = dplyr::if_else(
-        n == 1,
-        variable_name,
-        paste0(variable_name, '_', n)
-      )
-    )
-
-  colnames(.data) <- df_names$variable_name
-
-  return(.data)
-
-}
-
 
 convert_cols_from_dictionary <- function(.data, .dictionary) {
 
@@ -190,6 +162,34 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
   return(.data)
 }
 
+
+convert_col_names <- function(.data, .dictionary) {
+
+  df_names <- .data |>
+    join_data_with_dictionary(.dictionary) |>
+    dplyr::mutate(
+      variable_name = dplyr::if_else(
+        is.na(variable_name_new),
+        variable_name,
+        stringr::str_trim(variable_name_new)
+      )
+    ) |>
+    dplyr::group_by(variable_name) |>
+    dplyr::mutate(n = 1:dplyr::n()) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      variable_name = dplyr::if_else(
+        n == 1,
+        variable_name,
+        paste0(variable_name, '_', n)
+      )
+    )
+
+  colnames(.data) <- df_names$variable_name
+
+  return(.data)
+
+}
 
 
 #' Title

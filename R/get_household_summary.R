@@ -83,7 +83,7 @@ get_household_summary <- function(
 
     level_i <- .agg_levels[i]
     agg_geo <- paste0(agg_labels[level_i], "_geo")
-    agg_name <- paste0(agg_labels[level_i], "_agg")
+    agg_name <- agg_labels[level_i]
 
     df <- .data |>
       compute_hh_summary(!!as.name(agg_geo), !!as.name(agg_name))

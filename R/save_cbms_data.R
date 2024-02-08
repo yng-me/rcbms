@@ -1,10 +1,9 @@
 save_cbms_data <- function(
-  .df_files,
   .df_src_files,
-  .index,
   .input_data,
   .pq_path,
   .p_name,
+  .is_first_record = FALSE,
   .chunk = NULL,
   .chunk_size = 1,
   .references = get_config("references"),
@@ -15,9 +14,8 @@ save_cbms_data <- function(
   geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
   uid <- "case_id"
   if(.input_data == "bp") uid <- "uuid"
-  summary_record <- NULL
 
-  rov_var <- config$project[[.input_data]]$variable$result_of_visit
+  rov_var <- .config$project[[.input_data]]$variable$result_of_visit
   unfiltered_records <- .config$project[[.input_data]]$unfiltered_records
 
   df_list <- lapply(.df_src_files, function(x) {
@@ -37,14 +35,18 @@ save_cbms_data <- function(
   df_temp_dim_before <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_before_tidy") <- df_temp_dim_before
 
-  if(.index == 1 && .df_files$unique$n[.index] == 0) {
+  if(.is_first_record) {
     summary_record <- df_temp |>
       create_case_id(.input_data = .input_data) |>
       dplyr::select(dplyr::any_of(c(uid, geo_cols, rov_var)))
+
+    assign("summary_record", summary_record, envir = envir)
   }
 
-  if(!is.null(summary_record) && .df_files$unique$n[.index] > 0) {
+  if(exists("summary_record") & isFALSE(.is_first_record)) {
+
     with_geo_code <- which(geo_cols %in% names(df_temp))
+
     if(length(with_geo_code) == 4) {
       summary_record_only <- summary_record |>
         dplyr::select(-dplyr::any_of(geo_cols))
@@ -67,7 +69,9 @@ save_cbms_data <- function(
       if("hsn" %in% names(df_temp)) {
         df_temp <- df_temp |>
           dplyr::filter(
-            as.integer(hsn) < as.integer(paste(rep(7, 4 + .config$project$add_length), collapse = ''))
+            as.integer(hsn) < as.integer(
+              paste(rep(7, 4 + .config$project$add_length), collapse = '')
+            )
           )
       }
     }
@@ -88,7 +92,20 @@ save_cbms_data <- function(
       .input_data = .input_data
     ) |>
     dplyr::select(
-      dplyr::any_of(c(uid, geo_cols, rov_var, "ean", "bsn", "husn", "hsn", "line_number", "sex", "age")),
+      dplyr::any_of(
+        c(
+          uid,
+          geo_cols,
+          rov_var,
+          "ean",
+          "bsn",
+          "husn",
+          "hsn",
+          "line_number",
+          "sex",
+          "age"
+        )
+      ),
       sort(names(df_temp))
     )
 
@@ -135,7 +152,4 @@ save_cbms_data <- function(
       )
     )
   }
-
-  return(arrow::open_dataset(.pq_path))
-
 }

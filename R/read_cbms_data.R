@@ -22,6 +22,7 @@ read_cbms_data <- function(
 
   envir <- as.environment(1)
   geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
+  summary_record <- NULL
 
   input_data <- check_input_data(.config$input_data)
   mode <- tolower(.config$mode$type)
@@ -70,32 +71,31 @@ read_cbms_data <- function(
       pq_folder <- create_new_folder(get_data_path('parquet', df_input))
 
       if(read_from_parquet) {
-        p_name <- stringr::str_remove(tolower(p), "\\.parquet$")
+        p_name <- stringr::str_remove(tolower(basename(p)), "\\.parquet$")
       } else {
-        p_name <- stringr::str_remove(tolower(p), file_format)
+        p_name <- stringr::str_remove(tolower(basename(p)), file_format)
       }
 
       pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
 
-      df_src_files <- df_files$all |>
-        dplyr::filter(grepl(paste0(p, '$'), value))
-
-      file_size <- sum(df_src_files$size) / 1000000
-      n_files <- length(df_src_files$value)
-      n_chunks <- as.integer(round(file_size / (n_files * 7)))
-
       if(!read_from_parquet) {
 
+        df_src_files <- df_files$all |>
+          dplyr::filter(grepl(paste0(p, '$'), value))
+
+        file_size <- sum(df_src_files$size) / 1000000
+        n_files <- length(df_src_files$value)
+        n_chunks <- as.integer(round(file_size / (n_files * 7)))
+        is_first_record <- j == 1 & df_files$unique$n[j] == 0
 
         if(file_size <  5000 || n_chunks < 2) {
 
-          save_cbms_data(
-            .df_files = df_files,
+          df_temp_dim <- save_cbms_data(
             .df_src_files = df_src_files$value,
-            .index = j,
+            .is_first_record = is_first_record,
             .input_data = df_input,
             .pq_path = pq_path,
-            .p_name = p_name,
+            .p_name = p_name
           )
 
         } else {
@@ -106,7 +106,7 @@ read_cbms_data <- function(
           for(k in seq_len(n_chunks)) {
 
             chunk_counter <- stringr::str_pad(k, width = 4, pad = "0")
-            chunk_name <- paste0(p_name, '__', chunk_counter)
+            chunk_name <- paste0(p_name, '__', chunk_counter, '.parquet')
             chunk_pq <- paste0(pq_path_chunck, '/', chunk_name)
 
             chuck_end <- round((n_files / n_chunks) * k)
@@ -114,10 +114,9 @@ read_cbms_data <- function(
 
             files_to_chunk <- df_src_files$value[chuck_start:chuck_end]
 
-            save_cbms_data(
-              .df_files = df_files,
+            df_temp_dim <- save_cbms_data(
               .df_src_files = files_to_chunk,
-              .index = j,
+              .is_first_record = is_first_record,
               .input_data = df_input,
               .pq_path = chunk_pq,
               .chunk = k,
@@ -131,8 +130,32 @@ read_cbms_data <- function(
           }
         }
 
-      } else {
-        df_temp_dim <- ""
+      }
+
+      chunk_path <- paste0(pq_folder, '/chunk')
+
+      if(dir.exists(chunk_path)) {
+
+        chunk_file_paths <- list.files(chunk_path, full.names = TRUE)
+        chunk_file_paths <- chunk_file_paths[grepl(p_name, chunk_file_paths)]
+
+        for(m in seq_along(chunk_file_paths)) {
+          chunk_file <- chunk_file_paths[m]
+
+          chunk_counter <- stringr::str_extract_all(chunk_file, "\\d{4}\\.parquet$")[[1]] |>
+            stringr::str_remove("\\.parquet$")
+
+          df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_file)
+
+        }
+      }
+
+      if(read_from_parquet & .config$verbose) {
+        cli::cli_alert_info(
+          paste0(
+            "Importing ", cli::col_br_yellow(p_name), " record ", cli::col_br_cyan("✓")
+          )
+        )
       }
 
       if(file.exists(pq_path)) {
@@ -150,6 +173,9 @@ read_cbms_data <- function(
 
     assign(.assign_name, df, envir = envir)
   }
+
+  suppressWarnings(rm(list = 'summary_record', envir = envir))
+
   return(invisible(df))
 }
 
