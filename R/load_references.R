@@ -34,7 +34,16 @@ load_references <- function(
   )
 
   refs <- list()
-  ref_list <- c("data_dictionary", "valueset", "area_name", "validation", "tabulation", "macrodata", "score_card", "record")
+  ref_list <- c(
+    "data_dictionary",
+    "valueset",
+    "area_name",
+    "validation",
+    "tabulation",
+    "macrodata",
+    "score_card",
+    "record"
+  )
   ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec")
 
   wd <- .config$working_directory
@@ -387,6 +396,15 @@ load_tabulation_refs <- function(.gid) {
 }
 
 
+#' Title
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_macrodata_refs <- function(.gid) {
   required_cols <- c(
     'table_name',
@@ -404,7 +422,15 @@ load_macrodata_refs <- function(.gid) {
 }
 
 
-
+#' Title
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 load_score_card_refs <- function(.gid) {
   required_cols <- c(
     'variable_name',
@@ -434,9 +460,6 @@ load_score_card_refs <- function(.gid) {
     col_types = 'ccicccciiiiccccccci'
   )
 }
-
-
-
 
 
 #' Load record references

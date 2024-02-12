@@ -4,7 +4,7 @@
 \alias{transform_area_name}
 \title{Title}
 \usage{
-transform_area_name(.references, .add_length = 0)
+transform_area_name(.references = get_config("references"), .add_length = 0)
 }
 \arguments{
 \item{.add_length}{}

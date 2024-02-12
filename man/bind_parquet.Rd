@@ -4,10 +4,16 @@
 \alias{bind_parquet}
 \title{Title}
 \usage{
-bind_parquet(.data, ...)
+bind_parquet(
+  .data,
+  ...,
+  .input_data = NULL,
+  .references = get_config("references"),
+  .config = getOption("rcbms.config")
+)
 }
 \arguments{
-\item{...}{}
+\item{.config}{}
 }
 \description{
 Title

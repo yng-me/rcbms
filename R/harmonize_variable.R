@@ -74,7 +74,6 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
     return(nc_names)
   }
 
-
   # convert to character
   as_char <- get_col_type('c')
   if(length(as_char) > 0) {
@@ -128,6 +127,7 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
         lubridate::ymd
       )
   }
+
   # convert to year
   as_year <- get_col_type('y')
   if(length(as_year) > 0) {
@@ -157,6 +157,22 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
         dplyr::vars(dplyr::any_of(as_time)),
         as.character
       )
+  }
+
+  from_dcf <- .dictionary$variable_name
+  from_data_without_dcf <- setdiff(names(.data), from_dcf)
+
+  if(length(from_data_without_dcf) > 0) {
+
+    if(getOption("rcbms.config")$verbose) {
+      cli::cli_alert(
+        cli::col_br_red("No matching data dictionary entries and will be coerced as character type:")
+      )
+      cli::cli_ul(from_data_without_dcf)
+    }
+
+    .data <- .data |>
+      dplyr::mutate_at(dplyr::vars(dplyr::any_of(from_data_without_dcf)), as.character)
   }
 
   return(.data)
