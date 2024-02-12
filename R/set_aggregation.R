@@ -52,7 +52,7 @@ set_aggregation <- function(
         create_barangay_geo() |>
         dplyr::select(-dplyr::contains('_code')) |>
         dplyr::left_join(
-          transform_area_name(.references, .config$project$add_length),
+          transform_area_name(.add_length = .config$project$add_length),
           by = 'barangay_geo'
         ) |>
         dplyr::select(

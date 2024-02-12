@@ -1,7 +1,8 @@
 #' Execute script
 #'
 #' @param .config_file Path to config file
-#' @param ... Additional arguments passed to \code{\link{load_required_packages}}
+#' @param ... Additional arguments pass to \code{\link{load_required_packages}}
+#' @param .survey_round
 #'
 #' @return
 #' @export
@@ -9,23 +10,40 @@
 #' @examples
 #'
 
-execute_script <- function(.config_file, ...) {
+execute_script <- function(.config_file, ..., .survey_round = NULL) {
 
   with_config <- file.exists(.config_file)
-
   load_required_packages(...)
-  set_config(.config_file)
+  config <- set_config(.config_file)
+
+  if(is.null(.survey_round)) {
+    .survey_round <- config$survey_round
+  }
+
+  rlang::arg_match(
+    .survey_round,
+    c("2020", "2021", "2022", "2024"),
+    multiple = TRUE
+  )
+
   update_rcbms()
   load_references()
 
-  if(isTRUE(with_config)) {
+  if(isFALSE(with_config)) return(invisible(NULL))
+
+  envir <- as.environment(1)
+  for(i in seq_along(.survey_round)) {
+    config <- getOption("rcbms.config")
+    config$survey_round <- .survey_round[i]
+    options(rcbms.config = config)
+    assign("config", config, envir = envir)
+
     read_cbms_data()
     set_aggregation()
     execute_mode()
     save_logs()
     clear_objects()
   }
-
 }
 
 
@@ -111,102 +129,106 @@ execute_mode <- function(
     envir <- as.environment(1)
     assign("current_input_data", current_input_data, envir = envir)
 
-    script_files <- .references$script_files |>
-      dplyr::filter(input_data == current_input_data) |>
-      dplyr::pull(file)
+    if(tolower(.config$mode$type) == "portal") {
+      source(paste0(config$base, "/scripts/portal/", current_input_data, "/__initial.R"))
+    } else {
+      script_files <- .references$script_files |>
+        dplyr::filter(input_data == current_input_data) |>
+        dplyr::pull(file)
 
-    complete_cases_df <- NULL
+      complete_cases_df <- NULL
 
-    if(current_input_data == "hp") {
+      if(current_input_data == "hp") {
 
-      filter_var <- .config$project[[current_input_data]]$variable
+        filter_var <- .config$project[[current_input_data]]$variable
 
-      complete_cases_df <- get_complete_cases(
-        .parquet,
-        .aggregation,
-        !is.na(!!as.name(filter_var$age)) &
-          !is.na(!!as.name(filter_var$sex)) &
-          !!as.name(filter_var$age) >= 0,
-        .excluded_cases = .excluded_cases
-      )
-    }
-
-    for(j in seq_along(unique_areas$code)) {
-
-      if(.config$mode$type == "validation") {
-        result_object <- "cv"
-      } else {
-        result_object <- "ts"
-      }
-
-      res_list <- list()
-      res_class <- paste0("rcbms_", result_object, "_list")
-
-      assign(
-        result_object,
-        set_class(res_list, res_class),
-        envir = envir
-      )
-
-      complete_cases <- NULL
-      unique_area <- unique_areas$code[j]
-
-      assign("current_area_code", unique_area, envir = envir)
-
-      area_label <- paste0(unique_area, " ", unique_areas$label[j])
-
-      if(.config$verbose) {
-        if(length(unique_areas$code) > 1) {
-          progress_n <- paste0("[", j, "/", length(unique_areas$code), "]: ")
-        } else {
-          progress_n <- ""
-        }
-        cli::cli_alert_info(
-          paste0(progress_n, cli::col_br_cyan(area_label), " ", cli::col_br_cyan("✓"))
+        complete_cases_df <- get_complete_cases(
+          .parquet,
+          .aggregation,
+          !is.na(!!as.name(filter_var$age)) &
+            !is.na(!!as.name(filter_var$sex)) &
+            !!as.name(filter_var$age) >= 0,
+          .excluded_cases = .excluded_cases
         )
       }
 
-      if(!is.null(complete_cases_df)) {
+      for(j in seq_along(unique_areas$code)) {
 
-        complete_cases <- complete_cases_df |>
-          join_and_filter_area(
-            .aggregation,
-            .current_area = unique_area
-          ) |>
-          dplyr::pull(case_id)
-      }
+        if(.config$mode$type == "validation") {
+          result_object <- "cv"
+        } else {
+          result_object <- "ts"
+        }
 
-      if(!is.null(complete_cases)) {
-        assign("complete_cases", complete_cases, envir = envir)
-      }
+        res_list <- list()
+        res_class <- paste0("rcbms_", result_object, "_list")
 
-      for(i in seq_along(script_files)) {
+        assign(
+          result_object,
+          set_class(res_list, res_class),
+          envir = envir
+        )
+
+        complete_cases <- NULL
+        unique_area <- unique_areas$code[j]
+
+        assign("current_area_code", unique_area, envir = envir)
+
+        area_label <- paste0(unique_area, " ", unique_areas$label[j])
 
         if(.config$verbose) {
-          script_file <- basename(script_files[i]) |>
-            stringr::str_remove("\\.(r|R)$")
-          if(!grepl("^\\_\\_", script_file)) {
-            cli::cli_alert_success(
-              paste0("Processing ", cli::col_br_yellow(script_file), " script file")
-            )
+          if(length(unique_areas$code) > 1) {
+            progress_n <- paste0("[", j, "/", length(unique_areas$code), "]: ")
+          } else {
+            progress_n <- ""
           }
+          cli::cli_alert_info(
+            paste0(progress_n, cli::col_br_cyan(area_label), " ", cli::col_br_cyan("✓"))
+          )
         }
-        suppressWarnings(source(script_files[i]))
+
+        if(!is.null(complete_cases_df)) {
+
+          complete_cases <- complete_cases_df |>
+            join_and_filter_area(
+              .aggregation,
+              .current_area = unique_area
+            ) |>
+            dplyr::pull(case_id)
+        }
+
+        if(!is.null(complete_cases)) {
+          assign("complete_cases", complete_cases, envir = envir)
+        }
+
+        for(i in seq_along(script_files)) {
+
+          if(.config$verbose) {
+            script_file <- basename(script_files[i]) |>
+              stringr::str_remove("\\.(r|R)$")
+            if(!grepl("^\\_\\_", script_file)) {
+              cli::cli_alert_success(
+                paste0("Processing ", cli::col_br_yellow(script_file), " script file")
+              )
+            }
+          }
+          suppressWarnings(source(script_files[i]))
+        }
+
+        generate_o <- .config[[.config$mode$type]]$generate_output
+        if(is.null(generate_o)) generate_o <- FALSE
+
+        if(generate_o) {
+          generate_output(
+            eval(as.name(result_object)),
+            .references,
+            .aggregation,
+            .config = .config
+          )
+        }
+
+        suppressWarnings(rm(list = "complete_cases", envir = envir))
       }
-
-      generate_o <- .config[[.config$mode$type]]$generate_output
-      if(is.null(generate_o)) generate_o <- FALSE
-
-      if(generate_o) {
-        generate_output(
-          eval(as.name(result_object)),
-          .references,
-          .aggregation,
-          .config = .config
-        )
-      }
-
-      suppressWarnings(rm(list = "complete_cases", envir = envir))
     }
   }
 }

@@ -37,11 +37,15 @@ list_data_files <- function(
   if(read_from_parquet) {
     return(
       list(
-        unique = list.files(input_data_path, pattern = "\\.parquet$") |>
+        unique = list.files(input_data_path, pattern = "\\.parquet$", recursive = T) |>
           dplyr::as_tibble() |>
           dplyr::filter(grepl("\\.parquet$", value, ignore.case = T)) |>
           dplyr::mutate(
-            name = tolower(stringr::str_remove(value, "\\.parquet$")),
+            value = stringr::str_remove_all(value, "__\\d{4}\\.parquet$")
+          ) |>
+          dplyr::distinct(value, .keep_all = T) |>
+          dplyr::mutate(
+            name = tolower(stringr::str_remove(basename(value), "\\.parquet$")),
             n = seq(1:dplyr::n()),
             n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
           ) |>

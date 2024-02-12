@@ -152,3 +152,19 @@ set_class <- function(.data, .class) {
 is_not_installed <- function(.pkg) {
   rlang::is_false(rlang::is_installed(.pkg))
 }
+
+#' Title
+#'
+#' @param .type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+rcbms_list <- function(.type) {
+  new_list <- list()
+  set_class(new_list, paste0('rcbms_', .type, '_list'))
+}
+
+

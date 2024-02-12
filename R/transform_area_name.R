@@ -9,7 +9,7 @@
 #' @examples
 #'
 
-transform_area_name <- function(.references, .add_length = 0) {
+transform_area_name <- function(.references = get_config("references"), .add_length = 0) {
 
   regions <- .references$valueset |>
     dplyr::filter(name == 'area_name_region') |>
