@@ -178,7 +178,6 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
   return(.data)
 }
 
-
 convert_col_names <- function(.data, .dictionary) {
 
   df_names <- .data |>
