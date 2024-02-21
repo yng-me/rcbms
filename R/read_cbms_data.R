@@ -91,7 +91,7 @@ read_cbms_data <- function(
         if(is.null(.config$read_as_chunk)) {
           .config$read_as_chunk <- FALSE
         }
-        if((file_size <  5000 || n_chunks < 2) & .config$read_as_chunk) {
+        if(file_size <  5000 || n_chunks < 2 || isFALSE(.config$read_as_chunk)) {
 
           df_temp_dim <- save_cbms_data(
             .df_src_files = df_src_files$value,
