@@ -88,7 +88,10 @@ read_cbms_data <- function(
         n_chunks <- as.integer(round(file_size / (n_files * 7)))
         is_first_record <- j == 1 & df_files$unique$n[j] == 0
 
-        if(file_size <  5000 || n_chunks < 2) {
+        if(is.null(.config$read_as_chunk)) {
+          .config$read_as_chunk <- FALSE
+        }
+        if((file_size <  5000 || n_chunks < 2) & .config$read_as_chunk) {
 
           df_temp_dim <- save_cbms_data(
             .df_src_files = df_src_files$value,
