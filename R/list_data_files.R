@@ -21,6 +21,9 @@ list_data_files <- function(
   file_format <- get_file_format(.config, .input_data)
   read_from_parquet <- .config$read_from_parquet
   df_input_folder <- "raw"
+  if(!is.null(.config$project$directory)) {
+    df_input_folder <- .config$project$directory
+  }
 
   if(read_from_parquet) df_input_folder <- "parquet"
   input_data_path <- get_data_path(df_input_folder, .input_data)
