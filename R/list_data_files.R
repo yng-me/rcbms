@@ -24,11 +24,13 @@ list_data_files <- function(
 
   if(read_from_parquet) df_input_folder <- "parquet"
 
-  if(!is.null(.config$project$directory)) {
-    input_data_path <- .config$project$directory
+  if(!is.null(.config$project[[.input_data]]$directory)) {
+    input_data_path <- .config$project[[.input_data]]$directory
   } else {
     input_data_path <- get_data_path(df_input_folder, .input_data)
   }
+
+  print(input_data_path)
 
   if(!dir.exists(input_data_path)) {
     stop("Data directory does not exist: ", input_data_path)
