@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_config.R
 \name{set_config}
 \alias{set_config}
-\title{Title}
+\title{Set initial configuration for the project}
 \usage{
 set_config(
   .config_file,
@@ -12,10 +12,23 @@ set_config(
 )
 }
 \arguments{
-\item{.config_file}{Path to config file}
+\item{.config_file}{Path to config file. Default is \code{"./configs/global.yml"}. If the file is not present, a default config file will be generated.}
 
-\item{.assign_name}{}
+\item{.include_env}{Include \code{.env} file. Default is \code{TRUE}. This will be switched to \code{FALSE} if the \code{.env} file is not present. The default location is \code{"./configs/.env"}.}
+
+\item{.save_as_options}{Save as options in the global environment. Default is \code{TRUE}.}
+
+\item{.assign_name}{Name to assign to the config object. Default is \code{config}.}
+}
+\value{
+A list of configuration settings use to execute the script.
 }
 \description{
-Title
+Set initial configuration for the project
+}
+\examples{
+
+set_config("./configs/global.yml")
+
+
 }

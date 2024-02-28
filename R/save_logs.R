@@ -42,7 +42,7 @@ save_logs <- function(.config = getOption("rcbms.config")) {
 
     cv_logs <- DBI::dbReadTable(conn, cv_name) |>
       dplyr::tibble() |>
-      dplyr::mutate(status = NA_character_) |>
+      dplyr::mutate(status = 0) |>
       dplyr::filter(log_id %in% current_logs_id)
 
     cv_logs_current <- cv_logs

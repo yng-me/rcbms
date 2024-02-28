@@ -8,9 +8,6 @@ save_rcbms_logs <- function(
   conn <- connect_to_rcbms_logs(.config)
   log_tables <- RSQLite::dbListTables(conn)
 
-  cv_table_current <- paste0(.input_data, "_cv_current")
-  cv_table_name <- paste0(.input_data, "_cv")
-
   save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
 
   create_remarks_table(conn, log_tables)
@@ -37,7 +34,11 @@ create_remarks_table <- function(.conn, .tables) {
       "CREATE TABLE remarks (
         id varchar(36),
         user_id varchar(36),
-        status tinyint CHECK (status IN (1, 2, 3, 4)),
+        username varchar(36),
+        first_name varchar(36),
+        last_name varchar(36),
+        role varchar(36),
+        status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         remarks text,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );"
@@ -67,8 +68,8 @@ save_current_logs <- function(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         round varchar(4),
         mode varchar(16),
-        edit tinyint CHECK (edit IN (1, 2, 3, 4)),
-        level tinyint CHECK (level IN (1, 2, 3, 4, 5)),
+        edit tinyint CHECK (edit IN (0, 1, 2, 3, 4)),
+        level tinyint CHECK (level IN (0, 1, 2, 3, 4, 5)),
         source tinyint CHECK (source IN (1, 2, 3)),
         station char(5) CHECK (station IN ('CO', 'RO', 'PO', 'LGU')),
         input_data char(3) CHECK (input_data IN ('hp', 'bp', 'ilq')),
@@ -106,7 +107,7 @@ save_current_logs <- function(
   current_id <- 1
 
   cv_data <- .data |>
-    dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number"))) |>
+    dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info"))) |>
     dplyr::mutate(log_id = current_id)
 
   if(uid %in% names(cv_data)) {
@@ -182,6 +183,7 @@ save_current_logs <- function(
     last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid()")
     current_id <- as.integer(last_row[[1]])
 
+    cv_table_name <- paste0(.input_data, "_cv")
     cv_data <- cv_data |> dplyr::mutate(log_id = current_id)
 
     DBI::dbWriteTable(

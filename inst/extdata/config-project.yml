@@ -1,6 +1,6 @@
 # Project config default values
 '2024':
-  reference_period: '2024-01-01'
+  reference_period: '2024-06-30'
   add_length: 1
   bp:
     id: uuid
@@ -17,7 +17,7 @@
     sub_directory: ~
     file_format: txt
     summary_record: cover_page
-    roster_record: section_a_f
+    roster_record: section_a_e
     aggregation:
       level: 1
       areas: all

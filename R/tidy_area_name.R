@@ -8,43 +8,68 @@
 #' @examples
 #'
 
-tidy_area_name <- function(.references) {
+tidy_area_name <- function(.references, .add_length) {
+
+  if(.add_length == 1) {
+    barangay_geo_var <- 'barangay_geo_new'
+    over_all_code <- "0000000000"
+  } else {
+    barangay_geo_var <- 'barangay_geo'
+    over_all_code <- "000000000"
+  }
   .references$area_name |>
-    select(
-      area_code = barangay_geo,
+    dplyr::select(
+      area_code = !!as.name(barangay_geo_var),
       area_name = barangay,
     ) |>
-    mutate(level = 4) |>
-    bind_rows(
+    dplyr::mutate(level = 4) |>
+    dplyr::bind_rows(
       .references$area_name |>
-        transmute(
-          area_code = str_pad(str_sub(barangay_geo, 1, 6), width = 9, pad = '0', side = 'right'),
+        dplyr::transmute(
+          area_code = stringr::str_pad(
+            stringr::str_sub(!!as.name(barangay_geo_var), 1, 6 + .add_length),
+            width = 9 + .add_length,
+            pad = '0',
+            side = 'right'
+          ),
           area_name = city_mun
         ) |>
-        mutate(level = 3) |>
-        distinct(.keep_all = T)
+        dplyr::mutate(level = 3) |>
+        dplyr::distinct(.keep_all = T)
     ) |>
-    bind_rows(
+    dplyr::bind_rows(
       .references$area_name |>
-        transmute(
-          area_code = str_pad(str_sub(barangay_geo, 1, 4), width = 9, pad = '0', side = 'right'),
+        dplyr::transmute(
+          area_code = stringr::str_pad(
+            stringr::str_sub(!!as.name(barangay_geo_var), 1, 4 + .add_length),
+            width = 9 + .add_length,
+            pad = '0',
+            side = 'right'
+          ),
           area_name = province
         ) |>
-        mutate(level = 2) |>
-        distinct(.keep_all = T)
+        dplyr::mutate(level = 2) |>
+        dplyr::distinct(.keep_all = T)
     ) |>
-    bind_rows(
-      transform_area_name(.references) |>
-        transmute(
-          area_code = str_pad(region_code, width = 9, pad = '0', side = 'right'),
+    dplyr::bind_rows(
+      transform_area_name(.references, .add_length = .add_length) |>
+        dplyr::transmute(
+          area_code = stringr::str_pad(
+            region_code,
+            width = 9 + .add_length,
+            pad = '0',
+            side = 'right'
+          ),
           area_name = region
         ) |>
-        mutate(level = 1) |>
-        distinct(.keep_all = T)
+        dplyr::mutate(level = 1) |>
+        dplyr::distinct(.keep_all = T)
     ) |>
-    add_row(tibble(
-      area_code = "000000000",
-      area_name = "",
-      level = 0
-    ))
+    dplyr::add_row(
+      tibble::tibble(
+        area_code = over_all_code,
+        area_name = "",
+        level = 0
+      )
+    )
 }

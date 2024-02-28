@@ -23,11 +23,14 @@ check_age_sex_relation <- function(
   .threshold,
   .condition = "<",
   .conjuction = NULL,
+  .relation_to_hh_head_var = NULL,
   .config = getOption("rcbms.config")
 ) {
 
   var <- .config$project$hp$variable
-  relation_to_hh_head_var <- var$relation_to_hh_head
+  if(is.null(.relation_to_hh_head_var)) {
+    .relation_to_hh_head_var <- var$relation_to_hh_head
+  }
   age_var <- var$age
   sex_var <- var$sex
 
