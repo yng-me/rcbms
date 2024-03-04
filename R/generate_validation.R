@@ -100,20 +100,6 @@ generate_validation <- function(
     }
   }
 
-  additiona_info <- NULL
-  if(.include_additional_info) {
-    additiona_info <- c(
-      'hh_head',
-      'respondent_contact_number',
-      'contact_number',
-      'email_add',
-      'address',
-      'floor_number',
-      'subdivision_or_village',
-      'sitio_or_purok'
-    )
-  }
-
   uid <- .config$project[[current_input_data]]$id
   if(is.null(uid)) uid <- "case_id"
 
@@ -124,7 +110,7 @@ generate_validation <- function(
     output_temp <- .cv[[result_name]] |>
       dplyr::mutate(validation_id = result_name)
 
-    if(!('line_number' %in% names(output_temp)) && input_data == "hp") {
+    if(!('line_number' %in% names(output_temp)) && input_data %in% c("hp", "ilq")) {
       output_temp <- output_temp |>
         dplyr::mutate(line_number = NA_character_)
     }
@@ -157,57 +143,29 @@ generate_validation <- function(
 
   if(!is.null(output)) {
 
-    # if(.detailed_output) {
-    #
-    #   add_length <- .config$project$add_length
-    #
-    #   output <- output |>
-    #     dplyr::mutate(
-    #       barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length)
-    #     ) |>
-    #     dplyr::left_join(
-    #       .references$area_name |>
-    #         dplyr::collect() |>
-    #         transform_area_name() |>
-    #         dplyr::select(
-    #           barangay_geo,
-    #           region,
-    #           province,
-    #           city_mun,
-    #           barangay
-    #         ),
-    #       by = 'barangay_geo'
-    #     ) |>
-    #     dplyr::left_join(references, by = 'validation_id') |>
-    #     dplyr::select(-dpylr::any_of("barangay_geo"))
-    # }
-
-    if(.add_uuid && input_data == "hp") {
-      output <- output |> add_uuid(.id_name = "id")
+    additiona_info <- NULL
+    if(.include_additional_info) {
+      additiona_info <- c(
+        'hh_head',
+        'respondent_contact_number',
+        'contact_number',
+        'email_add',
+        'address',
+        'floor_number',
+        'subdivision_or_village',
+        'sitio_or_purok'
+      )
     }
 
-    if(.add_uuid && "uuid" %in% names(output)) {
-      output <- output |> dplyr::rename(id = "uuid")
+    if(.add_uuid) {
+      if("uuid" %in% names(output)) {
+        output <- output |> dplyr::rename(id = "uuid")
+      } else {
+        output <- output |> add_uuid(.id_name = "id")
+      }
     }
 
     save_rcbms_logs(output, input_data, .references, .config)
-
-    # if(.save_as_json) {
-    #   save_as_json(
-    #     .output = output,
-    #     .input_data = input_data,
-    #     .config = .config
-    #   )
-    # }
-
-    if(.save_as_excel) {
-      # save_as_excel(
-      #   .output = output,
-      #   .input_data = input_data,
-      #   .config = .config,
-      #   .detailed = .detailed_output
-      # )
-    }
 
   }
 

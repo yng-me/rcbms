@@ -3,33 +3,52 @@
   reference_period: '2024-06-30'
   add_length: 1
   bp:
-    id: uuid
+    id: barangay_geo
+    directory: ~
     sub_directory: ~
-    file_format: csv
-    summary_record: bpq_user
+    file_format: xlsm
+    summary_record: bpq_data
     aggregation:
-      level: 1
+      level: 2
       areas: all
     variable:
       result_of_visit: verified
   hp:
     id: case_id
+    directory: ~
     sub_directory: ~
     file_format: txt
     summary_record: cover_page
     roster_record: section_a_e
     aggregation:
-      level: 1
+      level: 2
       areas: all
     unfiltered_records:
       - cover_page
       - interview_record
     variable:
-      line_number: line_no
+      line_number: line_number
       result_of_visit: result_of_final_visit
       relation_to_hh_head: a02_relation_to_hh_head
-      age: a05_age
       sex: a03_sex
+      age: a05_age
+  ilq:
+    id: case_id
+    directory: ~
+    sub_directory: ~
+    file_format: csv
+    summary_record: ilq_rt1_data
+    roster_record: ilq_rt2_data
+    aggregation:
+      level: 2
+      areas: all
+    unfiltered_records: ~
+    variable:
+      line_number: line_number
+      result_of_visit: result_of_final_visit
+      sex: p03_sex
+      age: p05_age
+
 '2022':
   reference_period: '2022-06-30'
   add_length: 0
@@ -38,13 +57,14 @@
     sub_directory: ~
     file_format: xlsx
     aggregation:
-      level: 1
+      level: 2
       areas: all
     variable:
       result_of_visit: verified
   hp:
     id: case_id
-    sub_directory: 'Region I'
+    directory: ~
+    sub_directory: ~
     file_format: txt
     summary_record: summary_of_visit
     roster_record: section_a_to_e
@@ -55,10 +75,10 @@
       line_number: lno
       result_of_visit: result_of_visit
       relation_to_hh_head: a02_relation_to_hh_head
-      age: a07_age
       sex: a05_sex
+      age: a07_age
 '2021':
-  reference_period: '2021-10-01'
+  reference_period: '2021-09-30'
   add_length: 0
   bp:
     id: uuid
@@ -75,8 +95,8 @@
       line_number: lineno
       result_of_visit: result_of_visit
       relation_to_hh_head: a02_relation_to_hh_head
-      age: a07_age
       sex: a05_sex
+      age: a07_age
 '2020':
   reference_period: '2020-05-01'
   add_length: 0

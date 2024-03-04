@@ -34,6 +34,10 @@ check_age_sex_relation <- function(
   age_var <- var$age
   sex_var <- var$sex
 
+  if(is.null(.conjuction) & length(.condition) > 1) {
+    .conjuction <- rep("&", length(.condition) - 1)
+  }
+
   .data |>
     dplyr::group_by(case_id) |>
     tidyr::nest() |>
@@ -43,7 +47,7 @@ check_age_sex_relation <- function(
         df <- x |>
           dplyr::mutate(
             age = !!as.name(age_var),
-            relation_to_hh_head = as.integer(!!as.name(relation_to_hh_head_var)),
+            relation_to_hh_head = as.integer(!!as.name(.relation_to_hh_head_var)),
             is_primary_member = relation_to_hh_head == .primary_member & !!as.name(sex_var) %in% .sex_of_primary_member,
             with_relation = relation_to_hh_head == .relation_to_primary_member
           ) |>
@@ -76,7 +80,7 @@ check_age_sex_relation <- function(
 
           for(i in seq_along(hh_relation_d)) {
 
-            age_diff <- paste("abs(", hh_head_d[1], '-', hh_relation_d[i], ")")
+            age_diff <- paste0("abs(", hh_head_d[1], ' - ', hh_relation_d[i], ")")
 
             expr <- NULL
             .conjuction <- c(.conjuction, '')
@@ -85,7 +89,8 @@ check_age_sex_relation <- function(
               expr <- c(expr, expr_j)
             }
 
-            expr_c <- paste(expr, collapse = '')
+            expr_c <- stringr::str_trim(paste(expr, collapse = ' '))
+
             if(eval(parse(text = expr_c))) {
               df_list[[i]] <- df_first |>
                 dplyr::mutate(
@@ -101,6 +106,7 @@ check_age_sex_relation <- function(
       })
     ) |>
     tidyr::unnest(data) |>
+    dplyr::ungroup() |>
     validate_select(
       primary_member,
       sex_of_primary_member,
@@ -109,5 +115,13 @@ check_age_sex_relation <- function(
       age_of_relation_to_primary_member,
       age_difference
     ) |>
-    dplyr::filter(!is.na(age_difference))
+    dplyr::filter(!is.na(age_difference)) |>
+    select_cv(
+      primary_member,
+      sex_of_primary_member,
+      relation_to_primary_member,
+      age_of_primary_member,
+      age_of_relation_to_primary_member,
+      age_difference
+    )
 }

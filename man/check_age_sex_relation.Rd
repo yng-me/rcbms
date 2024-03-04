@@ -12,6 +12,7 @@ check_age_sex_relation(
   .threshold,
   .condition = "<",
   .conjuction = NULL,
+  .relation_to_hh_head_var = NULL,
   .config = getOption("rcbms.config")
 )
 }

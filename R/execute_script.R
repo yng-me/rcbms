@@ -41,7 +41,7 @@ execute_script <- function(.config_file, ..., .survey_round = NULL) {
     read_cbms_data()
     set_aggregation()
     execute_mode()
-    save_logs()
+    # save_logs()
     clear_objects()
   }
 }

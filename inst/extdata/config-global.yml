@@ -11,9 +11,10 @@ reload_references:
   score_card: yes
   record: yes
 working_directory: '.'
+check_if_online: true
 complete_cases: yes
 read_as_chunk: false
-chunk_threshold: 5000 # in MB
+chunk_threshold: 5000
 harmonize_variable: yes
 input_data: hp
 execute_mode: no
