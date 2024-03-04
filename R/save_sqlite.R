@@ -8,9 +8,6 @@ save_rcbms_logs <- function(
   conn <- connect_to_rcbms_logs(.config)
   log_tables <- RSQLite::dbListTables(conn)
 
-  cv_table_current <- paste0(.input_data, "_cv_current")
-  cv_table_name <- paste0(.input_data, "_cv")
-
   save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
 
   create_remarks_table(conn, log_tables)
@@ -37,7 +34,11 @@ create_remarks_table <- function(.conn, .tables) {
       "CREATE TABLE remarks (
         id varchar(36),
         user_id varchar(36),
-        status tinyint CHECK (status IN (1, 2, 3, 4)),
+        username varchar(36),
+        first_name varchar(36),
+        last_name varchar(36),
+        role varchar(36),
+        status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         remarks text,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );"
@@ -67,8 +68,8 @@ save_current_logs <- function(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         round varchar(4),
         mode varchar(16),
-        edit tinyint CHECK (edit IN (1, 2, 3, 4)),
-        level tinyint CHECK (level IN (1, 2, 3, 4, 5)),
+        edit tinyint CHECK (edit IN (0, 1, 2, 3, 4)),
+        level tinyint CHECK (level IN (0, 1, 2, 3, 4, 5)),
         source tinyint CHECK (source IN (1, 2, 3)),
         station char(5) CHECK (station IN ('CO', 'RO', 'PO', 'LGU')),
         input_data char(3) CHECK (input_data IN ('hp', 'bp', 'ilq')),
@@ -80,6 +81,7 @@ save_current_logs <- function(
         total_priority_c int,
         total_priority_d int,
         user_id varchar(36),
+        status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         version_app varchar(10),
         version_package varchar(10),
         version_script varchar(10),
@@ -106,7 +108,7 @@ save_current_logs <- function(
   current_id <- 1
 
   cv_data <- .data |>
-    dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number"))) |>
+    dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info"))) |>
     dplyr::mutate(log_id = current_id)
 
   if(uid %in% names(cv_data)) {
@@ -166,6 +168,7 @@ save_current_logs <- function(
       version_app = .config$version$app,
       version_package = .config$version$package,
       version_script = .config$version$script,
+      status = 0,
       pc_os = tolower(pc[["sysname"]]),
       pc_user = pc[["user"]],
       pc_effective_user = pc[["effective_user"]],
@@ -179,14 +182,47 @@ save_current_logs <- function(
 
   if(log_saved) {
 
+    cv_table_name <- paste0(.input_data, "_cv")
+
+    if(.input_data %in% c("hp", "ilq")) {
+      by_cv_cols <- c("case_id", "validation_id", "line_number")
+    } else if(.input_data == "bp") {
+      by_cv_cols <- c("uuid", "validation_id")
+    }
+
     last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid()")
     current_id <- as.integer(last_row[[1]])
 
-    cv_data <- cv_data |> dplyr::mutate(log_id = current_id)
+    cv_data <- cv_data |>
+      dplyr::mutate(log_id = current_id)
+
+    if(cv_table_name %in% .tables) {
+
+      cv_logs_with_remarks <- DBI::dbReadTable(.conn, cv_table_name) |>
+        dplyr::tibble() |>
+        dplyr::filter(as.integer(status) > 0) |>
+        dplyr::mutate(status = as.integer(status)) |>
+        dplyr::mutate(old_uuid = id) |>
+        dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
+
+      if(nrow(cv_logs_with_remarks) > 0) {
+
+        cv_data <- cv_data |>
+          dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
+          dplyr::mutate(
+            id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
+            status = dplyr::if_else(is.na(status), 0L, status)
+          ) |>
+          dplyr::select(-dplyr::any_of('old_uuid'))
+      }
+    } else {
+      cv_data <- cv_data |>
+        dplyr::mutate(status = 0L)
+    }
 
     DBI::dbWriteTable(
       conn = .conn,
-      name = paste0(.input_data, "_cv"),
+      name = cv_table_name,
       value = cv_data,
       append = TRUE
     )

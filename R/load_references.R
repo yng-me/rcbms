@@ -22,6 +22,17 @@ load_references <- function(
     cli::cli_h1("Loading References")
   }
 
+  check_if_online <- TRUE
+  if(!is.null(.config$check_if_online)) {
+    check_if_online <- .config$check_if_online
+  }
+
+  if(check_if_online) {
+    is_online <- is_online()
+  } else {
+    is_online <- FALSE
+  }
+
   gid <- list(
     area_name = "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE",
     valueset = "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
@@ -80,7 +91,7 @@ load_references <- function(
       ref_reload_i <- ref_reload[[ref_i]]
     }
 
-    if(is_online() & (ref_reload_i | !file.exists(pq_i))) {
+    if(is_online & (ref_reload_i | !file.exists(pq_i))) {
 
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
       if(ref_short_i == "rec") {

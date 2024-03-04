@@ -42,22 +42,26 @@ read_cbms_data <- function(
 
     df_input <- input_data[i]
 
+    is_bp_xlsm <- df_input == 'bp' & as.integer(.config$survey_round) == 2024
+
     df_files <- list_data_files(df_input, .references, .config)
 
     if(!read_from_parquet) {
-      rov_var <- config$project[[df_input]]$variable$result_of_visit
-      unfiltered_records <- .config$project[[df_input]]$unfiltered_records
-      if(is.null(unfiltered_records)) unfiltered_records <- ""
+      if(!is_bp_xlsm) {
+        rov_var <- config$project[[df_input]]$variable$result_of_visit
+        unfiltered_records <- .config$project[[df_input]]$unfiltered_records
+        if(is.null(unfiltered_records)) unfiltered_records <- ""
 
-      if(.config$verbose) {
-        if(length(input_data) > 1) {
-          progress_n <- paste0("[", i, "/", length(input_data), "]: ")
-        } else {
-          progress_n <- ""
+        if(.config$verbose) {
+          if(length(input_data) > 1) {
+            progress_n <- paste0("[", i, "/", length(input_data), "]: ")
+          } else {
+            progress_n <- ""
+          }
+          cli::cli_h3(
+            paste0(progress_n, cli::col_br_cyan(get_input_data_label(df_input)))
+          )
         }
-        cli::cli_h3(
-          paste0(progress_n, cli::col_br_cyan(get_input_data_label(df_input)))
-        )
       }
 
       uid <- "case_id"
@@ -93,13 +97,34 @@ read_cbms_data <- function(
         }
         if(file_size <  5000 || n_chunks < 2 || isFALSE(.config$read_as_chunk)) {
 
-          df_temp_dim <- save_cbms_data(
-            .df_src_files = df_src_files$value,
-            .is_first_record = is_first_record,
-            .input_data = df_input,
-            .pq_path = pq_path,
-            .p_name = p_name
-          )
+          if(is_bp_xlsm) {
+
+            bp_base_path <- config$project$bp$directory
+            if(is.null(bp_base_path)) {
+              bp_base_path <- paste0(.config$base, '/data/raw/bp')
+            }
+
+            df_temp_dim <- read_bp_data(bp_base_path)
+
+            bp_pq_xlsm <- './src/2024/data/parquet/bp'
+            arrow::write_parquet(df_temp_dim$bpq_data, paste0(bp_pq_xlsm, '/bpq_data.parquet'))
+            arrow::write_parquet(df_temp_dim$bpq_data_list, paste0(bp_pq_xlsm, '/bpq_data_list.parquet'))
+            arrow::write_parquet(df_temp_dim$bpq_data_mode_of_transport, paste0(bp_pq_xlsm, '/bpq_data_mode_of_transport.parquet'))
+
+            df$bp$bpq_data <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data.parquet'))
+            df$bp$bpq_data_list <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data_list.parquet'))
+            df$bp$bpq_data_mode_of_transport <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data_mode_of_transport.parquet'))
+
+          } else {
+
+            df_temp_dim <- save_cbms_data(
+              .df_src_files = df_src_files$value,
+              .is_first_record = is_first_record,
+              .input_data = df_input,
+              .pq_path = pq_path,
+              .p_name = p_name
+            )
+          }
 
         } else {
 

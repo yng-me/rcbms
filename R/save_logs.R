@@ -34,7 +34,7 @@ save_logs <- function(.config = getOption("rcbms.config")) {
     cv_name <- paste0(input_df, "_cv")
     cv_name_current <- paste0(input_df, "_cv_current")
 
-    if(input_df == "hp") {
+    if(input_df %in% c("hp", "ilq")) {
       by_cv_cols <- c("case_id", "validation_id", "line_number")
     } else if(input_df == "bp") {
       by_cv_cols <- c("uuid", "validation_id")
@@ -42,8 +42,8 @@ save_logs <- function(.config = getOption("rcbms.config")) {
 
     cv_logs <- DBI::dbReadTable(conn, cv_name) |>
       dplyr::tibble() |>
-      dplyr::mutate(status = NA_character_) |>
-      dplyr::filter(log_id %in% current_logs_id)
+      dplyr::filter(log_id %in% current_logs_id) |>
+      dplyr::mutate(status = 0)
 
     cv_logs_current <- cv_logs
 

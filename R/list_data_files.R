@@ -30,8 +30,6 @@ list_data_files <- function(
     input_data_path <- get_data_path(df_input_folder, .input_data)
   }
 
-  print(input_data_path)
-
   if(!dir.exists(input_data_path)) {
     stop("Data directory does not exist: ", input_data_path)
   }

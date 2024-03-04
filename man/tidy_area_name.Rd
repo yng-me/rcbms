@@ -4,7 +4,7 @@
 \alias{tidy_area_name}
 \title{Title}
 \usage{
-tidy_area_name(.references)
+tidy_area_name(.references, .add_length)
 }
 \arguments{
 \item{.references}{}

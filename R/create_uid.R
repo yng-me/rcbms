@@ -21,30 +21,32 @@ create_case_id <- function(
   if(is.null(.input_data)) {
     if(exists('current_input_data')) {
       .input_data <- current_input_data
-    } else {
-      .input_data <- "hp"
     }
   }
 
+  .data <- collect_first(.data)
+
   if(.input_data == "bp") return(.data)
 
-  .data <- collect_first(.data)
   if(!("case_id" %in% names(.data))) {
 
-    .data <- .data |>
-      dplyr::mutate(
-        case_id = paste0(
-          region_code,
-          province_code,
-          city_mun_code,
-          barangay_code,
-          ean,
-          bsn,
-          husn,
-          hsn
-        ),
-        .before = 1
-      )
+    if(.input_data == "ilq") {
+
+      .data <- .data |>
+        dplyr::mutate(
+          case_id = paste0(region_code, province_code, city_mun_code, barangay_code, ean, bsn, isn),
+          .before = 1
+        )
+
+    } else if(.input_data == "hp") {
+
+      .data <- .data |>
+        dplyr::mutate(
+          case_id = paste0(region_code, province_code, city_mun_code, barangay_code, ean, bsn, husn, hsn),
+          .before = 1
+        )
+    }
+
   }
 
   if(!is.null(.config$completed_cases) & .filter_completed) {

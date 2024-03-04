@@ -96,6 +96,6 @@ check_duplicate_code <- function(
     tidyr::unnest(data) |>
     dplyr::ungroup() |>
     dplyr::filter(!is.na(check_vars)) |>
-    validate_select(line_numbers, check_vars, dplyr::any_of(g))
+    select_cv(line_numbers, check_vars, dplyr::any_of(g))
 }
 
