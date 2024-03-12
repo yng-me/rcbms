@@ -165,6 +165,10 @@ generate_validation <- function(
       }
     }
 
+    if(.config$progress) {
+      cli::cli_text('Saving logs')
+    }
+    
     save_rcbms_logs(output, input_data, .references, .config)
 
   }

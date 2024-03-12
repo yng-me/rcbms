@@ -186,6 +186,10 @@ read_cbms_data <- function(
         )
       }
 
+      if(.config$progress) {
+        cli::cli_text(paste0('Importing ', p_name, ' record'))
+      }
+
       if(file.exists(pq_path)) {
         df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
       }

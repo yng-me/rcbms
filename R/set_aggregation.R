@@ -24,6 +24,10 @@ set_aggregation <- function(
     cli::cli_h1("Setting Aggregation")
   }
 
+  if(.config$progress) {
+    cli::cli_text('Setting aggregation')
+  }
+
   agg <- list()
 
   agg_level <- .config$aggregation$level

@@ -1,23 +1,23 @@
 # Global config default values
 survey_round: '2024'
-read_from_parquet: no
+read_from_parquet: false
 reload_references:
-  area_name: yes
-  valueset: yes
-  validation: yes
-  tabulation: yes
-  data_dictionary: yes
-  macrodata: yes
-  score_card: yes
-  record: yes
-working_directory: '.'
+  area_name: true
+  valueset: true
+  validation: true
+  tabulation: true
+  data_dictionary: true
+  macrodata: true
+  score_card: true
+  record: true
+working_directory: ~
 check_if_online: true
-complete_cases: yes
+complete_cases: true
 read_as_chunk: false
 chunk_threshold: 5000
-harmonize_variable: yes
+harmonize_variable: true
 input_data: hp
-execute_mode: no
+execute_mode: false
 mode:
   type: validation
   edit: 1
@@ -28,23 +28,24 @@ aggregation:
   level: 1
   areas: all
 validation:
-  generate_output: no
-  detailed_output: no
-  include_additional_info: no
-  validate_signatures: no
-  add_uuid: yes
-  save_as_excel: no
-  save_as_json: yes
+  generate_output: false
+  detailed_output: false
+  include_additional_info: false
+  validate_signatures: false
+  add_uuid: true
+  save_as_excel: false
+  save_as_json: true
 tabulation: ~
 portal:
   stage: dev
   db_migration:
-    overwrite: yes
-    append: no
+    overwrite: true
+    append: false
 version:
   app: 3.0.0
   script: 0.0.1
   package: 0.1.4
   db: 0.0.1
-clear_objects: yes
-verbose: yes
+clear_objects: true
+verbose: true
+progress: false

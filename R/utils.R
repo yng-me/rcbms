@@ -137,7 +137,7 @@ set_relative_wd <- function(
       wd <- .base_wd
     }
   } else {
-    wd <- './'
+    wd <- '.'
   }
 
   join_path(paste0(wd, '/', ...))
