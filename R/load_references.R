@@ -58,7 +58,7 @@ load_references <- function(
   ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec")
 
   wd <- .config$working_directory
-  if(is.null(wd)) wd <- ''
+  if(is.null(wd)) wd <- '.'
   wd_base_ref <- create_new_folder(paste0(wd, '/references'))
 
   pq <- stats::setNames(
@@ -367,7 +367,7 @@ load_validation_refs <- function(.gid) {
   attr(df$status, 'label') <- 'Status'
   attr(df$date_introduced, 'label') <- 'Date Introduced'
 
-  df
+  df |> dplyr::filter(status != 0)
 
 }
 

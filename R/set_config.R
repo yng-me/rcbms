@@ -41,7 +41,11 @@ set_config <- function(
 
   # VERSION
   wd <- config$working_directory
-  if(is.null(wd)) wd <- "./"
+  if(is.null(wd)) wd <- "."
+  if(trimws(wd) == "") {
+    config$working_directory <- NULL
+    wd <- "."
+  }
 
   if(!is.null(config$cbms_round)) {
     cli::cli_alert_warning(
@@ -66,6 +70,10 @@ set_config <- function(
   }
 
   config$project <- project[[as.character(config$survey_round)]]
+
+  if(is.null(config$progress)) {
+    config$progress <- FALSE
+  }
 
 
   # ENV

@@ -194,13 +194,13 @@ save_current_logs <- function(
     current_id <- as.integer(last_row[[1]])
 
     cv_data <- cv_data |>
-      dplyr::mutate(log_id = current_id)
+      dplyr::mutate(log_id = current_id, status = 0L)
 
     if(cv_table_name %in% .tables) {
 
       cv_logs_with_remarks <- DBI::dbReadTable(.conn, cv_table_name) |>
         dplyr::tibble() |>
-        dplyr::filter(as.integer(status) > 0) |>
+        dplyr::filter(as.integer(status) != 0) |>
         dplyr::mutate(status = as.integer(status)) |>
         dplyr::mutate(old_uuid = id) |>
         dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
@@ -208,17 +208,15 @@ save_current_logs <- function(
       if(nrow(cv_logs_with_remarks) > 0) {
 
         cv_data <- cv_data |>
+          dplyr::select(-status) |>
           dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
           dplyr::mutate(
             id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
-            status = dplyr::if_else(is.na(status), 0L, status)
+            status = dplyr::if_else(is.na(status), 0L, as.integer(status))
           ) |>
           dplyr::select(-dplyr::any_of('old_uuid'))
       }
-    } else {
-      cv_data <- cv_data |>
-        dplyr::mutate(status = 0L)
-    }
+    } 
 
     DBI::dbWriteTable(
       conn = .conn,

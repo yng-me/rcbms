@@ -41,12 +41,28 @@ add_metadata <- function(
         stringr::str_trim(variable_name_new)
       )
     ) |>
-    dplyr::select(variable, label, valueset) |>
+    dplyr::select(variable, label, valueset, item, sub_item, type) |>
     dplyr::distinct(.keep_all = T)  |>
     dplyr::filter(variable %in% df_name, !is.na(label))
 
   for(i in seq_along(.dictionary$variable)) {
-    attr(.data[[.dictionary$variable[i]]], 'label') <- as.character(.dictionary$label[i])
+    v <- .dictionary$variable[i]
+    attr(.data[[v]], 'label') <- as.character(.dictionary$label[i])
+
+    item <- .dictionary$item[i]
+    if(!is.na(item)) {
+      attr(.data[[v]], 'item') <- as.character(item)
+    }
+
+    sub_item <- .dictionary$sub_item[i]
+    if(!is.na(sub_item)) {
+      attr(.data[[v]], 'sub_item') <- as.character(sub_item)
+    }
+
+    data_type <- .dictionary$type[i]
+    if(!is.na(data_type)) {
+      attr(.data[[v]], 'type') <- as.character(data_type)
+    }
   }
 
   if('barangay_geo' %in% df_name) {

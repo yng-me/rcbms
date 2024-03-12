@@ -202,17 +202,25 @@ execute_mode <- function(
         }
 
         for(i in seq_along(script_files)) {
-
-          if(.config$verbose) {
-            script_file <- basename(script_files[i]) |>
-              stringr::str_remove("\\.(r|R)$")
-            if(!grepl("^\\_\\_", script_file)) {
+          script_file <- basename(script_files[i]) |>
+            stringr::str_remove("\\.(r|R)$")
+          
+          if(!grepl("^\\_\\_", script_file)) {
+            if(.config$verbose) {
               cli::cli_alert_success(
                 paste0("Processing ", cli::col_br_yellow(script_file), " script file")
               )
             }
+
+            if(.config$progress) {
+              cli::cli_text(paste0("Processing ", script_file, " script file"))
+            }
           }
           suppressWarnings(source(script_files[i]))
+        }
+
+        if(.config$progress) {
+          cli::cli_text('Writing validation output')
         }
 
         generate_o <- .config[[.config$mode$type]]$generate_output
