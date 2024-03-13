@@ -9,7 +9,7 @@
     file_format: xlsm
     summary_record: bpq_data
     aggregation:
-      level: 2
+      level: 4
       areas: all
     variable:
       result_of_visit: verified

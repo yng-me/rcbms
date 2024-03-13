@@ -104,48 +104,69 @@ save_current_logs <- function(
     stringr::str_remove(";$")
 
   uid <- "case_id"
-  if(.input_data == "bp") uid <- "uuid"
+  if(.input_data == "bp") uid <- "barangay_geo"
   current_id <- 1
 
-  cv_data <- .data |>
-    dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info"))) |>
-    dplyr::mutate(log_id = current_id)
+  if(!is.null(.data)) {
 
-  if(uid %in% names(cv_data)) {
-    total_cases_unique <- cv_data |>
-      dplyr::distinct(!!as.name(uid)) |>
-      nrow()
+    cv_data <- .data |>
+      dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info"))) |>
+      dplyr::mutate(log_id = current_id)
+
+    if(uid %in% names(cv_data)) {
+      total_cases_unique <- cv_data |>
+        dplyr::distinct(!!as.name(uid)) |>
+        nrow()
+    } else {
+      total_cases_unique <- 0
+    }
+
+    cv_ref <- .references$validation |>
+      dplyr::collect() |>
+      dplyr::filter(
+        survey_round == as.integer(.config$survey_round),
+        input_data == .input_data
+      ) |>
+      dplyr::select(validation_id, priority_level)
+
+    priority_df <- cv_data |>
+      dplyr::select(validation_id) |>
+      dplyr::left_join(
+        .references$validation |>
+          dplyr::collect() |>
+          dplyr::filter(
+            survey_round == as.integer(.config$survey_round),
+            input_data == .input_data
+          ) |>
+          dplyr::select(validation_id, priority_level),
+        by = "validation_id"
+      ) |>
+      dplyr::mutate(priority_level = stringr::str_trim(tolower(priority_level)))
+
+    get_priority <- function(.level) {
+      priority_df |>
+        dplyr::filter(priority_level == .level) |>
+        nrow()
+    }
+
+    total_priority_a <- get_priority('a')
+    total_priority_b <- get_priority('b')
+    total_priority_c <- get_priority('c')
+    total_priority_d <- get_priority('d')
+
+    log_status <- 0
+    total_cases <- nrow(cv_data)
+
   } else {
     total_cases_unique <- 0
+    total_cases <- 0
+    total_priority_a <- 0
+    total_priority_b <- 0
+    total_priority_c <- 0
+    total_priority_d <- 0
+    log_status <- 2
   }
 
-  cv_ref <- .references$validation |>
-    dplyr::collect() |>
-    dplyr::filter(
-      survey_round == as.integer(.config$survey_round),
-      input_data == .input_data
-    ) |>
-    dplyr::select(validation_id, priority_level)
-
-  priority_df <- cv_data |>
-    dplyr::select(validation_id) |>
-    dplyr::left_join(
-      .references$validation |>
-        dplyr::collect() |>
-        dplyr::filter(
-          survey_round == as.integer(.config$survey_round),
-          input_data == .input_data
-        ) |>
-        dplyr::select(validation_id, priority_level),
-      by = "validation_id"
-    ) |>
-    dplyr::mutate(priority_level = stringr::str_trim(tolower(priority_level)))
-
-  get_priority <- function(.level) {
-    priority_df |>
-      dplyr::filter(priority_level == .level) |>
-      nrow()
-  }
 
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
@@ -159,16 +180,16 @@ save_current_logs <- function(
       level = .config$aggregation$level,
       input_data = .input_data,
       area_code = current_area_code,
-      total_cases = nrow(cv_data),
+      total_cases = total_cases,
       total_cases_unique = total_cases_unique,
-      total_priority_a = get_priority('a'),
-      total_priority_b = get_priority('b'),
-      total_priority_c = get_priority('c'),
-      total_priority_d = get_priority('d'),
+      total_priority_a = total_priority_a,
+      total_priority_b = total_priority_b,
+      total_priority_c = total_priority_c,
+      total_priority_d = total_priority_d,
       version_app = .config$version$app,
       version_package = .config$version$package,
       version_script = .config$version$script,
-      status = 0,
+      status = log_status,
       pc_os = tolower(pc[["sysname"]]),
       pc_user = pc[["user"]],
       pc_effective_user = pc[["effective_user"]],
@@ -180,7 +201,7 @@ save_current_logs <- function(
     append = TRUE
   )
 
-  if(log_saved) {
+  if(log_saved & !is.null(.data)) {
 
     cv_table_name <- paste0(.input_data, "_cv")
 
@@ -216,7 +237,7 @@ save_current_logs <- function(
           ) |>
           dplyr::select(-dplyr::any_of('old_uuid'))
       }
-    } 
+    }
 
     DBI::dbWriteTable(
       conn = .conn,
@@ -224,6 +245,8 @@ save_current_logs <- function(
       value = cv_data,
       append = TRUE
     )
+  } else {
+    cv_data <- NULL
   }
 
   if(!exists("current_logs_id")) {
