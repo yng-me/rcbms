@@ -367,7 +367,7 @@ load_validation_refs <- function(.gid) {
   attr(df$status, 'label') <- 'Status'
   attr(df$date_introduced, 'label') <- 'Date Introduced'
 
-  df |> dplyr::filter(status != 0)
+  df |> dplyr::filter(status == 1)
 
 }
 

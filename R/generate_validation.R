@@ -57,7 +57,7 @@ generate_validation <- function(
     }
   }
 
-  if(!is.null(is_not_rcbms_cv_tbl)) {
+  if(!is.null(is_not_rcbms_cv_tbl) & .config$verbose) {
     cli::cli_rule()
     cli::cli_text(
       cli::col_br_red(
@@ -110,18 +110,23 @@ generate_validation <- function(
     output_temp <- .cv[[result_name]] |>
       dplyr::mutate(validation_id = result_name)
 
-    if(!('line_number' %in% names(output_temp)) && input_data %in% c("hp", "ilq")) {
+    if(!('line_number' %in% names(output_temp)) & input_data %in% c("hp", "ilq")) {
       output_temp <- output_temp |>
         dplyr::mutate(line_number = NA_character_)
     }
 
+    if('line_number' %in% names(names(output_temp))) {
+      output_temp <- output_temp |>
+        dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay', 'ean'))) |>
+        dplyr::group_by(validation_id, !!as.name(uid), line_number)
+
+    } else {
+      output_temp <- output_temp |>
+        dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay', 'ean'))) |>
+        dplyr::group_by(validation_id, !!as.name(uid))
+    }
+
     output_temp <- output_temp |>
-      dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay', 'ean'))) |>
-      dplyr::group_by(
-        validation_id,
-        !!as.name(uid),
-        line_number
-      ) |>
       tidyr::nest(.key = 'info') |>
       dplyr::mutate(info = purrr::map(info, \(x) {
         x |>
@@ -168,10 +173,10 @@ generate_validation <- function(
     if(.config$progress) {
       cli::cli_text('Saving logs')
     }
-    
-    save_rcbms_logs(output, input_data, .references, .config)
 
   }
+
+  save_rcbms_logs(output, input_data, .references, .config)
 
   return(output)
 
