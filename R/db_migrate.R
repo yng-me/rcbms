@@ -149,7 +149,7 @@ db_connect <- function(
     ...
   )
 
-  DBI::dbSendQuery(db_connection, "SET GLOBAL local_infile = true;")
+  # DBI::dbSendQuery(db_connection)
 
   return(db_connection)
 
