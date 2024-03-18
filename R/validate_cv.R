@@ -88,19 +88,19 @@ validate_select <- function(.data, ...) {
     .data <- .data |> create_barangay_geo()
   }
 
-  if(!('barangay_geo' %in% names(.data)) && current_input_data == "hp") {
+  if(!('barangay_geo' %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length))
   }
 
-  if(current_input_data == "hp") {
+  if(current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(
         ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length)
       )
   }
 
-  if(!('line_number' %in% names(.data)) && current_input_data == "hp") {
+  if(!('line_number' %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(line_number = NA_character_)
   }

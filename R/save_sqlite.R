@@ -40,6 +40,7 @@ create_remarks_table <- function(.conn, .tables) {
         role varchar(36),
         status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         remarks text,
+        uploaded tinyint CHECK (uploaded IN (0, 1)),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );"
     )
@@ -66,7 +67,7 @@ save_current_logs <- function(
       .conn,
       "CREATE TABLE logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        round varchar(4),
+        survey_round varchar(4),
         mode varchar(16),
         edit tinyint CHECK (edit IN (0, 1, 2, 3, 4)),
         level tinyint CHECK (level IN (0, 1, 2, 3, 4, 5)),
@@ -172,7 +173,7 @@ save_current_logs <- function(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
-      round = .config$survey_round,
+      survey_round = as.character(.config$survey_round),
       mode = .config$mode$type,
       edit = .config$mode$edit,
       source = .config$mode$source,

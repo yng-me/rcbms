@@ -40,6 +40,20 @@ check_age_sex_relation <- function(
 
   .data |>
     dplyr::group_by(case_id) |>
+    dplyr::select(
+      dplyr::any_of(
+        c(
+          'case_id',
+          'line_number',
+          'ean',
+          age_var,
+          sex_var,
+          .relation_to_hh_head_var
+        )
+      ),
+      dplyr::ends_with("_geo"),
+      dplyr::ends_with("_code")
+    ) |>
     tidyr::nest() |>
     dplyr::mutate(
       data = purrr::map(data, \(x) {

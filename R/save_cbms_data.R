@@ -13,7 +13,7 @@ save_cbms_data <- function(
   envir <- as.environment(1)
   geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
   uid <- "case_id"
-  if(.input_data == "bp") uid <- "uuid"
+  if(.input_data == "bp") uid <- "barangay_geo"
 
   rov_var <- .config$project[[.input_data]]$variable$result_of_visit
   unfiltered_records <- .config$project[[.input_data]]$unfiltered_records
@@ -96,12 +96,12 @@ save_cbms_data <- function(
         c(
           uid,
           geo_cols,
-          rov_var,
           "ean",
           "bsn",
           "husn",
           "hsn",
           "line_number",
+          rov_var,
           "sex",
           "age"
         )
@@ -136,7 +136,7 @@ save_cbms_data <- function(
       )
   }
 
-  arrow::write_parquet(df_temp, .pq_path)
+  arrow::write_parquet(df_temp |> create_case_id(.input_data = .input_data), .pq_path)
 
   suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))
   suppressWarnings(rm(list = 'df_temp', envir = envir))
