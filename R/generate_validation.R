@@ -115,7 +115,7 @@ generate_validation <- function(
         dplyr::mutate(line_number = NA_character_)
     }
 
-    if('line_number' %in% names(names(output_temp))) {
+    if('line_number' %in% names(output_temp)) {
       output_temp <- output_temp |>
         dplyr::select(-dplyr::any_of(c('region', 'province', 'city_mun', 'barangay', 'ean'))) |>
         dplyr::group_by(validation_id, !!as.name(uid), line_number)

@@ -37,8 +37,8 @@ execute_script <- function(.config_file, ..., .survey_round = NULL) {
     config$survey_round <- .survey_round[i]
     options(rcbms.config = config)
     assign("config", config, envir = envir)
-
     read_cbms_data()
+    create_relations()
     set_aggregation()
     execute_mode()
     # save_logs()
@@ -204,7 +204,7 @@ execute_mode <- function(
         for(i in seq_along(script_files)) {
           script_file <- basename(script_files[i]) |>
             stringr::str_remove("\\.(r|R)$")
-          
+
           if(!grepl("^\\_\\_", script_file)) {
             if(.config$verbose) {
               cli::cli_alert_success(

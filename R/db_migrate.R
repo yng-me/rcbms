@@ -124,6 +124,7 @@ db_migrate <- function(
 db_connect <- function(
     .config = getOption('rcbms.config'),
     .db_name = NULL,
+    .local_infile = FALSE,
     ...
 ) {
   env <- .config$env
@@ -149,7 +150,9 @@ db_connect <- function(
     ...
   )
 
-  # DBI::dbSendQuery(db_connection)
+  if(.local_infile) {
+    DBI::dbSendQuery(db_connection, "SET GLOBAL local_infile = true;")
+  }
 
   return(db_connection)
 
