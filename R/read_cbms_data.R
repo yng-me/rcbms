@@ -65,7 +65,7 @@ read_cbms_data <- function(
       }
 
       uid <- "case_id"
-      if(df_input == "bp") uid <- "uuid"
+      if(df_input == "bp") uid <- "barangay_geo"
     }
 
     for(j in seq_along(df_files$unique$value)) {

@@ -41,7 +41,8 @@ load_references <- function(
     data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
     macrodata = "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
     score_card = "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0",
-    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0"
+    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0",
+    section = "oRBIz5Q0h-wkkrSk2JVdTU5oJINZQTwq4Liti2b1rn0"
   )
 
   refs <- list()
@@ -53,9 +54,10 @@ load_references <- function(
     "tabulation",
     "macrodata",
     "score_card",
-    "record"
+    "record",
+    "section"
   )
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec")
+  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec", "sec")
 
   wd <- .config$working_directory
   if(is.null(wd)) wd <- '.'
@@ -63,10 +65,12 @@ load_references <- function(
 
   pq <- stats::setNames(
     lapply(ref_list, function(x) {
-      if(x == "record") {
-        paste0(wd_base_ref, '/ref_', x, '.xlsx')
+      if(x == "record" | x == 'section') {
+      #   paste0(wd_base_ref, '/ref_', x, ".xlsx")
+      # } else if (x == "section") {
+        paste0(wd_base_ref, '/ref_', x, ".json")
       } else {
-        paste0(wd_base_ref, '/ref_', x, '.parquet')
+        paste0(wd_base_ref, '/ref_', x, ".parquet")
       }
     }),
     ref_list
@@ -74,9 +78,10 @@ load_references <- function(
 
   ref_reload <- .config$reload_references
 
-  if(is.null(ref_reload$record)) ref_reload$record <- TRUE
   if(is.null(ref_reload$macrodata)) ref_reload$macrodata <- TRUE
   if(is.null(ref_reload$score_card)) ref_reload$score_card <- TRUE
+  if(is.null(ref_reload$record)) ref_reload$record <- TRUE
+  if(is.null(ref_reload$section)) ref_reload$section <- TRUE
 
   for(i in seq_along(ref_list)) {
 
@@ -94,8 +99,10 @@ load_references <- function(
     if(is_online & (ref_reload_i | !file.exists(pq_i))) {
 
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-      if(ref_short_i == "rec") {
-        openxlsx::write.xlsx(load_reference_fn(gid_i), pq_i)
+      if(ref_short_i == "rec" | ref_short_i == "sec") {
+      #   openxlsx::write.xlsx(load_reference_fn(gid_i), pq_i)
+      # } else if (ref_short_i == "sec") {
+        jsonlite::write_json(load_reference_fn(gid_i), pq_i, pretty = TRUE)
       } else {
         arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
       }
@@ -107,8 +114,10 @@ load_references <- function(
       )
     }
 
-    if(ref_short_i == "rec") {
-      refs[[ref_i]] <- openxlsx::read.xlsx(pq_i)
+    if(ref_short_i == "rec" || ref_short_i == "sec") {
+    #   refs[[ref_i]] <- openxlsx::read.xlsx(pq_i)
+    # } else if (ref_short_i == "sec") {
+      refs[[ref_i]] <- jsonlite::fromJSON(pq_i, flatten = TRUE, simplifyVector = TRUE)
     } else {
       refs[[ref_i]] <- arrow::read_parquet(pq_i)
     }
@@ -124,8 +133,9 @@ load_references <- function(
 
   refs$script_files <- NULL
 
-  script_files <- lapply(.config$input_data, get_script_files) |>
-    purrr::discard(is.null)
+  script_files <- lapply(.config$input_data, function(x) {
+    get_script_files(x, refs$section, .config = .config)
+  }) |> purrr::discard(is.null)
 
   if(length(script_files) > 0) {
     refs$script_files <- do.call('rbind', script_files) |> dplyr::tibble()
@@ -483,17 +493,101 @@ load_score_card_refs <- function(.gid) {
 #' @examples
 #'
 load_record_refs <- function(.gid) {
-  load_refs_from_gsheet(
+  df <- load_refs_from_gsheet(
     .gid,
     .required_cols = c(
       "record_name",
+      "short_name",
       "label",
+      "uid",
       "order",
       "type",
       "unfiltered",
       "include",
       "expect_equal_rows"
     ),
-    col_types = 'cciiiii'
+    col_types = 'cccciiiii'
+  )
+
+  round <- unique(df$survey_round)
+
+  stats::setNames(
+    lapply(round, function(x) {
+      df_i <- df |>
+        dplyr::filter(survey_round == x) |>
+        dplyr::select(-survey_round)
+
+      input <- unique(df_i$input_data)
+      z <- stats::setNames(
+        lapply(input, function(y) {
+          df_i |>
+            dplyr::filter(input_data == y) |>
+            dplyr::select(-input_data) |>
+            dplyr::mutate(
+              uid = stringr::str_split(uid, '\\s*?\\|\\s*?')
+            )
+        }),
+        input
+      )
+    }),
+    round
+  )
+}
+
+
+
+#' Load record references
+#'
+#' @param .gid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+load_section_refs <- function(.gid) {
+  df <- load_refs_from_gsheet(
+    .gid,
+    .required_cols = c(
+      "section",
+      "label",
+      "validation_record",
+      "validation_script_file",
+      "validation_deps"
+    ),
+    col_types = 'ccccc'
+  )
+
+  round <- unique(df$survey_round)
+
+  stats::setNames(
+    lapply(round, function(x) {
+      df_i <- df |>
+        dplyr::filter(survey_round == x) |>
+        dplyr::select(-survey_round)
+
+      input <- unique(df_i$input_data)
+      z <- stats::setNames(
+        lapply(input, function(y) {
+          df_i |>
+            dplyr::filter(input_data == y) |>
+            dplyr::select(-input_data) |>
+            dplyr::mutate(
+              value = tolower(section),
+              description = label,
+              label = paste0("Section ", section),
+              validation = tibble::tibble(
+                record = stringr::str_split(validation_record, '\\s*?\\|\\s*?'),
+                script_file = stringr::str_split(validation_script_file, '\\s*?\\|\\s*?'),
+                deps = stringr::str_split(validation_deps, '\\s*?\\|\\s*?')
+              )
+            ) |>
+            dplyr::select(-dplyr::starts_with('validation_'), -section) |>
+            dplyr::mutate(included = TRUE)
+        }),
+        input
+      )
+    }),
+    round
   )
 }

@@ -2,13 +2,14 @@
 #'
 #' @param .input_data
 #' @param .config
+#' @param .section
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #'
-get_script_files <- function(.input_data, .config = getOption('rcbms.config')) {
+get_script_files <- function(.input_data, .section = NULL, .config = getOption('rcbms.config')) {
 
   script_files <- list.files(
     join_path(.config$base, 'scripts', .config$mode$type, .input_data),
@@ -36,11 +37,16 @@ get_script_files <- function(.input_data, .config = getOption('rcbms.config')) {
     dplyr::rename(file = value) |>
     dplyr::select(input_data, file, order)
 
-  selected_sections <- .config$project[[.input_data]]$selected_sections
-  if(!is.null(selected_sections) && length(selected_sections) > 0) {
+  selected_scripts <- .section[[.config$survey_round]][[.input_data]] |>
+    filter(included) |>
+    pull(validation.script_file) |>
+    unlist() |>
+    unique()
+
+  if(!is.null(.section) & length(selected_scripts) > 0) {
     script_files <- script_files |>
-      dplyr::mutate(name = stringr::str_sub(stringr::str_remove_all(basename(file), '\\.R$'), 1, 9)) |>
-      dplyr::filter(name %in% selected_sections | grepl('initial', name)) |>
+      dplyr::mutate(name = stringr::str_remove_all(basename(file), '\\.R$'), 1, 9) |>
+      dplyr::filter(name %in% selected_scripts | grepl('initial', name)) |>
       dplyr::select(-name)
   }
 
