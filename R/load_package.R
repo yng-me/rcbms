@@ -51,10 +51,9 @@ load_required_packages <- function(.load_dependencies = F) {
       'jsonlite',
       'RSQLite',
       'DBI',
+      'gt',
       'yaml',
       'readr',
-      'quarto',
-      'devtools',
       'googlesheets4',
       'cli'
     ),

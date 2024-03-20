@@ -10,7 +10,7 @@
 #' @examples
 #'
 
-execute_script <- function(.config_file, ..., .survey_round = NULL) {
+execute_script <- function(survey_round, input_data, ..., config_file = NULL) {
 
   with_config <- file.exists(.config_file)
   load_required_packages(...)
@@ -41,7 +41,6 @@ execute_script <- function(.config_file, ..., .survey_round = NULL) {
     create_relations()
     set_aggregation()
     execute_mode()
-    # save_logs()
     clear_objects()
   }
 }
