@@ -83,18 +83,25 @@ list_data_files <- function(
     ) |>
     dplyr::arrange(n)
 
+  selected_records <- .references$section[[.config$survey_round]][[.input_data]] |>
+    filter(included) |>
+    pull(validation.record) |>
+    unlist() |>
+    unique()
 
-  if(!is.null(.references$record)) {
-    ref_record <- .references$record |>
-      dplyr::filter(
-        input_data == .input_data,
-        survey_round == .config$survey_round,
-        type > 0 | include == 1
-      )
-    if(nrow(ref_record) > 0) {
-      data_files <- data_files |>
-        dplyr::filter(tolower(name) %in% ref_record$record_name)
-    }
+  ref_records <- .references$record[[.config$survey_round]][[.input_data]] |>
+    dplyr::filter(type > 0) |>
+    dplyr::pull(record_name)
+
+  records_filter <- unique(c(selected_records, ref_records))
+
+  if(length(records_filter) > 0) {
+    data_files <- data_files |>
+      dplyr::filter(tolower(name) %in% records_filter)
+
+    all_data_files <- all_data_files |>
+      dplyr::mutate(name = tolower(stringr::str_remove(basename(value), file_format))) |>
+      dplyr::filter(name %in% records_filter)
   }
 
   return(

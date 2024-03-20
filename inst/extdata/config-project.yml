@@ -1,12 +1,13 @@
 # Project config default values
 '2024':
   reference_period: '2024-06-30'
+  source_note: '2024 Census of Population and Community-Based Monitoring System, Philippine Statistics Authority'
   add_length: 1
   bp:
     id: barangay_geo
-    directory: ~
-    sub_directory: ~
-    file_format: xlsm
+    directory: null
+    sub_directory: null
+    file_format: xlsx
     summary_record: bpq_data
     aggregation:
       level: 4
@@ -15,8 +16,8 @@
       result_of_visit: verified
   hp:
     id: case_id
-    directory: ~
-    sub_directory: ~
+    directory: null
+    sub_directory: null
     file_format: txt
     summary_record: cover_page
     roster_record: section_a_e
@@ -34,15 +35,15 @@
       age: a05_age
   ilq:
     id: case_id
-    directory: ~
-    sub_directory: ~
+    directory: null
+    sub_directory: null
     file_format: csv
     summary_record: ilq_rt1_data
     roster_record: ilq_rt2_data
     aggregation:
       level: 2
       areas: all
-    unfiltered_records: ~
+    unfiltered_records: null
     variable:
       line_number: line_number
       result_of_visit: result_of_final_visit
@@ -51,10 +52,11 @@
 
 '2022':
   reference_period: '2022-06-30'
+  source_note: '2022 Community-Based Monitoring System, Philippine Statistics Authority'
   add_length: 0
   bp:
     id: uuid
-    sub_directory: ~
+    sub_directory: null
     file_format: xlsx
     aggregation:
       level: 2
@@ -63,8 +65,8 @@
       result_of_visit: verified
   hp:
     id: case_id
-    directory: ~
-    sub_directory: ~
+    directory: null
+    sub_directory: null
     file_format: txt
     summary_record: summary_of_visit
     roster_record: section_a_to_e
@@ -79,10 +81,11 @@
       age: a07_age
 '2021':
   reference_period: '2021-09-30'
+  source_note: '2021 Pilot Community-Based Monitoring System, Philippine Statistics Authority'
   add_length: 0
   bp:
     id: uuid
-    sub_directory: ~
+    sub_directory: null
     file_format: csv
   hp:
     id: case_id
@@ -108,3 +111,4 @@
     file_format: txt
     summary_record: f3rt1
     roster_record: f3rt2
+
