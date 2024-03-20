@@ -87,13 +87,19 @@ list_data_files <- function(
     filter(included) |>
     pull(validation.record) |>
     unlist() |>
-    unique()
+    unique() |>
+    tolower() |>
+    stringr::str_trim()
 
   ref_records <- .references$record[[.config$survey_round]][[.input_data]] |>
     dplyr::filter(type > 0) |>
-    dplyr::pull(record_name)
+    dplyr::pull(record_name) |>
+    tolower() |>
+    stringr::str_trim()
 
   records_filter <- unique(c(selected_records, ref_records))
+
+  print(records_filter)
 
   if(length(records_filter) > 0) {
     data_files <- data_files |>
@@ -101,7 +107,7 @@ list_data_files <- function(
 
     all_data_files <- all_data_files |>
       dplyr::mutate(name = tolower(stringr::str_remove(basename(value), file_format))) |>
-      dplyr::filter(name %in% records_filter)
+      dplyr::filter(tolower(name) %in% records_filter)
   }
 
   return(
