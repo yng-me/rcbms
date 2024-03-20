@@ -12,21 +12,17 @@
 #' @export
 #'
 #' @examples
-#'
-
 compute_food_insecurity <- function(
-  .data,
-  ...,
-  .type = 1,
-  .agg_levels = NULL,
-  .valueset = get_config("references")$valueset,
-  .extract_name_position = 5,
-  .config = getOption("rcbms.config")
-) {
-
+    .data,
+    ...,
+    .type = 1,
+    .agg_levels = NULL,
+    .valueset = get_config("references")$valueset,
+    .extract_name_position = 5,
+    .config = getOption("rcbms.config")) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
-  if(is.null(.agg_levels)) {
+  if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
 
@@ -34,8 +30,7 @@ compute_food_insecurity <- function(
   rm_by_score_all <- list()
   rm_by_prevalence_all <- list()
 
-  for(i in seq_along(.agg_levels)) {
-
+  for (i in seq_along(.agg_levels)) {
     rm_by_item <- list()
     rm_by_score <- list()
     rm_by_prevalence <- list()
@@ -45,8 +40,7 @@ compute_food_insecurity <- function(
     agg_geo <- paste0(agg, "_geo")
     area_codes <- unique(.data[[agg_geo]])
 
-    for(k in seq_along(area_codes)) {
-
+    for (k in seq_along(area_codes)) {
       rm <- .data |>
         filter(!!as.name(agg_geo) == area_codes[k]) |>
         select(...) |>
@@ -65,12 +59,11 @@ compute_food_insecurity <- function(
     rm_by_item_all[[i]] <- dplyr::bind_rows(rm_by_item) |>
       dplyr::mutate(level = as.integer(level_i))
 
-    rm_by_score_all[[i]] <-  dplyr::bind_rows(rm_by_score) |>
+    rm_by_score_all[[i]] <- dplyr::bind_rows(rm_by_score) |>
       dplyr::mutate(level = as.integer(level_i))
 
     rm_by_prevalence_all[[i]] <- dplyr::bind_rows(rm_by_prevalence) |>
       dplyr::mutate(level = as.integer(level_i))
-
   }
 
   rm_all <- .data |>
@@ -97,8 +90,7 @@ compute_food_insecurity <- function(
 
   by_item <- dplyr::bind_rows(rm_by_item_all)
 
-  if(!is.null(.valueset)) {
-
+  if (!is.null(.valueset)) {
     .valueset <- .valueset |>
       dplyr::filter(name == "fies") |>
       dplyr::select(-name) |>
@@ -131,30 +123,29 @@ compute_food_insecurity <- function(
 
 
 compute_food_insecurity_prevalence <- function(.data) {
-
   rm <- RM.weights::RM.w(.data)
 
   rm_prob <- RM.weights::equating.fun(rm)
 
-  rm_item_b <- rm$b |> as_tibble_col('item_severity')
-  rm_item_se.b <- rm$se.b |> as_tibble_col('item_severity_se')
-  rm_item_infit <- rm$infit |> as_tibble_col('infit_stat')
-  rm_item_se.infit <- rm$se.infit |> as_tibble_col('infit_stat_se')
-  rm_item_outfit <- rm$outfit |> as_tibble_col('outfit_stat')
+  rm_item_b <- rm$b |> as_tibble_col("item_severity")
+  rm_item_se.b <- rm$se.b |> as_tibble_col("item_severity_se")
+  rm_item_infit <- rm$infit |> as_tibble_col("infit_stat")
+  rm_item_se.infit <- rm$se.infit |> as_tibble_col("infit_stat_se")
+  rm_item_outfit <- rm$outfit |> as_tibble_col("outfit_stat")
 
-  rm_by_item <- as_tibble_col(names(.data), 'name') |>
+  rm_by_item <- as_tibble_col(names(.data), "name") |>
     add_column(rm_item_b) |>
     add_column(rm_item_se.b) |>
     add_column(rm_item_infit) |>
     add_column(rm_item_se.infit) |>
     add_column(rm_item_outfit)
 
-  rm_score_a <- rm$a |> as_tibble_col('severity_raw_score')
-  rm_score_se.a <- rm$se.a |> as_tibble_col('severity_raw_score_se')
-  rm_score_wt.rs <- rm$wt.rs |> as_tibble_col('total_hh')
+  rm_score_a <- rm$a |> as_tibble_col("severity_raw_score")
+  rm_score_se.a <- rm$se.a |> as_tibble_col("severity_raw_score_se")
+  rm_score_wt.rs <- rm$wt.rs |> as_tibble_col("total_hh")
 
   rm_score_wt.rel.rs <- rm$wt.rel.rs |>
-    as_tibble_col('percent') |>
+    as_tibble_col("percent") |>
     mutate(percent = percent * 100)
 
   rm_score_prob <- rm_score_wt.rs |>
@@ -166,7 +157,7 @@ compute_food_insecurity_prevalence <- function(.data) {
     ) |>
     select(-starts_with("FI_"))
 
-  rm_by_score <- as_tibble_col(c(0:8), 'raw_score') |>
+  rm_by_score <- as_tibble_col(c(0:8), "raw_score") |>
     mutate(raw_score = as.character(raw_score)) |>
     add_column(rm_score_a) |>
     add_column(rm_score_se.a) |>
@@ -187,5 +178,3 @@ compute_food_insecurity_prevalence <- function(.data) {
     )
   )
 }
-
-

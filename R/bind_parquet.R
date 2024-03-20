@@ -10,28 +10,23 @@
 #' @export
 #'
 #' @examples
-#'
-#'
-
 bind_parquet <- function(
-  .data,
-  ...,
-  .input_data = NULL,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
-) {
-
+    .data,
+    ...,
+    .input_data = NULL,
+    .references = get_config("references"),
+    .config = getOption("rcbms.config")) {
   retain_cols <- c()
 
-  if(is.null(.input_data)) {
-    if(exists('current_input_data')) {
+  if (is.null(.input_data)) {
+    if (exists("current_input_data")) {
       .input_data <- current_input_data
     } else {
       .input_data <- "hp"
     }
   }
 
-  if(!inherits(.data, 'list')) {
+  if (!inherits(.data, "list")) {
     return(
       .data |>
         dplyr::select(

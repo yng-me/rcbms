@@ -7,18 +7,16 @@
 #' @export
 #'
 #' @examples
-#'
-
 tidy_geojson <- function(
     .path,
-    .subfolders = c("region", "province", "city-mun", "barangay")
-) {
-
+    .subfolders = c("region", "province", "city-mun", "barangay")) {
   to_camel_case <- function(x) {
     y <- x |>
       stringr::str_to_lower() |>
-      stringr::str_split('-') |>
-      purrr::map(~ .x |> purrr::map(~ stringr::str_to_title(.x)) |> stringr::str_c(collapse = ''))
+      stringr::str_split("-") |>
+      purrr::map(~ .x |>
+        purrr::map(~ stringr::str_to_title(.x)) |>
+        stringr::str_c(collapse = ""))
     paste0(tolower(stringr::str_sub(y, 1, 1)), stringr::str_sub(y, 2, -1))
   }
 
@@ -27,8 +25,7 @@ tidy_geojson <- function(
 
   geo_json_list <- list()
 
-  for(i in seq_along(geo_json_files)) {
-
+  for (i in seq_along(geo_json_files)) {
     geo_file <- geo_json_files[i]
     geo_json_file <- str_remove(basename(geo_file), "\\.json$")
     geo_json_name <- str_extract(geo_json_file, "\\d+")
@@ -46,28 +43,25 @@ tidy_geojson <- function(
           purrr::pluck("properties") |>
           dplyr::as_tibble()
 
-        if(agg_level_var %in% names(x)) {
+        if (agg_level_var %in% names(x)) {
           x |> dplyr::select(area_code = !!as.name(agg_level_var))
         } else {
-          x |> dplyr::transmute(area_code = '')
+          x |> dplyr::transmute(area_code = "")
         }
-
       }) |>
       dplyr::bind_rows() |>
       dplyr::bind_cols(
         tbl |>
-          purrr::pluck('features') |>
+          purrr::pluck("features") |>
           purrr::map(\(x) {
-
             geometry <- x |>
               purrr::pluck("geometry")
 
-            if(!is.null(geometry)) {
-
+            if (!is.null(geometry)) {
               type <- geometry |>
                 purrr::pluck("type")
 
-              if(length(type) == 0) {
+              if (length(type) == 0) {
                 type <- ""
               } else {
                 type <- type |> purrr::pluck(1)
@@ -80,7 +74,7 @@ tidy_geojson <- function(
               coordinates <- geometry |>
                 purrr::pluck("coordinates")
 
-              if(length(coordinates) > 0) {
+              if (length(coordinates) > 0) {
                 coordinates <- as.character(jsonlite::toJSON(coordinates, auto_unbox = T))
               } else {
                 coordinates <- "[]"
@@ -91,17 +85,15 @@ tidy_geojson <- function(
                 dplyr::rename(coordinates = value) |>
                 dplyr::bind_cols(type)
             }
-
           }) |>
           dplyr::bind_rows()
       ) |>
       dplyr::mutate(
-        collection = tbl |> pluck('type') |> pluck(1),
+        collection = tbl |> pluck("type") |> pluck(1),
         group = geo_json_name,
         level = as.integer(which(.subfolders == agg_labels[1]))
       )
   }
 
   dplyr::bind_rows(geo_json_list)
-
 }

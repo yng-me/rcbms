@@ -1,10 +1,8 @@
 save_rcbms_logs <- function(
-  .data,
-  .input_data,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
-) {
-
+    .data,
+    .input_data,
+    .references = get_config("references"),
+    .config = getOption("rcbms.config")) {
   conn <- connect_to_rcbms_logs(.config)
   log_tables <- RSQLite::dbListTables(conn)
 
@@ -13,14 +11,13 @@ save_rcbms_logs <- function(
   create_remarks_table(conn, log_tables)
 
   RSQLite::dbDisconnect(conn)
-
 }
 
 
 connect_to_rcbms_logs <- function(.config) {
   wd <- create_new_folder(paste0(.config$base, "/data/log"))
   v <- config$version$db
-  if(is.null(v)) v <- "0.0.1"
+  if (is.null(v)) v <- "0.0.1"
   db_name <- paste0(wd, "/rcbms_logs_v", v, ".db")
   conn <- RSQLite::dbConnect(RSQLite::SQLite(), db_name)
   return(conn)
@@ -28,7 +25,7 @@ connect_to_rcbms_logs <- function(.config) {
 
 
 create_remarks_table <- function(.conn, .tables) {
-  if(!("remarks" %in% .tables)) {
+  if (!("remarks" %in% .tables)) {
     DBI::dbExecute(
       .conn,
       "CREATE TABLE remarks (
@@ -48,21 +45,19 @@ create_remarks_table <- function(.conn, .tables) {
 }
 
 save_current_logs <- function(
-  .conn,
-  .data,
-  .input_data,
-  .tables,
-  .references,
-  .config
-) {
-
+    .conn,
+    .data,
+    .input_data,
+    .tables,
+    .references,
+    .config) {
   created_date <- lubridate::now()
 
-  if(!exists('current_area_code')) {
-    current_area_code <- ''
+  if (!exists("current_area_code")) {
+    current_area_code <- ""
   }
 
-  if(!("logs" %in% .tables)) {
+  if (!("logs" %in% .tables)) {
     DBI::dbExecute(
       .conn,
       "CREATE TABLE logs (
@@ -105,16 +100,15 @@ save_current_logs <- function(
     stringr::str_remove(";$")
 
   uid <- "case_id"
-  if(.input_data == "bp") uid <- "barangay_geo"
+  if (.input_data == "bp") uid <- "barangay_geo"
   current_id <- 1
 
-  if(!is.null(.data)) {
-
+  if (!is.null(.data)) {
     cv_data <- .data |>
       dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info"))) |>
       dplyr::mutate(log_id = current_id)
 
-    if(uid %in% names(cv_data)) {
+    if (uid %in% names(cv_data)) {
       total_cases_unique <- cv_data |>
         dplyr::distinct(!!as.name(uid)) |>
         nrow()
@@ -150,14 +144,13 @@ save_current_logs <- function(
         nrow()
     }
 
-    total_priority_a <- get_priority('a')
-    total_priority_b <- get_priority('b')
-    total_priority_c <- get_priority('c')
-    total_priority_d <- get_priority('d')
+    total_priority_a <- get_priority("a")
+    total_priority_b <- get_priority("b")
+    total_priority_c <- get_priority("c")
+    total_priority_d <- get_priority("d")
 
     log_status <- 0
     total_cases <- nrow(cv_data)
-
   } else {
     total_cases_unique <- 0
     total_cases <- 0
@@ -202,13 +195,12 @@ save_current_logs <- function(
     append = TRUE
   )
 
-  if(log_saved & !is.null(.data)) {
-
+  if (log_saved & !is.null(.data)) {
     cv_table_name <- paste0(.input_data, "_cv")
 
-    if(.input_data %in% c("hp", "ilq")) {
+    if (.input_data %in% c("hp", "ilq")) {
       by_cv_cols <- c("case_id", "validation_id", "line_number")
-    } else if(.input_data == "bp") {
+    } else if (.input_data == "bp") {
       by_cv_cols <- c("uuid", "validation_id")
     }
 
@@ -218,8 +210,7 @@ save_current_logs <- function(
     cv_data <- cv_data |>
       dplyr::mutate(log_id = current_id, status = 0L)
 
-    if(cv_table_name %in% .tables) {
-
+    if (cv_table_name %in% .tables) {
       cv_logs_with_remarks <- DBI::dbReadTable(.conn, cv_table_name) |>
         dplyr::tibble() |>
         dplyr::filter(as.integer(status) != 0) |>
@@ -227,8 +218,7 @@ save_current_logs <- function(
         dplyr::mutate(old_uuid = id) |>
         dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
 
-      if(nrow(cv_logs_with_remarks) > 0) {
-
+      if (nrow(cv_logs_with_remarks) > 0) {
         cv_data <- cv_data |>
           dplyr::select(-status) |>
           dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
@@ -236,7 +226,7 @@ save_current_logs <- function(
             id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
             status = dplyr::if_else(is.na(status), 0L, as.integer(status))
           ) |>
-          dplyr::select(-dplyr::any_of('old_uuid'))
+          dplyr::select(-dplyr::any_of("old_uuid"))
       }
     }
 
@@ -250,7 +240,7 @@ save_current_logs <- function(
     cv_data <- NULL
   }
 
-  if(!exists("current_logs_id")) {
+  if (!exists("current_logs_id")) {
     current_logs_id <- NULL
   }
   current_logs_id <- c(current_logs_id, current_id)

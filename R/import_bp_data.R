@@ -19,7 +19,7 @@ import_bp_data <- function() {
   )
 
   bp <- list()
-  for(i in seq_along(bp_records)) {
+  for (i in seq_along(bp_records)) {
     query_statement <- paste0("SELECT * FROM ", bp_records[i])
     bp[[bp_records[[i]]]] <- DBI::dbGetQuery(con, query_statement) |> dplyr::tibble()
   }

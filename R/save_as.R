@@ -1,9 +1,8 @@
 save_as_json <- function(.output, .input_data, .config) {
-
   created_date <- lubridate::now()
 
-  if(!exists('current_area_code')) {
-    current_area_code <- ''
+  if (!exists("current_area_code")) {
+    current_area_code <- ""
   }
 
   uuid_primary <- uuid::UUIDgenerate()
@@ -46,33 +45,31 @@ save_as_json <- function(.output, .input_data, .config) {
 # }
 
 set_output_filename <- function(.type, .date, .input_data, .config) {
-
   created_date <- lubridate::now()
   output_path <- create_new_folder(
-    join_path(.config$base, 'data', 'json', .input_data)
+    join_path(.config$base, "data", "json", .input_data)
   )
 
-  stage_label <- c('before', 'after', 'post')
-  source_label <- c('dc', 'dp')
+  stage_label <- c("before", "after", "post")
+  source_label <- c("dc", "dp")
 
-  if(exists('current_area_code')) {
-    current_area <- paste0('-', current_area_code)
+  if (exists("current_area_code")) {
+    current_area <- paste0("-", current_area_code)
   } else {
-    current_area <- ''
+    current_area <- ""
   }
 
   filename <- paste0(
     lubridate::ymd(as.Date(.date)),
     current_area,
-    '-validation-',
+    "-validation-",
     .input_data,
-    '-',
+    "-",
     source_label[.config$mode$edit],
-    '-',
+    "-",
     stage_label[.config$mode$source],
     .type
   )
 
-  paste0(output_path, '/', filename)
-
+  paste0(output_path, "/", filename)
 }
