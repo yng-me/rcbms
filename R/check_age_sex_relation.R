@@ -38,7 +38,7 @@ check_age_sex_relation <- function(
     .conjuction <- rep("&", length(.condition) - 1)
   }
 
-  .data |>
+  ddf <- .data |>
     dplyr::group_by(case_id) |>
     dplyr::select(
       dplyr::any_of(
@@ -54,9 +54,13 @@ check_age_sex_relation <- function(
       dplyr::ends_with("_geo"),
       dplyr::ends_with("_code")
     ) |>
-    tidyr::nest() |>
+    tidyr::nest()
+
+
+
+  ddf |>
     dplyr::mutate(
-      data = purrr::map(data, \(x) {
+      data = purrr::map(data, function(x) {
 
         df <- x |>
           dplyr::mutate(
@@ -122,20 +126,28 @@ check_age_sex_relation <- function(
     tidyr::unnest(data) |>
     dplyr::ungroup() |>
     validate_select(
-      primary_member,
-      sex_of_primary_member,
-      relation_to_primary_member,
-      age_of_primary_member,
-      age_of_relation_to_primary_member,
-      age_difference
+      dplyr::any_of(
+        c(
+          "primary_member",
+          "sex_of_primary_member",
+          "relation_to_primary_member",
+          "age_of_primary_member",
+          "age_of_relation_to_primary_member",
+          "age_difference"
+        )
+      )
     ) |>
     dplyr::filter(!is.na(age_difference)) |>
     select_cv(
-      primary_member,
-      sex_of_primary_member,
-      relation_to_primary_member,
-      age_of_primary_member,
-      age_of_relation_to_primary_member,
-      age_difference
+      dplyr::any_of(
+        c(
+          "primary_member",
+          "sex_of_primary_member",
+          "relation_to_primary_member",
+          "age_of_primary_member",
+          "age_of_relation_to_primary_member",
+          "age_difference"
+        )
+      )
     )
 }
