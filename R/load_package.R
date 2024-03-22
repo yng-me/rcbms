@@ -35,35 +35,37 @@ load_package <- function(.pkg, .install_only = TRUE) {
 #'
 #' @examples
 #'
-load_required_packages <- function(.load_dependencies = F) {
+load_required_packages <- function(.load_dependencies = F, .install_dependencies = F) {
 
-  sapply(
-    c(
-      'arrow',
-      'dplyr',
-      'tidyr',
-      'tibble',
-      'stringr',
-      'purrr',
-      'openxlsx',
-      'lubridate',
-      'janitor',
-      'jsonlite',
-      'RSQLite',
-      'DBI',
-      'yaml',
-      'readr',
-      'quarto',
-      'devtools',
-      'googlesheets4',
-      'cli'
-    ),
-    load_package
-  )
+  if(.install_dependencies) {
 
-  if(.load_dependencies) {
-    load_dependencies()
+    sapply(
+      c(
+        'arrow',
+        'dplyr',
+        'tidyr',
+        'tibble',
+        'stringr',
+        'purrr',
+        'openxlsx',
+        'lubridate',
+        'janitor',
+        'jsonlite',
+        'RSQLite',
+        'DBI',
+        'yaml',
+        'readr',
+        'googlesheets4',
+        'cli'
+      ),
+      load_package
+    )
+
+    if(.load_dependencies) {
+      load_dependencies()
+    }
   }
+
 }
 
 
