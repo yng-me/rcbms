@@ -9,11 +9,7 @@
 #' @examples
 #'
 
-read_bp_data <- function(
-  .base_path,
-  .references = get_config('references'),
-  .config = getOption('rcbms.config')
-) {
+read_bp_data <- function(.base_path, .references, .config) {
 
   bpq_data_files <- list.files(.base_path, full.names = TRUE, pattern = "\\.(xlsx|xlsm)$") |>
     dplyr::as_tibble() |>

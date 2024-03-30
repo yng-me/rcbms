@@ -1,6 +1,6 @@
 # Global config default values
 survey_round: '2024'
-read_from_parquet: false
+convert_to_parquet: false
 reload_references:
   area_name: true
   valueset: true

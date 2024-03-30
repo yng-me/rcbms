@@ -167,4 +167,3 @@ rcbms_list <- function(.type) {
   set_class(new_list, paste0('rcbms_', .type, '_list'))
 }
 
-

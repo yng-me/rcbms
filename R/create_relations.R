@@ -10,7 +10,7 @@
 
 create_relations <- function(.config = getOption('rcbms.config')) {
 
-  if(!.config$read_from_parquet) {
+  if(.config$parquet$convert) {
 
     for(i in seq_along(.config$input_data)) {
 

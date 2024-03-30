@@ -1,0 +1,50 @@
+---
+title: "rcbms-one"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rcbms-one}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rcbms)
+```
+
+## Project structure
+
+## Configuration
+
+### Global
+
+### Project 
+
+### Environment
+
+
+## References
+
+### Area name
+
+### Data dictionary
+
+### Valueset
+
+### Validation
+
+### Tabulation
+
+### Records
+
+### Sections
+
+### Macrodata
+
+### Score cards

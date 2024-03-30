@@ -10,31 +10,23 @@
 #' @examples
 #'
 
-read_cbms_data <- function(
-  .references = get_config("references"),
-  .config = getOption('rcbms.config'),
-  .assign_name = "parquet"
-) {
+read_cbms_data <- function(.references, .config) {
 
   if(.config$verbose) {
     cli::cli_h1("Importing Data Files")
   }
 
-  envir <- as.environment(1)
   geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
-  summary_record <- NULL
 
   input_data <- check_input_data(.config$input_data)
   mode <- tolower(.config$mode$type)
-  chunk_threshold <- .config$chunk_threshold
-  if(is.null(chunk_threshold)) {
-    chunk_threshold <- 4
+
+  convert_to_parquet <- TRUE
+  if(!is.null(.config$parquet$convert)) {
+    convert_to_parquet <- .config$parquet$convert
   }
 
-  read_from_parquet <- FALSE
-  if(!is.null(.config$read_from_parquet)) {
-    read_from_parquet <- .config$read_from_parquet
-  }
+  summary_record <- NULL
 
   df <- list()
 
@@ -42,15 +34,12 @@ read_cbms_data <- function(
 
     df_input <- input_data[i]
 
-    is_bp_xlsm <- df_input == 'bp' & as.integer(.config$survey_round) == 2024
+    is_bp_data <- df_input == 'bp' & as.integer(.config$survey_round) == 2024
 
     df_files <- list_data_files(df_input, .references, .config)
 
-    if(!read_from_parquet) {
-      if(!is_bp_xlsm) {
-        rov_var <- config$project[[df_input]]$variable$result_of_visit
-        unfiltered_records <- .config$project[[df_input]]$unfiltered_records
-        if(is.null(unfiltered_records)) unfiltered_records <- ""
+    if(convert_to_parquet) {
+      if(!is_bp_data) {
 
         if(.config$verbose) {
           if(length(input_data) > 1) {
@@ -72,9 +61,9 @@ read_cbms_data <- function(
 
       p <- df_files$unique$value[j]
       file_format <- get_file_format(.config, df_input)
-      pq_folder <- create_new_folder(get_data_path('parquet', df_input))
+      pq_folder <- create_new_folder(get_data_path('parquet', df_input, .config))
 
-      if(read_from_parquet) {
+      if(!convert_to_parquet) {
         p_name <- stringr::str_remove(tolower(basename(p)), "\\.parquet$")
       } else {
         p_name <- stringr::str_remove(tolower(basename(p)), file_format)
@@ -82,103 +71,38 @@ read_cbms_data <- function(
 
       pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
 
-      if(!read_from_parquet) {
+      if(convert_to_parquet) {
 
         df_src_files <- df_files$all |>
           dplyr::filter(grepl(paste0(p, '$'), value))
 
-        file_size <- sum(df_src_files$size) / 1000000
-        n_files <- length(df_src_files$value)
-        n_chunks <- as.integer(round(file_size / (n_files * 7)))
         is_first_record <- j == 1 & df_files$unique$n[j] == 0
 
-        if(is.null(.config$read_as_chunk)) {
-          .config$read_as_chunk <- FALSE
-        }
-        if(file_size <  5000 || n_chunks < 2 || isFALSE(.config$read_as_chunk)) {
+        if(is_bp_data) {
 
-          if(is_bp_xlsm) {
-
-            bp_base_path <- config$project$bp$directory
-            if(is.null(bp_base_path)) {
-              bp_base_path <- paste0(.config$base, '/data/raw/bp')
-            }
-
-            df_temp_dim <- read_bp_data(bp_base_path)
-
-            bp_pq_xlsm <- './src/2024/data/parquet/bp'
-            arrow::write_parquet(df_temp_dim$bpq_data, paste0(bp_pq_xlsm, '/bpq_data.parquet'))
-            arrow::write_parquet(df_temp_dim$bpq_data_list, paste0(bp_pq_xlsm, '/bpq_data_list.parquet'))
-            arrow::write_parquet(df_temp_dim$bpq_data_mode_of_transport, paste0(bp_pq_xlsm, '/bpq_data_mode_of_transport.parquet'))
-
-            df$bp$bpq_data <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data.parquet'))
-            df$bp$bpq_data_list <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data_list.parquet'))
-            df$bp$bpq_data_mode_of_transport <- arrow::open_dataset(paste0(bp_pq_xlsm, '/bpq_data_mode_of_transport.parquet'))
-
-          } else {
-
-            df_temp_dim <- save_cbms_data(
-              .df_src_files = df_src_files$value,
-              .is_first_record = is_first_record,
-              .input_data = df_input,
-              .pq_path = pq_path,
-              .p_name = p_name
-            )
+          bp_base_path <- config$project$bp$directory
+          if(is.null(bp_base_path)) {
+            bp_base_path <- paste0(.config$base, '/data/raw/bp')
           }
+
+          df_temp_dim <- read_bp_data(bp_base_path, .references, .config)
+          df$bp <- save_bp_data(df_temp_dim, './src/2024/data/parquet/bp')
 
         } else {
 
-          chuck_start <- 1
-          pq_path_chunck <- create_new_folder(file.path(pq_folder, "chunk"))
-
-          for(k in seq_len(n_chunks)) {
-
-            chunk_counter <- stringr::str_pad(k, width = 4, pad = "0")
-            chunk_name <- paste0(p_name, '__', chunk_counter, '.parquet')
-            chunk_pq <- paste0(pq_path_chunck, '/', chunk_name)
-
-            chuck_end <- round((n_files / n_chunks) * k)
-            if(k == n_chunks) chuck_end <- n_files
-
-            files_to_chunk <- df_src_files$value[chuck_start:chuck_end]
-
-            df_temp_dim <- save_cbms_data(
-              .df_src_files = files_to_chunk,
-              .is_first_record = is_first_record,
-              .input_data = df_input,
-              .pq_path = chunk_pq,
-              .chunk = k,
-              .chunk_size = n_chunks,
-              .p_name = p_name
-            )
-
-            chuck_start <- chuck_end + 1
-
-            df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_pq)
-          }
-        }
-
-      }
-
-      chunk_path <- paste0(pq_folder, '/chunk')
-
-      if(dir.exists(chunk_path)) {
-
-        chunk_file_paths <- list.files(chunk_path, full.names = TRUE)
-        chunk_file_paths <- chunk_file_paths[grepl(p_name, chunk_file_paths)]
-
-        for(m in seq_along(chunk_file_paths)) {
-          chunk_file <- chunk_file_paths[m]
-
-          chunk_counter <- stringr::str_extract_all(chunk_file, "\\d{4}\\.parquet$")[[1]] |>
-            stringr::str_remove("\\.parquet$")
-
-          df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_file)
-
+          df_temp_dim <- save_cbms_data(
+            .df_src_files = df_src_files$value,
+            .is_first_record = is_first_record,
+            .input_data = df_input,
+            .pq_path = pq_path,
+            .p_name = p_name,
+            .config = .config,
+            .references = .references
+          )
         }
       }
 
-      if(read_from_parquet & .config$verbose) {
+      if(!convert_to_parquet & .config$verbose) {
         cli::cli_alert_info(
           paste0(
             "Importing ", cli::col_br_yellow(p_name), " record ", cli::col_br_cyan("✓")
@@ -197,16 +121,6 @@ read_cbms_data <- function(
   }
 
   df <- set_class(df, "rcbms_parquet")
-
-  if(!is.null(.assign_name)) {
-
-    .config$links$parquet <- .assign_name
-    options(rcbms.config = .config)
-
-    assign(.assign_name, df, envir = envir)
-  }
-
-  suppressWarnings(rm(list = 'summary_record', envir = envir))
 
   return(invisible(df))
 }

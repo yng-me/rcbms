@@ -6,8 +6,8 @@ save_cbms_data <- function(
   .is_first_record = FALSE,
   .chunk = NULL,
   .chunk_size = 1,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
+  .references,
+  .config
 ) {
 
   envir <- as.environment(1)
