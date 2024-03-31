@@ -60,13 +60,7 @@ execute_script <- function(.config_file, ..., .survey_round = NULL) {
 #' @examples
 #'
 
-execute_mode <- function(
-  .parquet = get_config("parquet"),
-  .references = get_config("references"),
-  .aggregation = get_config("aggregation"),
-  .config = getOption("rcbms.config"),
-  .excluded_cases = NULL
-) {
+execute_mode <- function(.parquet, .references, .aggregation, .config, .excluded_cases = NULL) {
 
   envir <- as.environment(1)
   if(rlang::is_false(.config$execute_mode)) {

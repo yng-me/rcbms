@@ -1,6 +1,6 @@
-#' Title
+#' Tidy area name
 #'
-#' @param .references
+#' @param .area_name
 #'
 #' @return
 #' @export
@@ -8,7 +8,7 @@
 #' @examples
 #'
 
-tidy_area_name <- function(.references, .add_length) {
+tidy_area_name <- function(.area_name, .add_length) {
 
   if(.add_length == 1) {
     barangay_geo_var <- 'barangay_geo_new'
@@ -17,14 +17,14 @@ tidy_area_name <- function(.references, .add_length) {
     barangay_geo_var <- 'barangay_geo'
     over_all_code <- "000000000"
   }
-  .references$area_name |>
+  .area_name |>
     dplyr::select(
       area_code = !!as.name(barangay_geo_var),
       area_name = barangay,
     ) |>
     dplyr::mutate(level = 4) |>
     dplyr::bind_rows(
-      .references$area_name |>
+      .area_name |>
         dplyr::transmute(
           area_code = stringr::str_pad(
             stringr::str_sub(!!as.name(barangay_geo_var), 1, 6 + .add_length),
@@ -38,7 +38,7 @@ tidy_area_name <- function(.references, .add_length) {
         dplyr::distinct(.keep_all = T)
     ) |>
     dplyr::bind_rows(
-      .references$area_name |>
+      .area_name |>
         dplyr::transmute(
           area_code = stringr::str_pad(
             stringr::str_sub(!!as.name(barangay_geo_var), 1, 4 + .add_length),
@@ -52,7 +52,7 @@ tidy_area_name <- function(.references, .add_length) {
         dplyr::distinct(.keep_all = T)
     ) |>
     dplyr::bind_rows(
-      transform_area_name(.references, .add_length = .add_length) |>
+      transform_area_name(.area_name, .add_length = .add_length) |>
         dplyr::transmute(
           area_code = stringr::str_pad(
             region_code,

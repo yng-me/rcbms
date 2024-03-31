@@ -10,6 +10,7 @@ reload_references:
   macrodata: true
   score_card: true
   record: true
+  section: true
 working_directory: ~
 check_if_online: true
 complete_cases: true

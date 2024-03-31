@@ -1,33 +1,52 @@
 save_cbms_data <- function(
+  .conn,
   .df_src_files,
   .input_data,
   .pq_path,
   .p_name,
-  .is_first_record = FALSE,
-  .chunk = NULL,
-  .chunk_size = 1,
   .references,
-  .config
+  .config,
+  .is_first_record = FALSE,
+  .summary_record = NULL
 ) {
 
-  envir <- as.environment(1)
-  geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
   uid <- "case_id"
   if(.input_data == "bp") uid <- "barangay_geo"
+
+  geo_cols_name <- c("region", "province", "city_mun", "barangay")
+  geo_cols <- paste0(geo_cols_name, "_code")
+  sn_cols <- c("ean", "bsn", "husn", "hsn", "line_number")
 
   rov_var <- .config$project[[.input_data]]$variable$result_of_visit
   unfiltered_records <- .config$project[[.input_data]]$unfiltered_records
 
+  dcf <- .references$data_dictionary[[.config$survey_round]][[.input_data]]
+  if(tolower(.config$mode$stage[1]) > 3) {
+    dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
+  }
+
   df_list <- lapply(.df_src_files, function(x) {
-    suppressWarnings(
-      import_data(x, .input_data = .input_data) |>
+    if(.config$warning) {
+      import_data(x, .input_data, .config) |>
         clean_colnames() |>
         harmonize_variable(
-          .references$data_dictionary,
+          .dictionary = dcf,
           .survey_round = .config$survey_round,
-          .input_data = .input_data
+          .input_data = .input_data,
+          .config = .config
         )
-    )
+    } else {
+      suppressWarnings(
+        import_data(x, .input_data, .config) |>
+          clean_colnames() |>
+          harmonize_variable(
+            .dictionary = dcf,
+            .survey_round = .config$survey_round,
+            .input_data = .input_data,
+            .config = .config
+          )
+      )
+    }
   })
 
   df_temp <- dplyr::bind_rows(df_list)
@@ -36,30 +55,36 @@ save_cbms_data <- function(
   attr(df_temp, "dim_before_tidy") <- df_temp_dim_before
 
   if(.is_first_record) {
-    summary_record <- df_temp |>
-      create_case_id(.input_data = .input_data) |>
-      dplyr::select(dplyr::any_of(c(uid, geo_cols, rov_var)))
-
-    assign("summary_record", summary_record, envir = envir)
-  }
-
-  if(exists("summary_record") & isFALSE(.is_first_record)) {
-
-    with_geo_code <- which(geo_cols %in% names(df_temp))
-
-    if(length(with_geo_code) == 4) {
-      summary_record_only <- summary_record |>
-        dplyr::select(-dplyr::any_of(geo_cols))
-
-    } else {
-      summary_record_only <- summary_record
-    }
 
     df_temp <- df_temp |>
       create_case_id(.input_data = .input_data) |>
-      dplyr::left_join(summary_record_only, by = uid)
+      create_barangay_geo() |>
+      dplyr::select(
+        dplyr::any_of(c(uid, geo_cols, "barangay_geo", rov_var)),
+        dplyr::everything()
+      )
 
-    if(.config$complete_cases && !(.p_name %in% unfiltered_records)) {
+  } else {
+
+    if(!is.null(.summary_record)) {
+
+      with_geo_code <- which(geo_cols %in% names(df_temp))
+
+      if(length(with_geo_code) == 4) {
+        summary_record_only <- .summary_record |>
+          dplyr::select(dplyr::any_of(c(uid, "barangay_geo", rov_var)))
+
+      } else {
+        summary_record_only <- .summary_record |>
+          dplyr::select(dplyr::any_of(c(uid, geo_cols, "barangay_geo", rov_var)))
+      }
+
+      df_temp <- df_temp |>
+        create_case_id(.input_data = .input_data) |>
+        dplyr::left_join(summary_record_only, by = uid)
+    }
+
+    if(.config$complete_cases & !(.p_name %in% unfiltered_records)) {
 
       if(rov_var %in% names(df_temp)) {
         df_temp <- df_temp |>
@@ -77,37 +102,20 @@ save_cbms_data <- function(
     }
   }
 
-  assign("df_temp", df_temp, envir = envir)
-
-  src_file <- join_path(.config$base, 'tidy', .input_data, paste0(.p_name, '.R'))
-  if(file.exists(src_file)) source(src_file)
-
-  if(exists("df_temp_tidy")) df_temp <- df_temp_tidy
-
   df_temp <- df_temp |>
-    add_metadata(
-      .dictionary = .references$data_dictionary,
-      .valueset = .references$valueset,
-      .survey_round = .config$survey_round,
-      .input_data = .input_data
+    dplyr::left_join(
+      transform_area_name(.references$area_name, .config$project$add_length) |>
+        dplyr::select(
+          barangay_geo,
+          dplyr::any_of(c(geo_cols_name, 'is_huc', '2020_popn', 'class'))
+        ),
+      by = "barangay_geo"
     ) |>
     dplyr::select(
-      dplyr::any_of(
-        c(
-          uid,
-          geo_cols,
-          "ean",
-          "bsn",
-          "husn",
-          "hsn",
-          "line_number",
-          rov_var,
-          "sex",
-          "age"
-        )
-      ),
+      dplyr::any_of(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age")),
       sort(names(df_temp))
     )
+
 
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
@@ -136,20 +144,34 @@ save_cbms_data <- function(
       )
   }
 
-  arrow::write_parquet(df_temp |> create_case_id(.input_data = .input_data), .pq_path)
+  if(.config$parquet$encrypt & !is.null(.config$env)) {
 
-  suppressWarnings(rm(list = 'df_temp_tidy', envir = envir))
-  suppressWarnings(rm(list = 'df_temp', envir = envir))
+    df_temp <- df_temp |>
+      create_case_id(.input_data = .input_data) |>
+      tibble::tibble()
 
-  if(!is.null(.chunk) & .chunk_size > 1) {
-    .chunk <- paste0("[", .chunk, "/", .chunk_size, "] ")
+    key_pub <- .config$env$PQ_KEY_PUB
+    q_to_pq <- paste0("COPY df_temp TO '", .pq_path , "' (ENCRYPTION_CONFIG {footer_key: '", key_pub, "'});")
+
+    DBI::dbWriteTable(.conn, name = "df_temp", value = df_temp, overwrite = T)
+    DBI::dbExecute(.conn, q_to_pq)
+
+  } else {
+    df_temp <- df_temp |>
+      add_metadata(dcf, .references$valueset) |>
+      create_case_id(.input_data = .input_data)
+
+    arrow::write_parquet(df_temp, .pq_path)
   }
 
   if(.config$verbose) {
     cli::cli_alert_info(
       paste0(
-        "Importing ", .chunk, cli::col_br_yellow(.p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
+        "Importing ", cli::col_br_yellow(.p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
       )
     )
   }
+
+  return(df_temp)
+
 }

@@ -118,7 +118,7 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #'
 #' @examples
 
-create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
+create_barangay_geo <- function(.data) {
 
   if(!("barangay_geo" %in% names(.data))) {
     .data <- .data |>

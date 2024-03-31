@@ -91,6 +91,7 @@ utils::globalVariables(
     rcbms.config = list(
       parquet = list(
         convert = TRUE,
+        encrypt = TRUE,
         overwrite = TRUE,
         partition = FALSE,
         partition_by = c("region_code", "province_code", "city_mun_code")
@@ -103,7 +104,8 @@ utils::globalVariables(
         data_dictionary = FALSE,
         macrodata = FALSE,
         score_card = FALSE,
-        record = FALSE
+        record = FALSE,
+        section = FALSE
       ),
       check_if_online = TRUE,
       complete_cases = TRUE,
@@ -149,6 +151,7 @@ utils::globalVariables(
         db = "0.0.2"
       ),
       clear_objects = TRUE,
+      warning = FALSE,
       verbose = TRUE,
       progress = FALSE
     )

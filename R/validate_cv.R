@@ -119,7 +119,8 @@ validate_select <- function(.data, ...) {
   }
 
   join_hh_info <- config$validation$include_additional_info
-  summary_record <- get_summary_record(current_input_data)
+  
+  summary_record <- .config$project[[.input_data]][['summary_record']]
 
   if(isTRUE(join_hh_info) & !is.null(summary_record)) {
 

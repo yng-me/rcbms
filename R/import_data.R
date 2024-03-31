@@ -10,12 +10,7 @@
 #'
 #' @examples
 #'
-import_data <- function(
-  .path,
-  .input_data,
-  .config = getOption("rcbms.config"),
-  ...
-) {
+import_data <- function(.path, .input_data, .config, ...) {
 
   if(!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
     stop('Invalid input data.')

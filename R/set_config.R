@@ -12,12 +12,13 @@
 #'
 #'
 set_config <- function(
-  .config_dir = "./configs",
-  .config = getOption("rcbms.config"),
+  .config_dir = "configs",
+  .survey_round = NULL,
+  .input_data = NULL,
   .include_env = TRUE
 ) {
 
-  config_base <- .config
+  config_base <- getOption("rcbms.config")
   global <- read_config(file.path(.config_dir, "global.yml"))
   project <- read_config(file.path(.config_dir, "project.yml"))
 
@@ -37,7 +38,8 @@ set_config <- function(
 
   # ENV
   if(.include_env) {
-    if(file.exists(".env")) {
+    env_path <- file.path(wd, .config_dir, ".env")
+    if(file.exists(env_path)) {
       global$env <- set_dot_env(env_path)
     }
   }
@@ -51,19 +53,37 @@ set_config <- function(
 
     if(inherits(config_local[[config_name]], 'list')) {
 
-      v <- c(global[[config_name]], config_base[[config_name]])
+      value <- c(global[[config_name]], config_base[[config_name]])
 
     } else {
 
       if(!is.null(global[[config_name]])) {
-        v <- global[[config_name]]
+        value <- global[[config_name]]
       } else {
-        v <- config_base[[config_name]]
+        value <- config_base[[config_name]]
       }
     }
 
-    config_final[[config_name]] <- v
+    config_final[[config_name]] <- value
 
+  }
+
+  if(!is.null(.survey_round)) {
+    rlang::arg_match(
+      .survey_round,
+      values = c("2020", "2021", "2022", "2023", "2024"),
+      multiple = FALSE
+    )
+    config_final$survey_round <- .survey_round
+  }
+
+  if(!is.null(.input_data)) {
+    rlang::arg_match(
+      .input_data,
+      values = c("hp", "bp", "ilq", "cph", "bs"),
+      multiple = TRUE
+    )
+    config_final$input_data <- .input_data
   }
 
   return(invisible(set_class(config_final, "rcbms_config")))
@@ -72,34 +92,7 @@ set_config <- function(
 
 
 
-#' Title
-#'
-#' @param .key
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-
-get_config <- function(.key) {
-  config <- getOption("rcbms.config")
-  obj <- config$links[[.key]]
-
-  if(!is.null(obj)) {
-    if(exists(obj)) {
-      eval(as.name(obj))
-    } else {
-      return(NULL)
-    }
-  } else {
-    return(NULL)
-  }
-}
-
-
-
-#' Title
+#' Read config file
 #'
 #' @param .config_file
 #'
@@ -126,4 +119,31 @@ read_config <- function(.config_file) {
   }
 
   return(config)
+}
+
+
+#' Get config link
+#'
+#' @param .key
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+get_config <- function(.key) {
+  config <- getOption("rcbms.config")
+  obj <- config$links[[.key]]
+
+  if(!is.null(obj)) {
+    if(exists(obj)) {
+      eval(as.name(obj))
+    } else {
+      return(NULL)
+    }
+  } else {
+    return(NULL)
+  }
+
 }

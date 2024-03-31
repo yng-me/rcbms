@@ -9,29 +9,20 @@
 #'
 #' @examples
 #'
-add_metadata <- function(
-  .data,
-  .dictionary,
-  .valueset,
-  .survey_round,
-  .input_data
-) {
+add_metadata <- function(.data, .dictionary, .valueset) {
 
   if(is.null(.dictionary) & is.null(.valueset)) return(.data)
+
   validate_required_cols(
     .dictionary,
     c('variable_name', 'variable_name_new', 'valueset', 'label')
   )
+
   validate_required_cols(.valueset, c('name', 'value', 'label'))
 
   df_name <- names(.data)
 
   .dictionary <- .dictionary |>
-    dplyr::filter(
-      survey_round == as.integer(.survey_round),
-      input_data == .input_data
-    ) |>
-    dplyr::collect() |>
     convert_to_na() |>
     dplyr::distinct(variable_name, .keep_all = T) |>
     dplyr::mutate(

@@ -30,7 +30,7 @@ list_data_files <- function(.input_data, .references, .config) {
     stop("Data directory does not exist: ", input_data_path)
   }
 
-  summary_record <- get_summary_record(.input_data)
+  summary_record <- .config$project[[.input_data]][['summary_record']]
 
   if(is.null(summary_record)) summary_record <- '~~~'
   if(is.na(summary_record)) summary_record <- '~~~'
@@ -95,8 +95,6 @@ list_data_files <- function(.input_data, .references, .config) {
 
   records_filter <- unique(c(selected_records, ref_records))
 
-  print(records_filter)
-
   if(length(records_filter) > 0) {
     data_files <- data_files |>
       dplyr::filter(tolower(name) %in% records_filter)
@@ -112,23 +110,6 @@ list_data_files <- function(.input_data, .references, .config) {
       unique = data_files
     )
   )
-}
-
-get_summary_record <- function(.input_data, .type = 'summary_record') {
-  .config <- getOption('rcbms.config')
-  .config$project[[.input_data]][[.type]]
-}
-
-check_input_data <- function(.input_data) {
-  .input_data <- .input_data[.input_data %in% c("hp", "bp", "ilq", "cph", "bs")]
-  valid_input <- .input_data %in% c("hp", "bp", "ilq", "cph", "bs")
-  match_input <- length(which(valid_input))
-  if(match_input > 2) {
-    .input_data <- .input_data[valid_input]
-  } else if (match_input == 0) {
-    .input_data <- 'hp'
-  }
-  return(.input_data)
 }
 
 

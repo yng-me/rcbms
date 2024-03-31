@@ -1,6 +1,7 @@
 #' Load references
 #'
 #' @param .config
+#' @param .reload
 #'
 #' @return
 #' @export
@@ -8,7 +9,7 @@
 #' @examples
 #'
 
-load_references <- function(.config) {
+load_references <- function(.config, .reload = FALSE) {
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -43,8 +44,8 @@ load_references <- function(.config) {
       ref_short__i <- gid_refs$ref_short[1]
 
       verbose <- FALSE
-      ref_reload <- FALSE
-      check_if_online <- FALSE
+      ref_reload <- .reload
+      check_if_online <- .reload
 
     } else {
       stop("Invalid reference name")
@@ -71,7 +72,7 @@ load_references <- function(.config) {
       ref_reload_i <- ref_reload[[ref_i]]
     }
 
-    if(is_online & (ref_reload_i | !file.exists(pq_i))) {
+    if(is_online & (ref_reload_i | !file.exists(pq_i) | .reload)) {
 
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
       if(ref_short_i == "anm") {
@@ -248,7 +249,7 @@ load_data_dictionary_refs <- function(.gid) {
 load_area_name_refs <- function(.gid) {
 
   required_cols <- c(
-    # 'region',
+    'region',
     'province',
     'city_mun',
     'barangay',
@@ -262,7 +263,7 @@ load_area_name_refs <- function(.gid) {
     'funding_source'
   )
 
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'ccciiciciii', .start_at = 2) |>
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccciiciciii') |>
   dplyr::mutate(
     barangay_geo_new = stringr::str_pad(
       stringr::str_extract(barangay_geo_new, '\\d+'),

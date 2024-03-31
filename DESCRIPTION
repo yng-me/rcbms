@@ -19,6 +19,7 @@ Encoding: UTF-8
 LazyData: true
 Imports:
   arrow,
+  duckdb,
   dplyr (>= 1.1.0),
   tidyr (>= 1.1.0),
   stringr (>= 1.4.0),

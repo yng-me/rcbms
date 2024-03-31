@@ -4,11 +4,7 @@
 \alias{read_cbms_data}
 \title{Title}
 \usage{
-read_cbms_data(
-  .references = get_config("references"),
-  .config = getOption("rcbms.config"),
-  .assign_name = "parquet"
-)
+read_cbms_data(.references, .config)
 }
 \arguments{
 \item{.assign_name}{}

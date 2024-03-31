@@ -1,8 +1,7 @@
 #' Title
 #'
 #' @param .parquet
-#' @param .references
-#' @param ...
+#' @param .area_name
 #' @param .config
 #'
 #' @return
@@ -11,14 +10,7 @@
 #' @examples
 #'
 
-set_aggregation <- function(
-  ...,
-  .parquet = get_config("parquet"),
-  .references = get_config("references"),
-  .config = getOption("rcbms.config"),
-  .update_config = TRUE,
-  .config_key = "aggregation"
-) {
+set_aggregation <- function(.parquet, .area_name, .config) {
 
   if(.config$verbose) {
     cli::cli_h1("Setting Aggregation")
@@ -39,8 +31,7 @@ set_aggregation <- function(
   for(i in seq_along(.config$input_data)) {
 
     input_data <- .config$input_data[[i]]
-    agg_record <- get_summary_record(input_data)
-
+    agg_record <- .config$project[[input_data]][['summary_record']]
     agg_level_i <- .config$project[[input_data]]$aggregation$level
 
     if(is.null(agg_level_i)) agg_level_i <- agg_level
@@ -56,7 +47,7 @@ set_aggregation <- function(
         create_barangay_geo() |>
         dplyr::select(-dplyr::contains('_code')) |>
         dplyr::left_join(
-          transform_area_name(.add_length = .config$project$add_length),
+          transform_area_name(.area_name, .add_length = .config$project$add_length),
           by = 'barangay_geo'
         ) |>
         dplyr::select(
@@ -126,19 +117,7 @@ set_aggregation <- function(
     }
   }
 
-  envir <- as.environment(1)
-
-  if(!is.null(.config_key) && .update_config) {
-    .config$links$aggregation <- .config_key
-    options(rcbms.config = .config)
-
-    assign("config", .config, envir = envir)
-  }
-
-  agg <- set_class(agg, "rcbms_agg")
-  assign(.config_key, agg, envir = envir)
-
-  return(invisible(agg))
+  return(invisible(set_class(agg, "rcbms_agg")))
 
 }
 

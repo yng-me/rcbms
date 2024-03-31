@@ -1,6 +1,6 @@
-#' Title
+#' Transform area name
 #'
-#' @param .references
+#' @param .area_name
 #' @param .add_length
 #'
 #' @return
@@ -9,25 +9,9 @@
 #' @examples
 #'
 
-transform_area_name <- function(.references = get_config("references"), .add_length = 0) {
+transform_area_name <- function(.area_name, .add_length = 0) {
 
-  regions <- .references$valueset |>
-    dplyr::filter(name == 'area_name_region') |>
-    dplyr::collect() |>
-    dplyr::transmute(
-      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-      region = label
-    )
-
-  regions_long <- .references$valueset |>
-    dplyr::filter(name == 'area_name_region_long') |>
-    dplyr::collect() |>
-    dplyr::transmute(
-      region_code = stringr::str_pad(as.integer(value), width = 2, pad = '0'),
-      region_long = label
-    )
-
-  .data <- .references$area_name |>
+  .data <- .area_name |>
     dplyr::collect() |>
     dplyr::mutate(add_length = .add_length) |>
     dplyr::mutate(
@@ -46,8 +30,6 @@ transform_area_name <- function(.references = get_config("references"), .add_len
       province_geo = stringr::str_sub(barangay_geo, 1, 4 + add_length),
       city_mun_geo = stringr::str_sub(barangay_geo, 1, 6 + add_length)
     ) |>
-    dplyr::left_join(regions, by = 'region_code', multiple = 'first') |>
-    dplyr::left_join(regions_long, by = 'region_code', multiple = 'first') |>
     dplyr::mutate(
       region_agg = region,
       province_agg = dplyr::if_else(
@@ -78,7 +60,6 @@ transform_area_name <- function(.references = get_config("references"), .add_len
     dplyr::select(-add_length, -barangay_geo_new)
 
   attr(.data$region, 'label') <- 'Region'
-  attr(.data$region_long, 'label') <- 'Region (Long Name)'
   attr(.data$is_huc, 'label') <- 'Highly Ubranized City (HUC)'
   attr(.data$province, 'label') <- 'Province'
   attr(.data$city_mun, 'label') <- 'City/Municipality'
