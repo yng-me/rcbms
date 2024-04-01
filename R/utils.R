@@ -7,15 +7,12 @@
 #' @export
 #'
 #' @examples
-#'
-
 create_new_folder <- function(.dir, .rm = FALSE) {
-
-  if(dir.exists(.dir) & .rm) {
+  if (dir.exists(.dir) & .rm) {
     unlink(.dir, recursive = TRUE)
   }
 
-  if(!dir.exists(.dir)){
+  if (!dir.exists(.dir)) {
     dir.create(.dir, recursive = TRUE)
   }
   return(.dir)
@@ -29,15 +26,15 @@ create_new_folder <- function(.dir, .rm = FALSE) {
 #' @export
 #'
 #' @examples
-#'
-
 is_online <- function(.site = "http://google.com/") {
-  tryCatch({
-    readLines(.site, n = 1)
-    TRUE
-  },
-  warning = function(w) invokeRestart("muffleWarning"),
-  error = function(e) FALSE)
+  tryCatch(
+    {
+      readLines(.site, n = 1)
+      TRUE
+    },
+    warning = function(w) invokeRestart("muffleWarning"),
+    error = function(e) FALSE
+  )
 }
 
 #' Title
@@ -48,11 +45,9 @@ is_online <- function(.site = "http://google.com/") {
 #' @export
 #'
 #' @examples
-#'
-
 clean_path <- function(path) {
   stringr::str_replace_all(
-    stringr::str_replace_all(path, '/\\.?/', '/'), '\\/+', '/'
+    stringr::str_replace_all(path, "/\\.?/", "/"), "\\/+", "/"
   )
 }
 
@@ -65,13 +60,11 @@ clean_path <- function(path) {
 #' @export
 #'
 #' @examples
-#'
-
 join_path <- function(...) {
-  if(Sys.info()[1] == 'Darwin' | Sys.info()[1] == 'darwin') {
-    path <- stringr::str_c(..., collapse = '', sep = '/')
+  if (Sys.info()[1] == "Darwin" | Sys.info()[1] == "darwin") {
+    path <- stringr::str_c(..., collapse = "", sep = "/")
   } else {
-    path <- stringr::str_c(..., collapse = '', sep = '\\')
+    path <- stringr::str_c(..., collapse = "", sep = "\\")
   }
 
   return(clean_path(path))
@@ -84,12 +77,10 @@ join_path <- function(...) {
 #' @export
 #'
 #' @examples
-#'
-
 format_current_date <- function() {
   formatted_date <- paste0(
-    stringr::str_pad(lubridate::day(lubridate::today()), width = 2, pad = '0'), ' ',
-    lubridate::month(lubridate::today(), label = TRUE, abbr = FALSE), ' ',
+    stringr::str_pad(lubridate::day(lubridate::today()), width = 2, pad = "0"), " ",
+    lubridate::month(lubridate::today(), label = TRUE, abbr = FALSE), " ",
     lubridate::year(lubridate::today())
   )
   return(formatted_date)
@@ -104,13 +95,11 @@ format_current_date <- function() {
 #' @export
 #'
 #' @examples
-#'
-
 clean_colnames <- function(.data) {
-  str_to_replace <- '\\.|\\-|\\s|\\$\\>|\\<|\\|\\(|\\)|\\[|\\]'
+  str_to_replace <- "\\.|\\-|\\s|\\$\\>|\\<|\\|\\(|\\)|\\[|\\]"
   .data |>
-    dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, '_'))) |>
-    dplyr::rename_with(~ stringr::str_remove(., '^x\\.\\.\\.'))
+    dplyr::rename_with(~ tolower(stringr::str_replace_all(., str_to_replace, "_"))) |>
+    dplyr::rename_with(~ stringr::str_remove(., "^x\\.\\.\\."))
 }
 
 
@@ -123,24 +112,20 @@ clean_colnames <- function(.data) {
 #' @export
 #'
 #' @examples
-#'
-
 set_relative_wd <- function(
-  ...,
-  .base_wd = getOption('rcbms.config')$working_directory
-) {
-
-  if(!is.null(.base_wd)) {
-    if(!is.null(.base_wd) & typeof(.base_wd) == 'character') {
+    ...,
+    .base_wd = getOption("rcbms.config")$working_directory) {
+  if (!is.null(.base_wd)) {
+    if (!is.null(.base_wd) & typeof(.base_wd) == "character") {
       wd <- .base_wd
     } else if (!is.null(.base_wd$base)) {
       wd <- .base_wd
     }
   } else {
-    wd <- '.'
+    wd <- "."
   }
 
-  join_path(paste0(wd, '/', ...))
+  join_path(paste0(wd, "/", ...))
 }
 
 
@@ -161,10 +146,7 @@ is_not_installed <- function(.pkg) {
 #' @export
 #'
 #' @examples
-#'
 rcbms_list <- function(.type) {
   new_list <- list()
-  set_class(new_list, paste0('rcbms_', .type, '_list'))
+  set_class(new_list, paste0("rcbms_", .type, "_list"))
 }
-
-

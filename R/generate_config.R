@@ -8,11 +8,8 @@
 #' @export
 #'
 #' @examples
-#'
-
 generate_config <- function(.survey_round, .directory = NULL) {
-
-  if(is.null(.directory)) {
+  if (is.null(.directory)) {
     .directory <- "./configs/"
   }
 
@@ -25,7 +22,6 @@ generate_config <- function(.survey_round, .directory = NULL) {
   yaml::write_yaml(project, project_path)
 
   return(global_path)
-
 }
 
 

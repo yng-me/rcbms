@@ -83,3 +83,78 @@ utils::globalVariables(
     ".assign_name"
   )
 )
+
+
+.onLoad <- function(libname, pkgname) {
+  op <- options()
+  op.rcbms <- list(
+    rcbms.config = list(
+      parquet = list(
+        convert = TRUE,
+        overwrite = TRUE,
+        partition = FALSE,
+        partition_by = c("region_code", "province_code", "city_mun_code")
+      ),
+      reload_references = list(
+        area_name = TRUE,
+        valueset = TRUE,
+        validation = TRUE,
+        tabulation = TRUE,
+        data_dictionary = TRUE,
+        macrodata = TRUE,
+        score_card = TRUE,
+        record = TRUE
+      ),
+      check_if_online = TRUE,
+      complete_cases = TRUE,
+      read_as_chunk = FALSE,
+      chunk_threshold = 5000,
+      harmonize_variable = TRUE,
+      execute_mode = TRUE,
+      mode = list(
+        type = "validation",
+        edit = 1,
+        source = 2,
+        stage = "dev",
+        station = "co"
+      ),
+      aggregation = list(
+        level = 1,
+        areas = "all"
+      ),
+      validation = list(
+        generate_output = FALSE,
+        detailed_output = FALSE,
+        include_additional_info = FALSE,
+        validate_signatures = FALSE,
+        add_uuid = TRUE,
+        save_as_excel = FALSE,
+        save_as_json = TRUE
+      ),
+      tabulation = list(
+        generate_output = FALSE
+      ),
+      portal = list(
+        stage = "dev",
+        db_migration = list(
+          overwrite = TRUE,
+          append = FALSE
+        )
+      ),
+      version = list(
+        app = "3.0.0",
+        script = "0.0.1",
+        package = "0.1.4",
+        db = "0.0.1"
+      ),
+      clear_objects = TRUE,
+      verbose = TRUE,
+      progress = FALSE
+    )
+  )
+
+  toset <- !(names(op.rcbms) %in% names(op))
+  if (any(toset)) options(op.rcbms[toset])
+
+  invisible()
+}

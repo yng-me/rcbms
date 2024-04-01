@@ -9,19 +9,16 @@
 #' @export
 #'
 #' @examples
-#'
 import_data <- function(
-  .path,
-  .input_data,
-  .config = getOption("rcbms.config"),
-  ...
-) {
-
-  if(!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
-    stop('Invalid input data.')
+    .path,
+    .input_data,
+    .config = getOption("rcbms.config"),
+    ...) {
+  if (!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
+    stop("Invalid input data.")
   }
 
-  file_format <-  .config$project[[.input_data]]$file_format
+  file_format <- .config$project[[.input_data]]$file_format
   import_func <- eval(as.name(paste0("import_", file_format)))
 
   df <- import_func(.path, ...)
@@ -30,17 +27,16 @@ import_data <- function(
 }
 
 import_txt <- function(.path, ...) {
-
   readr::read_delim(
-      .path,
-      delim = "\t",
-      quote = "",
-      progress = FALSE,
-      trim_ws = TRUE,
-      show_col_types = FALSE,
-      ...
-    ) |>
-    dplyr::select(-dplyr::starts_with('aux')) |>
+    .path,
+    delim = "\t",
+    quote = "",
+    progress = FALSE,
+    trim_ws = TRUE,
+    show_col_types = FALSE,
+    ...
+  ) |>
+    dplyr::select(-dplyr::starts_with("aux")) |>
     convert_to_na() |>
     convert_to_na(.pattern = "^DEFAULT$")
 }
@@ -56,8 +52,8 @@ import_csv <- function(.path, ...) {
       skip_empty_rows = TRUE,
       ...
     ) |>
-    dplyr::select(-dplyr::any_of("...1")) |>
-    convert_to_na()
+      dplyr::select(-dplyr::any_of("...1")) |>
+      convert_to_na()
   )
 }
 
