@@ -9,7 +9,7 @@
 #' @examples
 #'
 
-load_references <- function(.config, .reload = FALSE) {
+load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 
   if(is.null(.config)) stop('Config not found.')
 
@@ -18,7 +18,8 @@ load_references <- function(.config, .reload = FALSE) {
 
   if(is_rcbms_config) {
 
-    gid_refs <- gid_references(.config$working_directory)
+    if(is.null(.wd)) { .wd <- .config$working_directory }
+    gid_refs <- gid_references(.wd)
     verbose <- .config$verbose
 
     if(verbose) {
@@ -34,7 +35,7 @@ load_references <- function(.config, .reload = FALSE) {
 
   } else {
 
-    gid_refs <- gid_references()
+    gid_refs <- gid_references(.wd)
 
     if(.config %in% gid_refs$ref | .config %in% gid_refs$ref_short) {
       gid_refs <- gid_refs |>
@@ -319,7 +320,8 @@ load_validation_refs <- function(.gid) {
   )
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccccc') |>
-    dplyr::filter(status == 1)
+    dplyr::filter(status == 1) |>
+    dplyr::select(-status)
 
   transform_refs(df)
 
@@ -577,7 +579,7 @@ transform_refs <- function(.data) {
 gid_references <- function(.wd = NULL) {
 
   if(is.null(.wd)) .wd <- '.'
-  wd_base_ref <- create_new_folder(paste0(.wd, '/references'))
+  wd_base_ref <- create_new_folder(file.path(.wd, 'references'))
 
   tibble::tibble(
     ref = c(
@@ -614,5 +616,5 @@ gid_references <- function(.wd = NULL) {
       "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
       "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0"
     )
-  ) |> dplyr::mutate(filename = paste0(wd_base_ref, "/ref_", ref, ".", type))
+  ) |> dplyr::mutate(filename = file.path(wd_base_ref, paste0("ref_", ref, ".", type)))
 }

@@ -24,8 +24,16 @@ check_age_sex_relation <- function(
   .condition = "<",
   .conjuction = NULL,
   .relation_to_hh_head_var = NULL,
-  .config = getOption("rcbms.config")
+  .config
 ) {
+
+  if(!exists("config")) {
+    .config <- getOption('rcbms.config')
+  } else if(exists("config") & !inherits(config, "rcbms_config")) {
+    .config <- getOption('rcbms.config')
+  } else {
+    .config <- config
+  }
 
   var <- .config$project$hp$variable
   if(is.null(.relation_to_hh_head_var)) {

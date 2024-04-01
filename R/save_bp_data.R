@@ -10,7 +10,7 @@ save_bp_data <- function(.conn, .pq_folder, .references, .config) {
     dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
   }
 
-  use_encryption <- .config$parquet$encrypt & !is.null(.config$env)
+  use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
 
   df_temp <- read_bp_data(dcf, .config)
   df_bp_names <- names(df_temp)

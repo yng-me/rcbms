@@ -117,6 +117,7 @@ utils::globalVariables(
       execute_mode = TRUE,
       mode = list(
         type = "validation",
+        sub_type = NULL,
         edit = 1,
         stage = 2,
         station = "co"

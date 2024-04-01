@@ -2,6 +2,7 @@
 #'
 #' @param .cv
 #' @param .config
+#' @param .references
 #' @param .detailed_output
 #' @param .include_additional_info
 #' @param .add_uuid
@@ -15,8 +16,8 @@
 #'
 generate_validation <- function(
   .cv,
-  .config = getOption('rcbms.config'),
-  .references = get_config("references"),
+  .references,
+  .config,
   .detailed_output = FALSE,
   .include_additional_info = FALSE,
   .add_uuid = FALSE,
@@ -30,17 +31,9 @@ generate_validation <- function(
     input_data <- .config$input_data[1]
   }
 
-  references <- .references$validation |>
-    dplyr::filter(
-      survey_round == as.integer(.config$survey_round),
-      input_data == input_data
-    ) |>
-    dplyr::collect()
-
+  cv_ref <- .references$validation[[.config$survey_round]][[input_data]]
   result_names <- names(.cv)
-  result_names <- result_names[
-    result_names %in% references$validation_id
-  ]
+  result_names <- result_names[result_names %in% cv_ref$validation_id]
 
   with_incon <- NULL
   is_not_rcbms_cv_tbl <- NULL

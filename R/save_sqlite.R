@@ -1,28 +1,23 @@
-save_rcbms_logs <- function(
-  .data,
-  .input_data,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
-) {
+save_rcbms_logs <- function(.data, .input_data, .references, .config) {
 
   conn <- connect_to_rcbms_logs(.config)
-  log_tables <- RSQLite::dbListTables(conn)
+  log_tables <- DBI::dbListTables(conn)
 
   save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
 
   create_remarks_table(conn, log_tables)
 
-  RSQLite::dbDisconnect(conn)
+  DBI::dbDisconnect(conn)
 
 }
 
 
 connect_to_rcbms_logs <- function(.config) {
-  wd <- create_new_folder(paste0(.config$base, "/data/log"))
+  wd <- create_new_folder(file.path(.config$base, "data", "log"))
   v <- config$version$db
   if(is.null(v)) v <- "0.0.1"
   db_name <- paste0(wd, "/rcbms_logs_v", v, ".db")
-  conn <- RSQLite::dbConnect(RSQLite::SQLite(), db_name)
+  conn <- DBI::dbConnect(RSQLite::SQLite(), db_name)
   return(conn)
 }
 
@@ -122,23 +117,11 @@ save_current_logs <- function(
       total_cases_unique <- 0
     }
 
-    cv_ref <- .references$validation |>
-      dplyr::collect() |>
-      dplyr::filter(
-        survey_round == as.integer(.config$survey_round),
-        input_data == .input_data
-      ) |>
-      dplyr::select(validation_id, priority_level)
 
     priority_df <- cv_data |>
       dplyr::select(validation_id) |>
       dplyr::left_join(
-        .references$validation |>
-          dplyr::collect() |>
-          dplyr::filter(
-            survey_round == as.integer(.config$survey_round),
-            input_data == .input_data
-          ) |>
+        .references$validation[[.config$survey_round]][[.input_data]] |>
           dplyr::select(validation_id, priority_level),
         by = "validation_id"
       ) |>

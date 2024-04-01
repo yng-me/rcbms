@@ -21,7 +21,8 @@ read_cbms_data <- function(.references, .config) {
     convert_to_parquet <- .config$parquet$convert
   }
 
-  use_encryption <- .config$parquet$encrypt & !is.null(.config$env)
+  use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
+
   if(use_encryption) {
 
     conn <- DBI::dbConnect(duckdb::duckdb())

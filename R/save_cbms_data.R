@@ -144,7 +144,10 @@ save_cbms_data <- function(
       )
   }
 
-  if(.config$parquet$encrypt & !is.null(.config$env)) {
+  if(.config$parquet$encrypt &
+     !is.null(.config$env$PQ_KEY_PUB) &
+     !is.null(.config$env$PQ_KEY_PRV)
+     ) {
 
     df_temp <- df_temp |>
       create_case_id(.input_data = .input_data) |>
