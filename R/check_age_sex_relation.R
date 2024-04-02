@@ -14,15 +14,25 @@
 #'
 #' @examples
 check_age_sex_relation <- function(
-    .data,
-    .primary_member,
-    .sex_of_primary_member = c(1, 2),
-    .relation_to_primary_member,
-    .threshold,
-    .condition = "<",
-    .conjuction = NULL,
-    .relation_to_hh_head_var = NULL,
-    .config = getOption("rcbms.config")) {
+  .data,
+  .primary_member,
+  .sex_of_primary_member = c(1, 2),
+  .relation_to_primary_member,
+  .threshold,
+  .condition = "<",
+  .conjuction = NULL,
+  .relation_to_hh_head_var = NULL,
+  .config
+) {
+
+  if(!exists("config")) {
+    .config <- getOption('rcbms.config')
+  } else if(exists("config") & !inherits(config, "rcbms_config")) {
+    .config <- getOption('rcbms.config')
+  } else {
+    .config <- config
+  }
+
   var <- .config$project$hp$variable
   if (is.null(.relation_to_hh_head_var)) {
     .relation_to_hh_head_var <- var$relation_to_hh_head

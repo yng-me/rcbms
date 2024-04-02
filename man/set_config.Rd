@@ -5,20 +5,17 @@
 \title{Set initial configuration for the project}
 \usage{
 set_config(
-  .config_file,
-  .include_env = TRUE,
-  .save_as_options = TRUE,
-  .assign_name = "config"
+  .config_dir = "configs",
+  .config = getOption("rcbms.config"),
+  .survey_round = NULL,
+  .input_data = NULL,
+  .include_env = TRUE
 )
 }
 \arguments{
-\item{.config_file}{Path to config file. Default is \code{"./configs/global.yml"}. If the file is not present, a default config file will be generated.}
-
 \item{.include_env}{Include \code{.env} file. Default is \code{TRUE}. This will be switched to \code{FALSE} if the \code{.env} file is not present. The default location is \code{"./configs/.env"}.}
 
-\item{.save_as_options}{Save as options in the global environment. Default is \code{TRUE}.}
-
-\item{.assign_name}{Name to assign to the config object. Default is \code{config}.}
+\item{.config_file}{Path to config file. Default is \code{"./configs/global.yml"}. If the file is not present, a default config file will be generated.}
 }
 \value{
 A list of configuration settings use to execute the script.

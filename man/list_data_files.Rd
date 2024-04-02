@@ -4,11 +4,7 @@
 \alias{list_data_files}
 \title{Title}
 \usage{
-list_data_files(
-  .input_data,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
-)
+list_data_files(.input_data, .references, .config)
 }
 \arguments{
 \item{.config}{}

@@ -8,34 +8,34 @@
 #' @export
 #'
 #' @examples
-list_data_files <- function(
-    .input_data,
-    .references = get_config("references"),
-    .config = getOption("rcbms.config")) {
-  if (is.null(.config)) stop(".config not defined.")
+#'
+
+list_data_files <- function(.input_data, .references, .config) {
+
+  if(is.null(.config)) stop('.config not defined.')
 
   file_format <- get_file_format(.config, .input_data)
-  read_from_parquet <- .config$read_from_parquet
+  convert_to_parquet <- .config$parquet$convert
   df_input_folder <- "raw"
 
-  if (read_from_parquet) df_input_folder <- "parquet"
+  if(!convert_to_parquet) df_input_folder <- "parquet"
 
   if (!is.null(.config$project[[.input_data]]$directory)) {
     input_data_path <- .config$project[[.input_data]]$directory
   } else {
-    input_data_path <- get_data_path(df_input_folder, .input_data)
+    input_data_path <- get_data_path(df_input_folder, .input_data, .config)
   }
 
   if (!dir.exists(input_data_path)) {
     stop("Data directory does not exist: ", input_data_path)
   }
 
-  summary_record <- get_summary_record(.input_data)
+  summary_record <- .config$project[[.input_data]][['summary_record']]
 
   if (is.null(summary_record)) summary_record <- "~~~"
   if (is.na(summary_record)) summary_record <- "~~~"
 
-  if (read_from_parquet) {
+  if(!convert_to_parquet) {
     return(
       list(
         unique = list.files(input_data_path, pattern = "\\.parquet$", recursive = T) |>
@@ -65,8 +65,8 @@ list_data_files <- function(
     dplyr::filter(grepl(file_format, value, ignore.case = T)) |>
     dplyr::mutate(file.info(value))
 
-  if (nrow(all_data_files) == 0 & !.config$read_from_parquet) {
-    stop(paste0("No input data files found for ", .input_data))
+  if(nrow(all_data_files) == 0 & .config$parquet$convert) {
+    stop(paste0('No input data files found for ', .input_data))
   }
 
   data_files <- dplyr::as_tibble(basename(all_data_files$value)) |>
@@ -80,8 +80,8 @@ list_data_files <- function(
     dplyr::arrange(n)
 
   selected_records <- .references$section[[.config$survey_round]][[.input_data]] |>
-    filter(included) |>
-    pull(validation.record) |>
+    dplyr::filter(included) |>
+    dplyr::pull(validation.record) |>
     unlist() |>
     unique() |>
     tolower() |>
@@ -95,9 +95,7 @@ list_data_files <- function(
 
   records_filter <- unique(c(selected_records, ref_records))
 
-  print(records_filter)
-
-  if (length(records_filter) > 0) {
+  if(length(records_filter) > 0) {
     data_files <- data_files |>
       dplyr::filter(tolower(name) %in% records_filter)
 
@@ -114,23 +112,6 @@ list_data_files <- function(
   )
 }
 
-get_summary_record <- function(.input_data, .type = "summary_record") {
-  .config <- getOption("rcbms.config")
-  .config$project[[.input_data]][[.type]]
-}
-
-check_input_data <- function(.input_data) {
-  .input_data <- .input_data[.input_data %in% c("hp", "bp", "ilq", "cph", "bs")]
-  valid_input <- .input_data %in% c("hp", "bp", "ilq", "cph", "bs")
-  match_input <- length(which(valid_input))
-  if (match_input > 2) {
-    .input_data <- .input_data[valid_input]
-  } else if (match_input == 0) {
-    .input_data <- "hp"
-  }
-  return(.input_data)
-}
-
 
 get_file_format <- function(.config, .input_data) {
   if (!is.null(.config$project[[.input_data]][["file_format"]])) {
@@ -144,9 +125,10 @@ get_file_format <- function(.config, .input_data) {
 
 
 get_data_path <- function(
-    .type,
-    .input_data,
-    .config = getOption("rcbms.config")) {
+  .type,
+  .input_data,
+  .config
+) {
   wd <- .config$working_directory
 
   if (is.null(wd)) wd <- "."

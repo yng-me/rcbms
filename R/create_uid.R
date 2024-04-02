@@ -105,8 +105,10 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #' @export
 #'
 #' @examples
-create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
-  if (!("barangay_geo" %in% names(.data))) {
+
+create_barangay_geo <- function(.data) {
+
+  if(!("barangay_geo" %in% names(.data))) {
     .data <- .data |>
       collect_first() |>
       dplyr::mutate(barangay_geo = paste0(region_code, province_code, city_mun_code, barangay_code))

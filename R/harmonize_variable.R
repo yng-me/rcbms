@@ -10,37 +10,22 @@
 #' @export
 #'
 #' @examples
-harmonize_variable <- function(
-    .data,
-    .dictionary,
-    .survey_round,
-    .input_data,
-    .config = getOption("rcbms.config")) {
-  if (is.null(.dictionary)) {
-    return(.data)
-  }
+#'
+harmonize_variable <- function(.data, .input_data, .survey_round, .dictionary, .config) {
+
+  if(is.null(.dictionary)) return(.data)
 
   validate_required_cols(
     .dictionary,
-    c("variable_name_new", "type", "length")
+    c('variable_name', 'variable_name_new', 'valueset', 'label')
   )
 
   .dictionary <- .dictionary |>
-    dplyr::filter(
-      survey_round == as.integer(.survey_round),
-      input_data == .input_data
-    ) |>
-    dplyr::collect() |>
     dplyr::mutate(
       variable_name = tolower(stringr::str_trim(variable_name)),
       type = stringr::str_trim(type),
       length = as.integer(length)
     )
-
-  if (tolower(.config$mode$stage[1]) == "final" | tolower(.config$mode$stage[1]) == "prod") {
-    .dictionary <- .dictionary |>
-      dplyr::mutate(variable_name = variable_name_new)
-  }
 
   excluded <- .dictionary |>
     dplyr::filter(is_included != 1) |>

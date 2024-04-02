@@ -11,12 +11,14 @@
 #'
 #' @examples
 get_complete_cases <- function(
-    .parquet,
-    .aggregation,
-    ...,
-    .config = getOption("rcbms.config"),
-    .excluded_cases = NULL) {
-  summary_record <- get_summary_record("hp")
+  .parquet,
+  .aggregation,
+  ...,
+  .config = getOption("rcbms.config"),
+  .excluded_cases = NULL
+) {
+
+  summary_record <- .config$project[[.input_data]][['summary_record']]
   summary_df <- .parquet$hp[[summary_record]]
 
   if (is.null(summary_df)) {
@@ -35,7 +37,7 @@ get_complete_cases <- function(
     create_case_id() |>
     dplyr::distinct(case_id, .keep_all = TRUE)
 
-  roster_record <- get_summary_record("hp", "roster_record")
+  roster_record <- .config$project[[.input_data]][['roster_record']]
   roster_df <- .parquet$hp[[roster_record]]
 
   if (!is.null(roster_record)) {

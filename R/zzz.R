@@ -91,31 +91,35 @@ utils::globalVariables(
     rcbms.config = list(
       parquet = list(
         convert = TRUE,
+        encrypt = TRUE,
         overwrite = TRUE,
         partition = FALSE,
         partition_by = c("region_code", "province_code", "city_mun_code")
       ),
       reload_references = list(
-        area_name = TRUE,
-        valueset = TRUE,
-        validation = TRUE,
-        tabulation = TRUE,
-        data_dictionary = TRUE,
-        macrodata = TRUE,
-        score_card = TRUE,
-        record = TRUE
+        area_name = FALSE,
+        valueset = FALSE,
+        validation = FALSE,
+        tabulation = FALSE,
+        data_dictionary = FALSE,
+        macrodata = FALSE,
+        score_card = FALSE,
+        record = FALSE,
+        section = FALSE
       ),
       check_if_online = TRUE,
       complete_cases = TRUE,
-      read_as_chunk = FALSE,
-      chunk_threshold = 5000,
+      chunk = list(
+        read_as_chunk = FALSE,
+        threshold = 5000
+      ),
       harmonize_variable = TRUE,
       execute_mode = TRUE,
       mode = list(
         type = "validation",
+        sub_type = NULL,
         edit = 1,
-        source = 2,
-        stage = "dev",
+        stage = 2,
         station = "co"
       ),
       aggregation = list(
@@ -142,12 +146,13 @@ utils::globalVariables(
         )
       ),
       version = list(
-        app = "3.0.0",
+        app = "3.0.1",
         script = "0.0.1",
-        package = "0.1.4",
-        db = "0.0.1"
+        package = "0.1.9",
+        db = "0.0.2"
       ),
       clear_objects = TRUE,
+      warning = FALSE,
       verbose = TRUE,
       progress = FALSE
     )

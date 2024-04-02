@@ -1,19 +1,25 @@
 #' Title
 #'
-#' @param .references
+#' @param .dictionary
 #' @param .config
 #'
 #' @return
 #' @export
 #'
 #' @examples
-read_bp_data <- function(
-    .base_path,
-    .references = get_config("references"),
-    .config = getOption("rcbms.config")) {
-  bpq_data_files <- list.files(.base_path, full.names = TRUE, pattern = "\\.(xlsx|xlsm)$") |>
+#'
+
+read_bp_data <- function(.dictionary, .config) {
+
+  bp_base_path <- .config$project$bp$directory
+  if(is.null(bp_base_path)) {
+    bp_base_path <- file.path(.config$base, "data", "raw", "bp")
+  }
+
+  bpq_data_files <- list.files(bp_base_path, full.names = T, pattern = "\\.(xlsx|xlsm)$") |>
     dplyr::as_tibble() |>
-    dplyr::filter(!grepl("[$]", value)) |>
+    dplyr::filter(!grepl('[$]', value)) |>
+    dplyr::filter(grepl('^\\d{10}', basename(value))) |>
     dplyr::pull(value)
 
   bpq_data <- list()
@@ -45,7 +51,7 @@ read_bp_data <- function(
       tidyr::pivot_wider(names_from = variable_name, values_from = value) |>
       add_geo_info(barangay_code) |>
       harmonize_variable(
-        .dictionary = .references$data_dictionary,
+        .dictionary = .dictionary,
         .survey_round = .config$survey_round,
         .input_data = "bp",
         .config = .config
@@ -74,12 +80,7 @@ read_bp_data <- function(
 
   return(
     list(
-      bpq_data = dplyr::bind_rows(bpq_data) |> add_metadata(
-        .dictionary = .references$data_dictionary,
-        .valueset = .references$valueset,
-        .survey_round = .config$survey_round,
-        .input_data = "bp"
-      ),
+      bpq_data = dplyr::bind_rows(bpq_data),
       bpq_data_list = dplyr::bind_rows(bpq_data_list),
       bpq_data_mode_of_transport = dplyr::bind_rows(bpq_data_mode_of_transport)
     )

@@ -56,12 +56,10 @@ execute_script <- function(survey_round, input_data, ..., config_file = NULL) {
 #' @export
 #'
 #' @examples
-execute_mode <- function(
-    .parquet = get_config("parquet"),
-    .references = get_config("references"),
-    .aggregation = get_config("aggregation"),
-    .config = getOption("rcbms.config"),
-    .excluded_cases = NULL) {
+#'
+
+execute_mode <- function(.parquet, .references, .aggregation, .config, .excluded_cases = NULL) {
+
   envir <- as.environment(1)
   if (rlang::is_false(.config$execute_mode)) {
     if (.config$mode$type == "validation") {

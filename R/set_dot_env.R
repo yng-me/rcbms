@@ -1,16 +1,19 @@
 #' Read Environment Variable
 #'
-#' @param .path
+#' @param .env_path
 #'
 #' @return List of environment variables defined
 #' @export
 #'
 #' @examples
-set_dot_env <- function(.path) {
-  env_file <- readr::read_file(.path)
-  env_values <- unlist(stringr::str_split(env_file, "\n")[[1]])
-  env_values <- env_values[env_values != ""]
-  env_values <- env_values[!grepl("^#", env_values)]
+#'
+
+set_dot_env <- function(.env_path) {
+
+  env_file <- readr::read_file(.env_path)
+  env_values <- unlist(stringr::str_split(env_file, '\n')[[1]])
+  env_values <- env_values[env_values != '']
+  env_values <- env_values[!grepl('^#', env_values)]
 
   if (length(env_values) == 0) {
     return(NULL)

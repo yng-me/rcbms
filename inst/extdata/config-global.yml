@@ -1,6 +1,6 @@
 # Global config default values
 survey_round: '2024'
-read_from_parquet: false
+convert_to_parquet: false
 reload_references:
   area_name: true
   valueset: true
@@ -10,6 +10,7 @@ reload_references:
   macrodata: true
   score_card: true
   record: true
+  section: true
 working_directory: ~
 check_if_online: true
 complete_cases: true
@@ -25,7 +26,7 @@ mode:
   stage: dev
   station: co
 aggregation:
-  level: 1
+  level: 5
   areas: all
 validation:
   generate_output: false

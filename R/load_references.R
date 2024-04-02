@@ -1,26 +1,57 @@
 #' Load references
 #'
 #' @param .config
-#' @param .update_config
-#' @param .config_key
+#' @param .reload
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_references <- function(
-    .config = getOption("rcbms.config"),
-    .update_config = TRUE,
-    .config_key = "references") {
-  if (is.null(.config)) stop("Config not found.")
+#'
 
-  if (.config$verbose) {
-    cli::cli_h1("Loading References")
-  }
+load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 
-  check_if_online <- TRUE
-  if (!is.null(.config$check_if_online)) {
-    check_if_online <- .config$check_if_online
+  if(is.null(.config)) stop('Config not found.')
+
+  refs <- list()
+  is_rcbms_config <- inherits(.config, "rcbms_config")
+
+  if(is_rcbms_config) {
+
+    if(is.null(.wd)) { .wd <- .config$working_directory }
+    gid_refs <- gid_references(.wd)
+    verbose <- .config$verbose
+
+    if(verbose) {
+      cli::cli_h1("Loading References")
+    }
+
+    check_if_online <- TRUE
+    if(!is.null(.config$check_if_online)) {
+      check_if_online <- .config$check_if_online
+    }
+
+    ref_reload <- .config$reload_references
+
+  } else {
+
+    gid_refs <- gid_references(.wd)
+
+    if(.config %in% gid_refs$ref | .config %in% gid_refs$ref_short) {
+      gid_refs <- gid_refs |>
+        dplyr::filter(ref == .config | ref_short == .config)
+
+      ref__i <- gid_refs$ref[1]
+      ref_short__i <- gid_refs$ref_short[1]
+
+      verbose <- FALSE
+      ref_reload <- .reload
+      check_if_online <- .reload
+
+    } else {
+      stop("Invalid reference name")
+    }
+
   }
 
   if (check_if_online) {
@@ -29,61 +60,12 @@ load_references <- function(
     is_online <- FALSE
   }
 
-  gid <- list(
-    area_name = "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE",
-    valueset = "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
-    validation = "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
-    tabulation = "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
-    data_dictionary = "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
-    macrodata = "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
-    score_card = "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0",
-    record = "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0",
-    section = "oRBIz5Q0h-wkkrSk2JVdTU5oJINZQTwq4Liti2b1rn0"
-  )
+  for(i in seq_along(gid_refs$ref)) {
 
-  refs <- list()
-  ref_list <- c(
-    "data_dictionary",
-    "valueset",
-    "area_name",
-    "validation",
-    "tabulation",
-    "macrodata",
-    "score_card",
-    "record",
-    "section"
-  )
-  ref_list_short <- c("dcf", "vs", "anm", "cv", "ts", "macro", "sc", "rec", "sec")
-
-  wd <- .config$working_directory
-  if (is.null(wd)) wd <- "."
-  wd_base_ref <- create_new_folder(paste0(wd, "/references"))
-
-  pq <- stats::setNames(
-    lapply(ref_list, function(x) {
-      if (x == "record" | x == "section") {
-        #   paste0(wd_base_ref, '/ref_', x, ".xlsx")
-        # } else if (x == "section") {
-        paste0(wd_base_ref, "/ref_", x, ".json")
-      } else {
-        paste0(wd_base_ref, "/ref_", x, ".parquet")
-      }
-    }),
-    ref_list
-  )
-
-  ref_reload <- .config$reload_references
-
-  if (is.null(ref_reload$macrodata)) ref_reload$macrodata <- TRUE
-  if (is.null(ref_reload$score_card)) ref_reload$score_card <- TRUE
-  if (is.null(ref_reload$record)) ref_reload$record <- TRUE
-  if (is.null(ref_reload$section)) ref_reload$section <- TRUE
-
-  for (i in seq_along(ref_list)) {
-    ref_i <- ref_list[[i]]
-    ref_short_i <- ref_list_short[[i]]
-    pq_i <- pq[[ref_i]]
-    gid_i <- gid[[ref_i]]
+    ref_i <- gid_refs$ref[i]
+    ref_short_i <- gid_refs$ref_short[i]
+    pq_i <- gid_refs$filename[i]
+    gid_i <- gid_refs$gid[i]
 
     if (length(ref_reload) == 1) {
       ref_reload_i <- ref_reload
@@ -91,61 +73,49 @@ load_references <- function(
       ref_reload_i <- ref_reload[[ref_i]]
     }
 
-    if (is_online & (ref_reload_i | !file.exists(pq_i))) {
+    if(is_online & (ref_reload_i | !file.exists(pq_i) | .reload)) {
+
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-      if (ref_short_i == "rec" | ref_short_i == "sec") {
-        #   openxlsx::write.xlsx(load_reference_fn(gid_i), pq_i)
-        # } else if (ref_short_i == "sec") {
-        jsonlite::write_json(load_reference_fn(gid_i), pq_i, pretty = TRUE)
-      } else {
+      if(ref_short_i == "anm") {
         arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
+      } else {
+        jsonlite::write_json(load_reference_fn(gid_i), pq_i, pretty = TRUE)
       }
     }
 
-    if (.config$verbose && !ref_reload_i) {
+    if(verbose & !ref_reload_i) {
       cli::cli_alert_info(
         paste0("Loading ", cli::col_br_yellow(ref_i), " reference ", cli::col_br_cyan("✓"))
       )
     }
 
-    if (ref_short_i == "rec" || ref_short_i == "sec") {
-      #   refs[[ref_i]] <- openxlsx::read.xlsx(pq_i)
-      # } else if (ref_short_i == "sec") {
-      refs[[ref_i]] <- jsonlite::fromJSON(pq_i, flatten = TRUE, simplifyVector = TRUE)
-    } else {
+    if(ref_short_i == "anm") {
       refs[[ref_i]] <- arrow::read_parquet(pq_i)
-    }
-
-    if (!("survey_round" %in% names(refs[[ref_i]])) && "cbms_round" %in% names(refs[[ref_i]])) {
-      refs[[ref_i]] <- refs[[ref_i]] |>
-        dplyr::rename(survey_round = cbms_round)
+    } else {
+      refs[[ref_i]] <- jsonlite::fromJSON(pq_i, flatten = TRUE, simplifyVector = TRUE)
     }
 
     set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))
   }
 
-  refs$script_files <- NULL
+  if(is_rcbms_config) {
 
-  script_files <- lapply(.config$input_data, function(x) {
-    get_script_files(x, refs$section, .config = .config)
-  }) |> purrr::discard(is.null)
+    refs$script_files <- NULL
+    script_files <- lapply(.config$input_data, function(x) {
+      get_script_files(x, refs$section, .config = .config)
+    }) |> purrr::discard(is.null)
 
-  if (length(script_files) > 0) {
-    refs$script_files <- do.call("rbind", script_files) |> dplyr::tibble()
+    if(length(script_files) > 0) {
+      refs$script_files <- dplyr::bind_rows(script_files)
+    }
   }
 
-  envir <- as.environment(1)
-  if (!is.null(.config_key) & .update_config) {
-    .config$links$references <- .config_key
-    options(rcbms.config = .config)
-
-    assign("config", .config, envir = envir)
+  if(is_rcbms_config) {
+    return(invisible(set_class(refs, "rcbms_refs")))
+  } else {
+    return(set_class(refs[[ref__i]], paste0("rcbms_", ref_short__i, "_ref")))
   }
 
-  refs <- set_class(refs, "rcbms_refs")
-  assign(.config_key, refs, envir = envir)
-
-  return(invisible(refs))
 }
 
 #' Title
@@ -204,6 +174,7 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
 
 
 validate_required_cols <- function(.data, .required_cols) {
+
   required_cols_which <- which(.required_cols %in% names(.data))
 
   if (length(required_cols_which) < length(.required_cols)) {
@@ -214,11 +185,8 @@ validate_required_cols <- function(.data, .required_cols) {
 }
 
 
-load_refs_from_gsheet <- function(
-    .gid,
-    .required_cols,
-    ...,
-    .start_at = 1) {
+load_refs_from_gsheet <- function(.gid, .required_cols, ..., .start_at = 1) {
+
   range <- paste0(
     LETTERS[.start_at], ":",
     LETTERS[length(.required_cols) + .start_at - 1]
@@ -253,8 +221,11 @@ load_data_dictionary_refs <- function(.gid) {
     "is_derived"
   )
 
-  load_refs_from_gsheet(.gid, .required_cols = required_cols, col_types = "ccccccciiiii") |>
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciiiii') |>
     dplyr::filter(!is.na(variable_name))
+
+  transform_refs(df)
+
 }
 
 
@@ -268,38 +239,33 @@ load_data_dictionary_refs <- function(.gid) {
 #' @examples
 load_area_name_refs <- function(.gid) {
   required_cols <- c(
-    # 'region',
-    "province",
-    "city_mun",
-    "barangay",
-    "barangay_geo_new",
-    "barangay_geo",
-    "income_class",
-    "is_huc",
-    "class",
-    "2015_popn",
-    "2020_popn",
-    "funding_source"
+    'region',
+    'province',
+    'city_mun',
+    'barangay',
+    'barangay_geo_new',
+    'barangay_geo',
+    'income_class',
+    'is_huc',
+    'class',
+    '2015_popn',
+    '2020_popn',
+    'funding_source'
   )
 
-  load_refs_from_gsheet(
-    .gid,
-    .required_cols = required_cols,
-    col_types = "ccciiciciii",
-    .start_at = 2
-  ) |>
-    dplyr::mutate(
-      barangay_geo_new = stringr::str_pad(
-        stringr::str_extract(barangay_geo_new, "\\d+"),
-        width = 10,
-        pad = "0"
-      ),
-      barangay_geo = stringr::str_pad(
-        stringr::str_extract(barangay_geo, "\\d+"),
-        width = 9,
-        pad = "0"
-      )
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccciiciciii') |>
+  dplyr::mutate(
+    barangay_geo_new = stringr::str_pad(
+      stringr::str_extract(barangay_geo_new, '\\d+'),
+      width = 10,
+      pad = '0'
+    ),
+    barangay_geo = stringr::str_pad(
+      stringr::str_extract(barangay_geo, '\\d+'),
+      width = 9,
+      pad = '0'
     )
+  )
 }
 
 #' Load valueset references
@@ -313,8 +279,8 @@ load_area_name_refs <- function(.gid) {
 load_valueset_refs <- function(.gid) {
   load_refs_from_gsheet(
     .gid,
-    .required_cols = c("name", "value", "label"),
-    col_types = "ccc"
+    c('name', 'value', 'label'),
+    col_types = 'ccc'
   )
 }
 
@@ -338,22 +304,13 @@ load_validation_refs <- function(.gid) {
     "status",
     "date_introduced"
   )
-  df <- load_refs_from_gsheet(
-    .gid,
-    required_cols,
-    col_types = "cccccccc"
-  )
 
-  attr(df$validation_id, "label") <- "Validation ID"
-  attr(df$title, "label") <- "Title"
-  attr(df$description, "label") <- "Description"
-  attr(df$primary_data_item, "label") <- "Primary Data Item"
-  attr(df$section, "label") <- "Section"
-  attr(df$priority_level, "label") <- "Priority Level"
-  attr(df$status, "label") <- "Status"
-  attr(df$date_introduced, "label") <- "Date Introduced"
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccccc') |>
+    dplyr::filter(status == 1) |>
+    dplyr::select(-status)
 
-  df |> dplyr::filter(status == 1)
+  transform_refs(df)
+
 }
 
 
@@ -383,11 +340,13 @@ load_tabulation_refs <- function(.gid) {
     "row_reset_last"
   )
 
-  load_refs_from_gsheet(
+  df <- load_refs_from_gsheet(
     .gid,
     required_cols,
     col_types = "cccccciiciiici"
   )
+
+  transform_refs(df)
 }
 
 
@@ -560,4 +519,83 @@ load_section_refs <- function(.gid) {
     }),
     round
   )
+}
+
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+transform_refs <- function(.data) {
+
+  round <- unique(.data$survey_round)
+
+  stats::setNames(
+    lapply(round, function(x) {
+      df_i <- .data |>
+        dplyr::filter(survey_round == x) |>
+        dplyr::select(-survey_round)
+
+      input <- unique(df_i$input_data)
+      z <- stats::setNames(
+        lapply(input, function(y) {
+          df_i |>
+            dplyr::filter(input_data == y) |>
+            dplyr::select(-input_data)
+        }),
+        input
+      )
+    }),
+    round
+  )
+}
+
+
+gid_references <- function(.wd = NULL) {
+
+  if(is.null(.wd)) .wd <- '.'
+  wd_base_ref <- create_new_folder(file.path(.wd, 'references'))
+
+  tibble::tibble(
+    ref = c(
+      "area_name",
+      "valueset",
+      "validation",
+      "tabulation",
+      "data_dictionary",
+      "record",
+      "section",
+      "macrodata",
+      "score_card"
+    ),
+    ref_short = c(
+      "anm",
+      "vs",
+      "cv",
+      "ts",
+      "dcf",
+      "rec",
+      "sec",
+      "macro",
+      "sc"
+    ),
+    type = c("parquet", rep("json", 8)),
+    gid = c(
+      "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE",
+      "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
+      "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
+      "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",
+      "MU-qx-Va8DpdoZQ5M2I2fexcU4fm-NJAuzr6Os54dMQ",
+      "ulDGDAMPjaQomq14ZSyFXSAlk_LQ9RI1xyDhWxLJ_o0",
+      "oRBIz5Q0h-wkkrSk2JVdTU5oJINZQTwq4Liti2b1rn0",
+      "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
+      "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0"
+    )
+  ) |> dplyr::mutate(filename = file.path(wd_base_ref, paste0("ref_", ref, ".", type)))
 }

@@ -4,11 +4,7 @@
 \alias{read_bp_data}
 \title{Title}
 \usage{
-read_bp_data(
-  .base_path,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
-)
+read_bp_data(.base_path, .references, .config)
 }
 \arguments{
 \item{.config}{}

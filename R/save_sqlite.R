@@ -1,25 +1,23 @@
-save_rcbms_logs <- function(
-    .data,
-    .input_data,
-    .references = get_config("references"),
-    .config = getOption("rcbms.config")) {
+save_rcbms_logs <- function(.data, .input_data, .references, .config) {
+
   conn <- connect_to_rcbms_logs(.config)
-  log_tables <- RSQLite::dbListTables(conn)
+  log_tables <- DBI::dbListTables(conn)
 
   save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
 
   create_remarks_table(conn, log_tables)
 
-  RSQLite::dbDisconnect(conn)
+  DBI::dbDisconnect(conn)
+
 }
 
 
 connect_to_rcbms_logs <- function(.config) {
-  wd <- create_new_folder(paste0(.config$base, "/data/log"))
+  wd <- create_new_folder(file.path(.config$base, "data", "log"))
   v <- config$version$db
   if (is.null(v)) v <- "0.0.1"
   db_name <- paste0(wd, "/rcbms_logs_v", v, ".db")
-  conn <- RSQLite::dbConnect(RSQLite::SQLite(), db_name)
+  conn <- DBI::dbConnect(RSQLite::SQLite(), db_name)
   return(conn)
 }
 
@@ -66,7 +64,7 @@ save_current_logs <- function(
         mode varchar(16),
         edit tinyint CHECK (edit IN (0, 1, 2, 3, 4)),
         level tinyint CHECK (level IN (0, 1, 2, 3, 4, 5)),
-        source tinyint CHECK (source IN (1, 2, 3)),
+        stage tinyint CHECK (stage IN (1, 2, 3)),
         station char(5) CHECK (station IN ('CO', 'RO', 'PO', 'LGU')),
         input_data char(3) CHECK (input_data IN ('hp', 'bp', 'ilq')),
         area_code varchar(16),
@@ -116,23 +114,11 @@ save_current_logs <- function(
       total_cases_unique <- 0
     }
 
-    cv_ref <- .references$validation |>
-      dplyr::collect() |>
-      dplyr::filter(
-        survey_round == as.integer(.config$survey_round),
-        input_data == .input_data
-      ) |>
-      dplyr::select(validation_id, priority_level)
 
     priority_df <- cv_data |>
       dplyr::select(validation_id) |>
       dplyr::left_join(
-        .references$validation |>
-          dplyr::collect() |>
-          dplyr::filter(
-            survey_round == as.integer(.config$survey_round),
-            input_data == .input_data
-          ) |>
+        .references$validation[[.config$survey_round]][[.input_data]] |>
           dplyr::select(validation_id, priority_level),
         by = "validation_id"
       ) |>
@@ -169,7 +155,7 @@ save_current_logs <- function(
       survey_round = as.character(.config$survey_round),
       mode = .config$mode$type,
       edit = .config$mode$edit,
-      source = .config$mode$source,
+      stage = .config$mode$stage,
       station = toupper(.config$mode$station),
       level = .config$aggregation$level,
       input_data = .input_data,

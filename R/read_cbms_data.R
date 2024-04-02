@@ -8,44 +8,45 @@
 #' @export
 #'
 #' @examples
-read_cbms_data <- function(
-    .references = get_config("references"),
-    .config = getOption("rcbms.config"),
-    .assign_name = "parquet") {
-  if (.config$verbose) {
+#'
+
+read_cbms_data <- function(.references, .config) {
+
+  if(.config$verbose) {
     cli::cli_h1("Importing Data Files")
   }
 
-  envir <- as.environment(1)
-  geo_cols <- c("region_code", "province_code", "city_mun_code", "barangay_code")
-  summary_record <- NULL
-
-  input_data <- check_input_data(.config$input_data)
-  mode <- tolower(.config$mode$type)
-  chunk_threshold <- .config$chunk_threshold
-  if (is.null(chunk_threshold)) {
-    chunk_threshold <- 4
+  convert_to_parquet <- TRUE
+  if(!is.null(.config$parquet$convert)) {
+    convert_to_parquet <- .config$parquet$convert
   }
 
-  read_from_parquet <- FALSE
-  if (!is.null(.config$read_from_parquet)) {
-    read_from_parquet <- .config$read_from_parquet
+  use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
+
+  if(use_encryption) {
+
+    conn <- DBI::dbConnect(duckdb::duckdb())
+    key_pub <- .config$env$PQ_KEY_PUB
+    key_prv <- .config$env$PQ_KEY_PRV
+    q_encrypt <- paste0("PRAGMA add_parquet_key('", key_pub, "', '", key_prv, "');")
+    DBI::dbExecute(conn, q_encrypt)
+
   }
 
   df <- list()
 
-  for (i in seq_along(input_data)) {
-    df_input <- input_data[i]
+  for(i in seq_along(.config$input_data)) {
 
-    is_bp_xlsm <- df_input == "bp" & as.integer(.config$survey_round) == 2024
+    input_data <- .config$input_data[i]
 
-    df_files <- list_data_files(df_input, .references, .config)
+    is_bp_data <- input_data == "bp" & as.character(.config$survey_round) == "2024"
 
-    if (!read_from_parquet) {
-      if (!is_bp_xlsm) {
-        rov_var <- config$project[[df_input]]$variable$result_of_visit
-        unfiltered_records <- .config$project[[df_input]]$unfiltered_records
-        if (is.null(unfiltered_records)) unfiltered_records <- ""
+    df_files <- list_data_files(input_data, .references, .config)
+    pq_folder <- create_new_folder(get_data_path("parquet", input_data, .config))
+
+    if(convert_to_parquet) {
+
+      if(!is_bp_data) {
 
         if (.config$verbose) {
           if (length(input_data) > 1) {
@@ -54,141 +55,98 @@ read_cbms_data <- function(
             progress_n <- ""
           }
           cli::cli_h3(
-            paste0(progress_n, cli::col_br_cyan(get_input_data_label(df_input)))
+            paste0(progress_n, cli::col_br_cyan(get_input_data_label(input_data)))
           )
         }
       }
-
-      uid <- "case_id"
-      if (df_input == "bp") uid <- "barangay_geo"
     }
 
-    for (j in seq_along(df_files$unique$value)) {
-      p <- df_files$unique$value[j]
-      file_format <- get_file_format(.config, df_input)
-      pq_folder <- create_new_folder(get_data_path("parquet", df_input))
+    if(is_bp_data & convert_to_parquet) {
 
-      if (read_from_parquet) {
-        p_name <- stringr::str_remove(tolower(basename(p)), "\\.parquet$")
-      } else {
-        p_name <- stringr::str_remove(tolower(basename(p)), file_format)
-      }
+      df$bp <- save_bp_data(conn, pq_folder, .references, .config)
 
-      pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
+    } else {
 
-      if (!read_from_parquet) {
-        df_src_files <- df_files$all |>
-          dplyr::filter(grepl(paste0(p, "$"), value))
+      summary_record <- NULL
+      file_format <- get_file_format(.config, input_data)
 
-        file_size <- sum(df_src_files$size) / 1000000
-        n_files <- length(df_src_files$value)
-        n_chunks <- as.integer(round(file_size / (n_files * 7)))
-        is_first_record <- j == 1 & df_files$unique$n[j] == 0
+      for(j in seq_along(df_files$unique$value)) {
 
-        if (is.null(.config$read_as_chunk)) {
-          .config$read_as_chunk <- FALSE
+        p_file <- df_files$unique$value[j]
+        p_name <- set_file_name(p_file, file_format, convert_to_parquet)
+        pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
+
+        if(convert_to_parquet) {
+
+          df_src_files <- df_files$all |>
+            dplyr::filter(grepl(paste0(p_file, '$'), value))
+
+          is_first_record <- j == 1 & df_files$unique$n[j] == 0
+
+          df_temp <- save_cbms_data(
+            conn,
+            .df_src_files = df_src_files$value,
+            .input_data = input_data,
+            .pq_path = pq_path,
+            .p_name = p_name,
+            .config = .config,
+            .references = .references,
+            .is_first_record = is_first_record,
+            .summary_record = summary_record
+          )
+
+          if(is_first_record) {
+            summary_record <- df_temp
+          }
         }
-        if (file_size < 5000 || n_chunks < 2 || isFALSE(.config$read_as_chunk)) {
-          if (is_bp_xlsm) {
-            bp_base_path <- config$project$bp$directory
-            if (is.null(bp_base_path)) {
-              bp_base_path <- paste0(.config$base, "/data/raw/bp")
+
+        if(!convert_to_parquet & .config$verbose) {
+          cli::cli_alert_info(
+            paste0("Importing ", cli::col_br_yellow(p_name), " record ", cli::col_br_cyan("✓"))
+          )
+        }
+
+        if(.config$progress) {
+          cli::cli_text(paste0('Importing ', p_name, ' record'))
+        }
+
+        if(file.exists(pq_path)) {
+
+          if(use_encryption) {
+
+            q_pq <- paste0(
+              "SELECT * FROM read_parquet('",
+              pq_path,
+              "', encryption_config = { footer_key: '",
+              key_pub,
+              "' });"
+            )
+
+            dcf <- .references$data_dictionary[[.config$survey_round]][[input_data]]
+            if(tolower(.config$mode$stage[1]) > 3) {
+              dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
             }
 
-            df_temp_dim <- read_bp_data(bp_base_path)
+            df_from_db <- DBI::dbGetQuery(conn, q_pq) |>
+              add_metadata(dcf, .references$valueset) |>
+              arrow::arrow_table()
 
-            bp_pq_xlsm <- "./src/2024/data/parquet/bp"
-            arrow::write_parquet(df_temp_dim$bpq_data, paste0(bp_pq_xlsm, "/bpq_data.parquet"))
-            arrow::write_parquet(df_temp_dim$bpq_data_list, paste0(bp_pq_xlsm, "/bpq_data_list.parquet"))
-            arrow::write_parquet(df_temp_dim$bpq_data_mode_of_transport, paste0(bp_pq_xlsm, "/bpq_data_mode_of_transport.parquet"))
+            df[[input_data]][[p_name]] <- df_from_db
 
             df$bp$bpq_data <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data.parquet"))
             df$bp$bpq_data_list <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_list.parquet"))
             df$bp$bpq_data_mode_of_transport <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_mode_of_transport.parquet"))
           } else {
-            df_temp_dim <- save_cbms_data(
-              .df_src_files = df_src_files$value,
-              .is_first_record = is_first_record,
-              .input_data = df_input,
-              .pq_path = pq_path,
-              .p_name = p_name
-            )
-          }
-        } else {
-          chuck_start <- 1
-          pq_path_chunck <- create_new_folder(file.path(pq_folder, "chunk"))
-
-          for (k in seq_len(n_chunks)) {
-            chunk_counter <- stringr::str_pad(k, width = 4, pad = "0")
-            chunk_name <- paste0(p_name, "__", chunk_counter, ".parquet")
-            chunk_pq <- paste0(pq_path_chunck, "/", chunk_name)
-
-            chuck_end <- round((n_files / n_chunks) * k)
-            if (k == n_chunks) chuck_end <- n_files
-
-            files_to_chunk <- df_src_files$value[chuck_start:chuck_end]
-
-            df_temp_dim <- save_cbms_data(
-              .df_src_files = files_to_chunk,
-              .is_first_record = is_first_record,
-              .input_data = df_input,
-              .pq_path = chunk_pq,
-              .chunk = k,
-              .chunk_size = n_chunks,
-              .p_name = p_name
-            )
-
-            chuck_start <- chuck_end + 1
-
-            df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_pq)
+            df[[input_data]][[p_name]] <- arrow::open_dataset(pq_path)
           }
         }
-      }
-
-      chunk_path <- paste0(pq_folder, "/chunk")
-
-      if (dir.exists(chunk_path)) {
-        chunk_file_paths <- list.files(chunk_path, full.names = TRUE)
-        chunk_file_paths <- chunk_file_paths[grepl(p_name, chunk_file_paths)]
-
-        for (m in seq_along(chunk_file_paths)) {
-          chunk_file <- chunk_file_paths[m]
-
-          chunk_counter <- stringr::str_extract_all(chunk_file, "\\d{4}\\.parquet$")[[1]] |>
-            stringr::str_remove("\\.parquet$")
-
-          df[[df_input]][[p_name]][[chunk_counter]] <- arrow::open_dataset(chunk_file)
-        }
-      }
-
-      if (read_from_parquet & .config$verbose) {
-        cli::cli_alert_info(
-          paste0(
-            "Importing ", cli::col_br_yellow(p_name), " record ", cli::col_br_cyan("✓")
-          )
-        )
-      }
-
-      if (.config$progress) {
-        cli::cli_text(paste0("Importing ", p_name, " record"))
-      }
-
-      if (file.exists(pq_path)) {
-        df[[df_input]][[p_name]] <- arrow::open_dataset(pq_path)
       }
     }
   }
 
+
+  if(use_encryption) DBI::dbDisconnect(conn, shutdown = TRUE)
   df <- set_class(df, "rcbms_parquet")
-
-  if (!is.null(.assign_name)) {
-    .config$links$parquet <- .assign_name
-    options(rcbms.config = .config)
-
-    assign(.assign_name, df, envir = envir)
-  }
-
-  suppressWarnings(rm(list = "summary_record", envir = envir))
 
   return(invisible(df))
 }
@@ -208,4 +166,13 @@ get_input_data_label <- function(.key) {
     return(.key)
   }
   labels[which(labels_short == .key)]
+}
+
+
+set_file_name <- function(.file, .file_format, .convert_to_parquet) {
+  if(.convert_to_parquet) {
+    stringr::str_remove(tolower(basename(.file)), .file_format)
+  } else {
+    stringr::str_remove(tolower(basename(.file)), "\\.parquet$")
+  }
 }

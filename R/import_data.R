@@ -9,6 +9,13 @@
 #' @export
 #'
 #' @examples
+<<<<<<< HEAD
+#'
+import_data <- function(.path, .input_data, .config, ...) {
+
+  if(!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
+    stop('Invalid input data.')
+=======
 import_data <- function(
     .path,
     .input_data,
@@ -16,6 +23,7 @@ import_data <- function(
     ...) {
   if (!(.input_data %in% c("hp", "bp", "ilq", "cph", "bs"))) {
     stop("Invalid input data.")
+>>>>>>> main
   }
 
   file_format <- .config$project[[.input_data]]$file_format
