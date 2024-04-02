@@ -6,11 +6,7 @@
 #' @export
 #'
 #' @examples
-create_relations <- function(.config = getOption("rcbms.config")) {
-  if (!.config$read_from_parquet) {
-    for (i in seq_along(.config$input_data)) {
-      pq <- file.path(.config$base, "relations", .config$input_data[i])
-
+#'
 create_relations <- function(.config = getOption('rcbms.config')) {
 
   if(.config$parquet$convert) {
