@@ -9,30 +9,28 @@
 #' @export
 #'
 #' @examples
-#'
-
 convert_to_factor <- function(
-  .x,
-  ...,
-  .code_ref = NULL,
-  .is_char = FALSE,
-  .ordered = FALSE
-) {
-
-  refs <- get_config('references')
-  if(is.null(refs)) return(.x)
+    .x,
+    ...,
+    .code_ref = NULL,
+    .is_char = FALSE,
+    .ordered = FALSE) {
+  refs <- get_config("references")
+  if (is.null(refs)) {
+    return(.x)
+  }
 
   vs <- refs$valueset |>
     dplyr::filter(name == .code_ref) |>
     dplyr::distinct(label, .keep_all = T)
 
-  if(.is_char == T) {
+  if (.is_char == T) {
     vs <- vs |> dplyr::mutate(value = stringr::str_trim(value))
   } else {
     vs <- vs |> dplyr::mutate(value = as.integer(value))
   }
 
-  if(!is.null(.code_ref)) {
+  if (!is.null(.code_ref)) {
     factor(
       .x,
       ...,
@@ -40,11 +38,9 @@ convert_to_factor <- function(
       labels = vs$label,
       ordered = .ordered
     )
-
   } else {
     factor(.x, ..., ordered = .ordered)
   }
-
 }
 
 #' Title
@@ -57,11 +53,8 @@ convert_to_factor <- function(
 #' @export
 #'
 #' @examples
-#'
-
-convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
-
-  if(!is.null(.pattern)) {
+convert_to_na <- function(.data, .convert_value = "", .pattern = NULL) {
+  if (!is.null(.pattern)) {
     .data <- .data |>
       dplyr::mutate_if(
         is.character,
@@ -90,11 +83,9 @@ convert_to_na <- function(.data, .convert_value = '', .pattern = NULL) {
 #' @export
 #'
 #' @examples
-#'
 convert_age <- function(.from, .to) {
-
-  from_lt = as.POSIXlt(.from)
-  to_lt = as.POSIXlt(.to)
+  from_lt <- as.POSIXlt(.from)
+  to_lt <- as.POSIXlt(.to)
 
   age <- to_lt$year - from_lt$year
 
@@ -119,7 +110,6 @@ convert_age <- function(.from, .to) {
 #' @export
 #'
 #' @examples
-#'
 sum_rows <- function(.data, .name, ...) {
   df <- dplyr::select(.data, ...)
   s__ <- rowSums(df, na.rm = T)

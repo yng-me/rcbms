@@ -1,6 +1,6 @@
 factor_cols <- function(.data, ..., .keep_cols = TRUE) {
-  cols <-  sapply(substitute(list(...))[-1], deparse)
-  for(i in seq_along(cols)) {
+  cols <- sapply(substitute(list(...))[-1], deparse)
+  for (i in seq_along(cols)) {
     .data <- .data |>
       factor_col(
         as.character(cols[[i]]),
@@ -12,13 +12,11 @@ factor_cols <- function(.data, ..., .keep_cols = TRUE) {
 
 
 factor_col <- function(.data, .col, .keep_cols = TRUE) {
-
   attr_i <- attributes(.data[[.col]])
 
-  if(!is.null(attr_i$valueset)) {
-
+  if (!is.null(attr_i$valueset)) {
     col_fct <- .col
-    if(.keep_cols) col_fct <- paste0(.col, "_fct")
+    if (.keep_cols) col_fct <- paste0(.col, "_fct")
     .data <- .data |>
       dplyr::mutate(
         !!as.name(col_fct) := factor(

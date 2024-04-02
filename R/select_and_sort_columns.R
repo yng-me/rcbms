@@ -8,35 +8,30 @@
 #' @export
 #'
 #' @examples
-#'
-
 select_and_sort_columns <- function(
-  .data,
-  .references = get_config("references"),
-  .config = getOption('rcbms.config')
-) {
-
+    .data,
+    .references = get_config("references"),
+    .config = getOption("rcbms.config")) {
   df <- .data |>
     dplyr::select(
-    dplyr::any_of(
-      c(
-        'case_id',
-        'region_code',
-        'province_code',
-        'city_mun_code',
-        'barangay_code',
-        'ean',
-        'bsn',
-        'husn',
-        'hsn',
-        'line_number'
-      )
-    ),
-    order(names(.data))
-  )
+      dplyr::any_of(
+        c(
+          "case_id",
+          "region_code",
+          "province_code",
+          "city_mun_code",
+          "barangay_code",
+          "ean",
+          "bsn",
+          "husn",
+          "hsn",
+          "line_number"
+        )
+      ),
+      order(names(.data))
+    )
 
-  if(tolower(.config$mode$type) == 'portal') {
-
+  if (tolower(.config$mode$type) == "portal") {
     included <- .references$data_dictionary |>
       dplyr::filter(is_included_for_portal == 1) |>
       dplyr::collect() |>

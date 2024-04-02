@@ -54,7 +54,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 
   }
 
-  if(check_if_online) {
+  if (check_if_online) {
     is_online <- is_online()
   } else {
     is_online <- FALSE
@@ -67,7 +67,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
     pq_i <- gid_refs$filename[i]
     gid_i <- gid_refs$gid[i]
 
-    if(length(ref_reload) == 1) {
+    if (length(ref_reload) == 1) {
       ref_reload_i <- ref_reload
     } else {
       ref_reload_i <- ref_reload[[ref_i]]
@@ -96,7 +96,6 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
     }
 
     set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))
-
   }
 
   if(is_rcbms_config) {
@@ -129,9 +128,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 #' @export
 #'
 #' @examples
-#'
 fetch_gsheet <- function(.gid, ..., .range = NULL) {
-
   googlesheets4::gs4_deauth()
 
   sheet_pattern <- "^\\d{4}_(bp|hp|cph|bs|ilq)$"
@@ -142,12 +139,11 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     dplyr::filter(grepl(sheet_pattern, value)) |>
     dplyr::pull(value)
 
-  if(length(ss_names) == 0) ss_names <- 1
+  if (length(ss_names) == 0) ss_names <- 1
 
   ss_df <- list()
 
-  for(i in seq_along(ss_names)) {
-
+  for (i in seq_along(ss_names)) {
     ss_name <- ss_names[i]
 
     ss_df_temp <- googlesheets4::read_sheet(
@@ -159,7 +155,7 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     ) |>
       clean_colnames()
 
-    if(grepl(sheet_pattern, ss_name)) {
+    if (grepl(sheet_pattern, ss_name)) {
       ss_df_temp <- ss_df_temp |>
         dplyr::mutate(
           survey_round = as.integer(stringr::str_sub(ss_name, 1, 4)),
@@ -174,7 +170,6 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
   }
 
   do.call("rbind", ss_df)
-
 }
 
 
@@ -182,8 +177,8 @@ validate_required_cols <- function(.data, .required_cols) {
 
   required_cols_which <- which(.required_cols %in% names(.data))
 
-  if(length(required_cols_which) < length(.required_cols)) {
-    stop('Invalid column names specified.')
+  if (length(required_cols_which) < length(.required_cols)) {
+    stop("Invalid column names specified.")
   }
 
   return(.data)
@@ -193,12 +188,11 @@ validate_required_cols <- function(.data, .required_cols) {
 load_refs_from_gsheet <- function(.gid, .required_cols, ..., .start_at = 1) {
 
   range <- paste0(
-    LETTERS[.start_at], ':',
+    LETTERS[.start_at], ":",
     LETTERS[length(.required_cols) + .start_at - 1]
   )
   dd <- fetch_gsheet(.gid, ..., .range = range)
   return(validate_required_cols(dd, .required_cols))
-
 }
 
 
@@ -211,23 +205,20 @@ load_refs_from_gsheet <- function(.gid, .required_cols, ..., .start_at = 1) {
 #' @export
 #'
 #' @examples
-#'
-
 load_data_dictionary_refs <- function(.gid) {
-
   required_cols <- c(
-    'variable_name',
-    'variable_name_new',
-    'item',
-    'sub_item',
-    'label',
-    'valueset',
-    'type',
-    'length',
-    'is_included',
-    'privacy_level',
-    'is_included_for_portal',
-    'is_derived'
+    "variable_name",
+    "variable_name_new",
+    "item",
+    "sub_item",
+    "label",
+    "valueset",
+    "type",
+    "length",
+    "is_included",
+    "privacy_level",
+    "is_included_for_portal",
+    "is_derived"
   )
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciiiii') |>
@@ -246,9 +237,7 @@ load_data_dictionary_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_area_name_refs <- function(.gid) {
-
   required_cols <- c(
     'region',
     'province',
@@ -287,7 +276,6 @@ load_area_name_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_valueset_refs <- function(.gid) {
   load_refs_from_gsheet(
     .gid,
@@ -305,18 +293,16 @@ load_valueset_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
-
 load_validation_refs <- function(.gid) {
   required_cols <- c(
-    'validation_id',
-    'title',
-    'description',
-    'primary_data_item',
-    'section',
-    'priority_level',
-    'status',
-    'date_introduced'
+    "validation_id",
+    "title",
+    "description",
+    "primary_data_item",
+    "section",
+    "priority_level",
+    "status",
+    "date_introduced"
   )
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccccc') |>
@@ -336,29 +322,28 @@ load_validation_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_tabulation_refs <- function(.gid) {
   required_cols <- c(
-    'tabulation_id',
-    'tab_name',
-    'table_number',
-    'title',
-    'subtitle',
-    'description',
-    'is_included',
-    'precision',
-    'col_decimal_format',
-    'col_width_all',
-    'col_width_first',
-    'col_width_last',
-    'row_height_header',
-    'row_reset_last'
+    "tabulation_id",
+    "tab_name",
+    "table_number",
+    "title",
+    "subtitle",
+    "description",
+    "is_included",
+    "precision",
+    "col_decimal_format",
+    "col_width_all",
+    "col_width_first",
+    "col_width_last",
+    "row_height_header",
+    "row_reset_last"
   )
 
   df <- load_refs_from_gsheet(
     .gid,
     required_cols,
-    col_types = 'cccccciiciiici'
+    col_types = "cccccciiciiici"
   )
 
   transform_refs(df)
@@ -373,20 +358,19 @@ load_tabulation_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_macrodata_refs <- function(.gid) {
   required_cols <- c(
-    'table_name',
-    'category',
-    'title',
-    'subtitle',
-    'description'
+    "table_name",
+    "category",
+    "title",
+    "subtitle",
+    "description"
   )
 
   load_refs_from_gsheet(
     .gid,
     required_cols,
-    col_types = 'ccccc'
+    col_types = "ccccc"
   )
 }
 
@@ -399,34 +383,33 @@ load_macrodata_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_score_card_refs <- function(.gid) {
   required_cols <- c(
-    'variable_name',
-    'table_name',
-    'type',
-    'category',
-    'title',
-    'subtitle',
-    'description',
-    'group',
-    'order',
-    'position',
-    'display',
-    'value_prefix',
-    'value_suffix',
-    'unit_of_measure',
-    'icon_primary',
-    'icon_primary_position',
-    'icon_secondary',
-    'icon_secondary_position',
-    'is_published'
+    "variable_name",
+    "table_name",
+    "type",
+    "category",
+    "title",
+    "subtitle",
+    "description",
+    "group",
+    "order",
+    "position",
+    "display",
+    "value_prefix",
+    "value_suffix",
+    "unit_of_measure",
+    "icon_primary",
+    "icon_primary_position",
+    "icon_secondary",
+    "icon_secondary_position",
+    "is_published"
   )
 
   load_refs_from_gsheet(
     .gid,
     required_cols,
-    col_types = 'ccicccciiiiccccccci'
+    col_types = "ccicccciiiiccccccci"
   )
 }
 
@@ -439,7 +422,6 @@ load_score_card_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_record_refs <- function(.gid) {
   df <- load_refs_from_gsheet(
     .gid,
@@ -454,7 +436,7 @@ load_record_refs <- function(.gid) {
       "include",
       "expect_equal_rows"
     ),
-    col_types = 'cccciiiii'
+    col_types = "cccciiiii"
   )
 
   round <- unique(df$survey_round)
@@ -472,7 +454,7 @@ load_record_refs <- function(.gid) {
             dplyr::filter(input_data == y) |>
             dplyr::select(-input_data) |>
             dplyr::mutate(
-              uid = stringr::str_split(uid, '\\s*?\\|\\s*?')
+              uid = stringr::str_split(uid, "\\s*?\\|\\s*?")
             )
         }),
         input
@@ -492,7 +474,6 @@ load_record_refs <- function(.gid) {
 #' @export
 #'
 #' @examples
-#'
 load_section_refs <- function(.gid) {
   df <- load_refs_from_gsheet(
     .gid,
@@ -503,7 +484,7 @@ load_section_refs <- function(.gid) {
       "validation_script_file",
       "validation_deps"
     ),
-    col_types = 'ccccc'
+    col_types = "ccccc"
   )
 
   round <- unique(df$survey_round)
@@ -525,12 +506,12 @@ load_section_refs <- function(.gid) {
               description = label,
               label = paste0("Section ", section),
               validation = tibble::tibble(
-                record = stringr::str_split(validation_record, '\\s*?\\|\\s*?'),
-                script_file = stringr::str_split(validation_script_file, '\\s*?\\|\\s*?'),
-                deps = stringr::str_split(validation_deps, '\\s*?\\|\\s*?')
+                record = stringr::str_split(validation_record, "\\s*?\\|\\s*?"),
+                script_file = stringr::str_split(validation_script_file, "\\s*?\\|\\s*?"),
+                deps = stringr::str_split(validation_deps, "\\s*?\\|\\s*?")
               )
             ) |>
-            dplyr::select(-dplyr::starts_with('validation_'), -section) |>
+            dplyr::select(-dplyr::starts_with("validation_"), -section) |>
             dplyr::mutate(included = TRUE)
         }),
         input

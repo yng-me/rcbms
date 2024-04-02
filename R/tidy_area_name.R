@@ -14,7 +14,7 @@ tidy_area_name <- function(.area_name, .add_length) {
     barangay_geo_var <- 'barangay_geo_new'
     over_all_code <- "0000000000"
   } else {
-    barangay_geo_var <- 'barangay_geo'
+    barangay_geo_var <- "barangay_geo"
     over_all_code <- "000000000"
   }
   .area_name |>
@@ -29,8 +29,8 @@ tidy_area_name <- function(.area_name, .add_length) {
           area_code = stringr::str_pad(
             stringr::str_sub(!!as.name(barangay_geo_var), 1, 6 + .add_length),
             width = 9 + .add_length,
-            pad = '0',
-            side = 'right'
+            pad = "0",
+            side = "right"
           ),
           area_name = city_mun
         ) |>
@@ -43,8 +43,8 @@ tidy_area_name <- function(.area_name, .add_length) {
           area_code = stringr::str_pad(
             stringr::str_sub(!!as.name(barangay_geo_var), 1, 4 + .add_length),
             width = 9 + .add_length,
-            pad = '0',
-            side = 'right'
+            pad = "0",
+            side = "right"
           ),
           area_name = province
         ) |>
@@ -57,8 +57,8 @@ tidy_area_name <- function(.area_name, .add_length) {
           area_code = stringr::str_pad(
             region_code,
             width = 9 + .add_length,
-            pad = '0',
-            side = 'right'
+            pad = "0",
+            side = "right"
           ),
           area_name = region
         ) |>

@@ -15,14 +15,13 @@ set_dot_env <- function(.env_path) {
   env_values <- env_values[env_values != '']
   env_values <- env_values[!grepl('^#', env_values)]
 
-  if(length(env_values) == 0) {
+  if (length(env_values) == 0) {
     return(NULL)
   }
 
   env <- list()
-  for(i in seq_along(env_values)) {
-
-    env_value <- unlist(stringr::str_split(env_values[i], '=')[[1]])
+  for (i in seq_along(env_values)) {
+    env_value <- unlist(stringr::str_split(env_values[i], "=")[[1]])
     key <- stringr::str_trim(env_value[1])
     value <- stringr::str_trim(env_value[2])
 
@@ -36,8 +35,8 @@ set_dot_env <- function(.env_path) {
 get_env <- function(.key) {
   .key <- as.character(substitute(.key))
   env <- set_dot_env()
-  if(!(.key %in% names(env))) {
-    stop(paste0(.key, ' is not defined in the .env.'))
+  if (!(.key %in% names(env))) {
+    stop(paste0(.key, " is not defined in the .env."))
   }
   return(env[[.key]])
 }

@@ -48,8 +48,8 @@ read_cbms_data <- function(.references, .config) {
 
       if(!is_bp_data) {
 
-        if(.config$verbose) {
-          if(length(input_data) > 1) {
+        if (.config$verbose) {
+          if (length(input_data) > 1) {
             progress_n <- paste0("[", i, "/", length(input_data), "]: ")
           } else {
             progress_n <- ""
@@ -133,6 +133,9 @@ read_cbms_data <- function(.references, .config) {
 
             df[[input_data]][[p_name]] <- df_from_db
 
+            df$bp$bpq_data <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data.parquet"))
+            df$bp$bpq_data_list <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_list.parquet"))
+            df$bp$bpq_data_mode_of_transport <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_mode_of_transport.parquet"))
           } else {
             df[[input_data]][[p_name]] <- arrow::open_dataset(pq_path)
           }
@@ -159,7 +162,9 @@ get_input_data_label <- function(.key) {
   )
   labels_short <- c("hp", "bp", "ilq", "cph", "bs")
   label_which <- which(labels_short == .key)
-  if(length(label_which) == 0) return(.key)
+  if (length(label_which) == 0) {
+    return(.key)
+  }
   labels[which(labels_short == .key)]
 }
 

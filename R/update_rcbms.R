@@ -1,17 +1,15 @@
 update_rcbms <- function(.config = getOption("rcbms.config")) {
-
   is_package_latest <- utils::compareVersion(
     .config$version$package,
     as.character(utils::packageVersion("rcbms"))
   )
 
-  if(is_package_latest != 0) {
-
-    if(.config$verbose) {
+  if (is_package_latest != 0) {
+    if (.config$verbose) {
       cli::cli_h1("Checking Versions")
     }
 
-    if(is_online()) {
+    if (is_online()) {
       devtools::install_github("yng-me/rcbms", upgrade = TRUE)
 
       wd <- .config$working_directory
@@ -22,7 +20,6 @@ update_rcbms <- function(.config = getOption("rcbms.config")) {
       config_updated$base <- NULL
       config_updated$env <- NULL
       yaml::write_yaml(config_updated, file = paste0(wd, "/configs/global.yml"))
-
     } else {
       cli::cli_alert_warning(paste0(
         cli::col_red(

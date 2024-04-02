@@ -11,7 +11,7 @@ save_cbms_data <- function(
 ) {
 
   uid <- "case_id"
-  if(.input_data == "bp") uid <- "barangay_geo"
+  if (.input_data == "bp") uid <- "barangay_geo"
 
   geo_cols_name <- c("region", "province", "city_mun", "barangay")
   geo_cols <- paste0(geo_cols_name, "_code")
@@ -91,11 +91,11 @@ save_cbms_data <- function(
           dplyr::filter(!!as.name(rov_var) == 1)
       }
 
-      if("hsn" %in% names(df_temp)) {
+      if ("hsn" %in% names(df_temp)) {
         df_temp <- df_temp |>
           dplyr::filter(
             as.integer(hsn) < as.integer(
-              paste(rep(7, 4 + .config$project$add_length), collapse = '')
+              paste(rep(7, 4 + .config$project$add_length), collapse = "")
             )
           )
       }
@@ -120,8 +120,8 @@ save_cbms_data <- function(
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
 
-  if(.config$verbose) {
-    if(identical(df_temp_dim_before, df_temp_dim_after)) {
+  if (.config$verbose) {
+    if (identical(df_temp_dim_before, df_temp_dim_after)) {
       df_temp_dim <- paste0(
         cli::col_br_cyan(format(df_temp_dim_before[1], big.mark = ",")), " × ",
         cli::col_br_cyan(format(df_temp_dim_before[2], big.mark = ","))
@@ -137,7 +137,7 @@ save_cbms_data <- function(
     df_temp_dim <- paste0("(", df_temp_dim, ") ")
   }
 
-  if(.input_data %in% c("cph", "bs") & .config$survey_round == "2020") {
+  if (.input_data %in% c("cph", "bs") & .config$survey_round == "2020") {
     df_temp <- df_temp |>
       dplyr::mutate(
         province_code = stringr::str_sub(province_code, 2, 3)
@@ -167,7 +167,7 @@ save_cbms_data <- function(
     arrow::write_parquet(df_temp, .pq_path)
   }
 
-  if(.config$verbose) {
+  if (.config$verbose) {
     cli::cli_alert_info(
       paste0(
         "Importing ", cli::col_br_yellow(.p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")

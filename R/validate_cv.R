@@ -24,8 +24,7 @@ select_cv <- function(.data, ...) {
     dplyr::collect() |>
     validate_select(...)
 
-  set_class(.data, 'rcbms_cv_tbl')
-
+  set_class(.data, "rcbms_cv_tbl")
 }
 
 
@@ -39,9 +38,9 @@ validate_select <- function(.data, ...) {
 
   uid <- config$project[[current_input_data]]$id
 
-  if(is.null(uid)) uid <- "case_id"
+  if (is.null(uid)) uid <- "case_id"
 
-  if(!exists("current_input_data")) {
+  if (!exists("current_input_data")) {
     current_input_data <- config$input_data[1]
   }
 
@@ -50,30 +49,29 @@ validate_select <- function(.data, ...) {
   geo_cols_name <- c('region', 'province', 'city_mun', 'barangay')
   geo_cols <- paste0(geo_cols_name, '_code')
 
-  if(length(which(geo_cols %in% names(.data))) == 4) {
+  if (length(which(geo_cols %in% names(.data))) == 4) {
     .data <- .data |> create_barangay_geo()
   }
 
-  if(!('barangay_geo' %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
+  if (!("barangay_geo" %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length))
   }
 
-  if(current_input_data %in% c("hp", "ilq")) {
+  if (current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(
         ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length)
       )
   }
 
-  if(!('line_number' %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
+  if (!("line_number" %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(line_number = NA_character_)
   }
 
 
-  if("barangay_geo" %in% names(.data)) {
-
+  if ("barangay_geo" %in% names(.data)) {
     .data <- .data |>
       dplyr::select(
         dplyr::any_of(c(uid, geo_cols_name, "ean", "line_number")),
@@ -85,12 +83,10 @@ validate_select <- function(.data, ...) {
 
   summary_record <- config$project[[current_input_data]][['summary_record']]
 
-  if(isTRUE(join_hh_info) & !is.null(summary_record)) {
-
+  if (isTRUE(join_hh_info) & !is.null(summary_record)) {
     parquet <- get_config("parquet")
     summary_df <- parquet[[current_input_data]][[summary_record]]
-    if(!is.null(summary_df)) {
-
+    if (!is.null(summary_df)) {
       hh_info <- summary_df |>
         dplyr::collect() |>
         create_case_id(.input_data = current_input_data) |>
@@ -98,21 +94,20 @@ validate_select <- function(.data, ...) {
           dplyr::any_of(
             c(
               uid,
-              'hh_head',
-              'respondent_contact_number',
-              'contact_number',
-              'email_add',
-              'address',
-              'floor_number',
-              'subdivision_or_village',
-              'sitio_or_purok'
+              "hh_head",
+              "respondent_contact_number",
+              "contact_number",
+              "email_add",
+              "address",
+              "floor_number",
+              "subdivision_or_village",
+              "sitio_or_purok"
             )
           )
         )
 
-    .data <- .data |>
-      dplyr::left_join(hh_info |> dplyr::collect(), by = uid)
-
+      .data <- .data |>
+        dplyr::left_join(hh_info |> dplyr::collect(), by = uid)
     }
   }
 
@@ -122,5 +117,4 @@ validate_select <- function(.data, ...) {
     dplyr::any_of(c("ean", "line_number")),
     ...
   )
-
 }

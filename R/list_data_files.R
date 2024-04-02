@@ -20,20 +20,20 @@ list_data_files <- function(.input_data, .references, .config) {
 
   if(!convert_to_parquet) df_input_folder <- "parquet"
 
-  if(!is.null(.config$project[[.input_data]]$directory)) {
+  if (!is.null(.config$project[[.input_data]]$directory)) {
     input_data_path <- .config$project[[.input_data]]$directory
   } else {
     input_data_path <- get_data_path(df_input_folder, .input_data, .config)
   }
 
-  if(!dir.exists(input_data_path)) {
+  if (!dir.exists(input_data_path)) {
     stop("Data directory does not exist: ", input_data_path)
   }
 
   summary_record <- .config$project[[.input_data]][['summary_record']]
 
-  if(is.null(summary_record)) summary_record <- '~~~'
-  if(is.na(summary_record)) summary_record <- '~~~'
+  if (is.null(summary_record)) summary_record <- "~~~"
+  if (is.na(summary_record)) summary_record <- "~~~"
 
   if(!convert_to_parquet) {
     return(
@@ -48,7 +48,7 @@ list_data_files <- function(.input_data, .references, .config) {
           dplyr::mutate(
             name = tolower(stringr::str_remove(basename(value), "\\.parquet$")),
             n = seq(1:dplyr::n()),
-            n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
+            n = dplyr::if_else(grepl(paste0("^", summary_record), name), 0L, n)
           ) |>
           dplyr::arrange(n)
       )
@@ -56,11 +56,11 @@ list_data_files <- function(.input_data, .references, .config) {
   }
 
   all_data_files <- list.files(
-      input_data_path,
-      pattern = file_format,
-      recursive = T,
-      full.names = T
-    ) |>
+    input_data_path,
+    pattern = file_format,
+    recursive = T,
+    full.names = T
+  ) |>
     dplyr::as_tibble() |>
     dplyr::filter(grepl(file_format, value, ignore.case = T)) |>
     dplyr::mutate(file.info(value))
@@ -75,7 +75,7 @@ list_data_files <- function(.input_data, .references, .config) {
     dplyr::mutate(
       name = tolower(stringr::str_remove(value, file_format)),
       n = seq(1:dplyr::n()),
-      n = dplyr::if_else(grepl(paste0('^', summary_record), name), 0L, n)
+      n = dplyr::if_else(grepl(paste0("^", summary_record), name), 0L, n)
     ) |>
     dplyr::arrange(n)
 
@@ -114,11 +114,11 @@ list_data_files <- function(.input_data, .references, .config) {
 
 
 get_file_format <- function(.config, .input_data) {
-  if(!is.null(.config$project[[.input_data]][['file_format']])) {
-    file_format <- .config$project[[.input_data]][['file_format']]
-    file_format <- paste0('\\.(', toupper(file_format), '|', tolower(file_format), ')$')
+  if (!is.null(.config$project[[.input_data]][["file_format"]])) {
+    file_format <- .config$project[[.input_data]][["file_format"]]
+    file_format <- paste0("\\.(", toupper(file_format), "|", tolower(file_format), ")$")
   } else {
-    file_format <- '\\.(TXT|txt)$'
+    file_format <- "\\.(TXT|txt)$"
   }
   return(file_format)
 }
@@ -131,18 +131,18 @@ get_data_path <- function(
 ) {
   wd <- .config$working_directory
 
-  if(is.null(wd)) wd <- '.'
+  if (is.null(wd)) wd <- "."
   full_path <- file.path(
     wd,
-    'src',
+    "src",
     .config$survey_round,
-    'data',
+    "data",
     .type,
     .input_data
   )
 
   sub_directory <- .config$project[[.input_data]]$sub_directory
-  if(!is.null(sub_directory)) {
+  if (!is.null(sub_directory)) {
     full_path <- file.path(full_path, sub_directory)
   }
 

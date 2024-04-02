@@ -10,7 +10,6 @@
 #'
 #' set_config("./configs/global.yml")
 #'
-#'
 set_config <- function(
   .config_dir = "configs",
   .survey_round = NULL,
@@ -130,14 +129,12 @@ read_config <- function(.config_file) {
 #' @export
 #'
 #' @examples
-#'
-
 get_config <- function(.key) {
   config <- getOption("rcbms.config")
   obj <- config$links[[.key]]
 
-  if(!is.null(obj)) {
-    if(exists(obj)) {
+  if (!is.null(obj)) {
+    if (exists(obj)) {
       eval(as.name(obj))
     } else {
       return(NULL)
@@ -145,5 +142,4 @@ get_config <- function(.key) {
   } else {
     return(NULL)
   }
-
 }

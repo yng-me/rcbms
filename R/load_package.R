@@ -7,11 +7,8 @@
 #' @export
 #'
 #' @examples
-#'
-
 load_package <- function(.pkg, .install_only = TRUE) {
-
-  if(is_not_installed(.pkg)) {
+  if (is_not_installed(.pkg)) {
     utils::install.packages(.pkg)
   }
 
@@ -22,7 +19,6 @@ load_package <- function(.pkg, .install_only = TRUE) {
     warn.conflicts = F,
     verbose = F
   )
-
 }
 
 
@@ -70,31 +66,25 @@ load_required_packages <- function(.load_dependencies = F, .install_dependencies
 
 
 load_dependencies <- function() {
-
-  if(is_not_installed("tsg")) {
-
-    if(is_online()) {
-
+  if (is_not_installed("tsg")) {
+    if (is_online()) {
       tsg_version <- utils::installed.packages() |>
         tibble::as_tibble() |>
         dplyr::filter(Package == "tsg") |>
         dplyr::pull(Version)
 
-      if(tsg_version != "0.1.3") {
+      if (tsg_version != "0.1.3") {
         devtools::install_github("yng-me/tsg")
-        cat('\n')
+        cat("\n")
       }
-
     } else {
-      warning('You are currently offline. Check your internet connection.')
+      warning("You are currently offline. Check your internet connection.")
     }
-
   } else {
-
-    if(is_online()) {
-      devtools::install_github('yng-me/tsg')
+    if (is_online()) {
+      devtools::install_github("yng-me/tsg")
     } else {
-      warning('You are currently offline. Check your internet connection and try again.')
+      warning("You are currently offline. Check your internet connection and try again.")
     }
   }
 }

@@ -13,8 +13,6 @@
 #' @export
 #'
 #' @examples
-#'
-
 check_age_sex_relation <- function(
   .data,
   .primary_member,
@@ -36,13 +34,13 @@ check_age_sex_relation <- function(
   }
 
   var <- .config$project$hp$variable
-  if(is.null(.relation_to_hh_head_var)) {
+  if (is.null(.relation_to_hh_head_var)) {
     .relation_to_hh_head_var <- var$relation_to_hh_head
   }
   age_var <- var$age
   sex_var <- var$sex
 
-  if(is.null(.conjuction) & length(.condition) > 1) {
+  if (is.null(.conjuction) & length(.condition) > 1) {
     .conjuction <- rep("&", length(.condition) - 1)
   }
 
@@ -51,9 +49,9 @@ check_age_sex_relation <- function(
     dplyr::select(
       dplyr::any_of(
         c(
-          'case_id',
-          'line_number',
-          'ean',
+          "case_id",
+          "line_number",
+          "ean",
           age_var,
           sex_var,
           .relation_to_hh_head_var
@@ -99,25 +97,27 @@ check_age_sex_relation <- function(
         df_head <- df |> dplyr::filter(is_primary_member)
         df_relation <- df |> dplyr::filter(with_relation)
 
-        if(nrow(df_head) == 1 & nrow(df_relation) > 1) {
+        if (nrow(df_head) == 1 & nrow(df_relation) > 1) {
+          hh_head_d <- df |>
+            dplyr::filter(is_primary_member) |>
+            dplyr::pull(age)
+          hh_relation_d <- df |>
+            dplyr::filter(with_relation) |>
+            dplyr::pull(age)
 
-          hh_head_d <- df |> dplyr::filter(is_primary_member) |> dplyr::pull(age)
-          hh_relation_d <- df |> dplyr::filter(with_relation) |> dplyr::pull(age)
-
-          for(i in seq_along(hh_relation_d)) {
-
-            age_diff <- paste0("abs(", hh_head_d[1], ' - ', hh_relation_d[i], ")")
+          for (i in seq_along(hh_relation_d)) {
+            age_diff <- paste0("abs(", hh_head_d[1], " - ", hh_relation_d[i], ")")
 
             expr <- NULL
-            .conjuction <- c(.conjuction, '')
-            for(j in seq_along(.condition)) {
+            .conjuction <- c(.conjuction, "")
+            for (j in seq_along(.condition)) {
               expr_j <- paste(age_diff, .condition[j], .threshold[j], .conjuction[j])
               expr <- c(expr, expr_j)
             }
 
-            expr_c <- stringr::str_trim(paste(expr, collapse = ' '))
+            expr_c <- stringr::str_trim(paste(expr, collapse = " "))
 
-            if(eval(parse(text = expr_c))) {
+            if (eval(parse(text = expr_c))) {
               df_list[[i]] <- df_first |>
                 dplyr::mutate(
                   age_of_primary_member = eval(parse(text = hh_head_d[1])),

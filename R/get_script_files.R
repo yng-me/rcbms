@@ -8,16 +8,16 @@
 #' @export
 #'
 #' @examples
-#'
-get_script_files <- function(.input_data, .section = NULL, .config = getOption('rcbms.config')) {
-
+get_script_files <- function(.input_data, .section = NULL, .config = getOption("rcbms.config")) {
   script_files <- list.files(
-    join_path(.config$base, 'scripts', .config$mode$type, .input_data),
-    pattern = '\\.(r|R)$',
+    join_path(.config$base, "scripts", .config$mode$type, .input_data),
+    pattern = "\\.(r|R)$",
     full.names = T
   )
 
-  if(length(script_files) == 0) return(NULL)
+  if (length(script_files) == 0) {
+    return(NULL)
+  }
 
   if(.config$mode$edit == 0) {
 
@@ -69,5 +69,4 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption('
   }
 
   return(script_files)
-
 }

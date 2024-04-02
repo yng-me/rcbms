@@ -15,28 +15,24 @@
 #' @export
 #'
 #' @examples
-#'
-
 generate_tabs <- function(
-  .data,
-  ...,
-  .agg_levels = NULL,
-  .total_by_cols = FALSE,
-  .keep_col_names = FALSE,
-  .multiple_response = FALSE,
-  .valueset = NULL,
-  .extract_name_position = 5,
-  .sort = TRUE,
-  .config = getOption("rcbms.config")
-) {
-
+    .data,
+    ...,
+    .agg_levels = NULL,
+    .total_by_cols = FALSE,
+    .keep_col_names = FALSE,
+    .multiple_response = FALSE,
+    .valueset = NULL,
+    .extract_name_position = 5,
+    .sort = TRUE,
+    .config = getOption("rcbms.config")) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
-  if(is.null(.agg_levels)) {
+  if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
 
-  if(.multiple_response) {
+  if (.multiple_response) {
     return(
       .data |>
         generate_tab_multiple(
@@ -54,8 +50,7 @@ generate_tabs <- function(
   col_x <- cols[1]
   col_y <- cols[2]
 
-  for(i in seq_along(.agg_levels)) {
-
+  for (i in seq_along(.agg_levels)) {
     level_i <- .agg_levels[i]
     agg_level <- agg_labels[level_i]
     agg <- paste0(agg_level, "_geo")
@@ -70,7 +65,6 @@ generate_tabs <- function(
       ) |>
       factor_cols(...) |>
       dplyr::mutate(level = as.integer(level_i))
-
   }
 
   tbl_list[["overall"]] <- .data |>
@@ -85,7 +79,7 @@ generate_tabs <- function(
 
   tbl_list <- bind_rows(tbl_list)
 
-  if(.keep_col_names) {
+  if (.keep_col_names) {
     tbl_list <- tbl_list |>
       dplyr::rename_with(
         ~ stringr::str_remove(., "^[a-r]\\d{2}_"),
@@ -98,7 +92,7 @@ generate_tabs <- function(
         dplyr::matches(paste0("^", col_x))
       )
 
-    if(length(cols) == 2) {
+    if (length(cols) == 2) {
       tbl_list <- tbl_list |>
         dplyr::rename_with(
           ~ paste0("y", stringr::str_remove(., col_y)),
@@ -130,16 +124,13 @@ generate_tabs <- function(
 
 
 generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE) {
-
-  if(.total_by_cols & length(.cols) > 1) {
-
+  if (.total_by_cols & length(.cols) > 1) {
     .data |>
       dplyr::add_count(..., name = "total") |>
       dplyr::add_count(..., !!as.name(.cols[2]), name = "total_y") |>
       dplyr::group_by(..., total, total_y, dplyr::pick(dplyr::any_of(.cols))) |>
-      dplyr::count(name = "count",  sort = .sort)  |>
+      dplyr::count(name = "count", sort = .sort) |>
       dplyr::mutate(percent = 100 * (count / total_y))
-
   } else {
     .data |>
       dplyr::add_count(..., name = "total") |>
@@ -147,22 +138,19 @@ generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE
       dplyr::count(name = "count", sort = .sort) |>
       dplyr::mutate(percent = 100 * (count / total))
   }
-
 }
 
 
 generate_tab_multiple <- function(
-  .data,
-  ...,
-  .agg_levels = NULL,
-  .valueset = NULL,
-  .extract_name_position = 5,
-  .config = getOption('rcbms.config')
-) {
-
+    .data,
+    ...,
+    .agg_levels = NULL,
+    .valueset = NULL,
+    .extract_name_position = 5,
+    .config = getOption("rcbms.config")) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
-  if(is.null(.agg_levels)) {
+  if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
 
@@ -197,8 +185,7 @@ generate_tab_multiple <- function(
   #
   tbl_list <- list()
 
-  for(i in seq_along(.agg_levels)) {
-
+  for (i in seq_along(.agg_levels)) {
     level_i <- .agg_levels[i]
     agg_level <- agg_labels[level_i]
     agg <- paste0(agg_level, "_geo")
@@ -228,13 +215,12 @@ generate_tab_multiple <- function(
       x = toupper(stringr::str_sub(x, .extract_name_position, .extract_name_position))
     )
 
-  if(!is.null(.valueset)) {
-
-    if(!("value" %in% names(.valueset) & "label" %in% names(.valueset))) {
+  if (!is.null(.valueset)) {
+    if (!("value" %in% names(.valueset) & "label" %in% names(.valueset))) {
       return(tbl)
     }
 
-    if(grepl("\\d+", .valueset$value[1])) {
+    if (grepl("\\d+", .valueset$value[1])) {
       .valueset |>
         dplyr::mutate(value = as.integer(value))
     }
@@ -244,7 +230,6 @@ generate_tab_multiple <- function(
       dplyr::left_join(.valueset, by = "value") |>
       dplyr::rename(x_fct = label) |>
       dplyr::select(-c(value, name))
-
   }
 
   tbl |>
@@ -282,27 +267,24 @@ generate_tab_multiple <- function(
 #' @export
 #'
 #' @examples
-#'
 generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NULL) {
-
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
   cols <- sapply(substitute(list(...))[-1], deparse)
 
-  if(is.null(.agg_levels)) {
+  if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
 
   tbl_list <- list()
 
-  for(i in seq_along(.agg_levels)) {
-
+  for (i in seq_along(.agg_levels)) {
     level_i <- .agg_levels[i]
     agg_name <- agg_labels[level_i]
     agg_geo <- paste0(agg_name, "_geo")
 
     tbl_list[[i]] <- .data |>
-      dplyr::filter({{.col}} == .col_value) |>
+      dplyr::filter({{ .col }} == .col_value) |>
       dplyr::mutate(area_code = !!as.name(agg_geo)) |>
       dplyr::group_by(area_code, ...) |>
       dplyr::count(name = "total_qualified") |>
@@ -311,7 +293,7 @@ generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NU
           dplyr::mutate(area_code = !!as.name(agg_geo)) |>
           dplyr::group_by(area_code, ...) |>
           dplyr::count(name = "total"),
-        by = c('area_code', cols)
+        by = c("area_code", cols)
       ) |>
       dplyr::mutate(
         level = as.integer(level_i),
@@ -319,8 +301,8 @@ generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NU
       )
   }
 
-  tbl_list[['overall']] <- .data |>
-    dplyr::filter({{.col}} == .col_value) |>
+  tbl_list[["overall"]] <- .data |>
+    dplyr::filter({{ .col }} == .col_value) |>
     dplyr::group_by(...) |>
     dplyr::count(name = "total_qualified") |>
     dplyr::left_join(
@@ -330,7 +312,7 @@ generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NU
       by = cols
     ) |>
     dplyr::mutate(
-      area_code = '0',
+      area_code = "0",
       level = 0L,
       percent = 100 * (total_qualified / total)
     )
