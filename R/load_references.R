@@ -92,7 +92,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
     if(ref_short_i == "anm") {
       refs[[ref_i]] <- arrow::read_parquet(pq_i)
     } else {
-      refs[[ref_i]] <- jsonlite::fromJSON(pq_i)
+      refs[[ref_i]] <- jsonlite::fromJSON(pq_i, flatten = T)
     }
 
     set_class(refs[[ref_i]], paste0("rcbms_", ref_short_i, "_ref"))

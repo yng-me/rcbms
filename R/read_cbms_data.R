@@ -133,9 +133,6 @@ read_cbms_data <- function(.references, .config) {
 
             df[[input_data]][[p_name]] <- df_from_db
 
-            df$bp$bpq_data <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data.parquet"))
-            df$bp$bpq_data_list <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_list.parquet"))
-            df$bp$bpq_data_mode_of_transport <- arrow::open_dataset(paste0(bp_pq_xlsm, "/bpq_data_mode_of_transport.parquet"))
           } else {
             df[[input_data]][[p_name]] <- arrow::open_dataset(pq_path)
           }

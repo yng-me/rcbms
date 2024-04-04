@@ -33,7 +33,7 @@ harmonize_variable <- function(.data, .input_data, .survey_round, .dictionary, .
 
   .data |>
     dplyr::select(-dplyr::any_of(excluded)) |>
-    convert_cols_from_dictionary(.dictionary) |>
+    convert_cols_from_dictionary(.dictionary, .config) |>
     convert_col_names(.dictionary)
 }
 
@@ -48,7 +48,7 @@ join_data_with_dictionary <- function(.data, .dictionary) {
     )
 }
 
-convert_cols_from_dictionary <- function(.data, .dictionary) {
+convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
   get_col_type <- function(.type) {
     as_type <- .dictionary$variable_name[.dictionary$type == .type]
     nc_names <- as_type[as_type %in% names(.data)]
@@ -144,7 +144,7 @@ convert_cols_from_dictionary <- function(.data, .dictionary) {
   from_data_without_dcf <- setdiff(names(.data), from_dcf)
 
   if (length(from_data_without_dcf) > 0) {
-    if (getOption("rcbms.config")$verbose) {
+    if (.config$verbose) {
       cli::cli_alert(
         cli::col_br_red("No matching data dictionary entries and will be coerced as character type:")
       )
