@@ -14,17 +14,21 @@
 #' @export
 #'
 #' @examples
+#'
 db_migrate <- function(
-    .output,
-    ...,
-    .name = NULL,
-    .prefix = "",
-    .suffix = "",
-    .add_primary_key = TRUE,
-    .add_table_ref = FALSE,
-    .references = get_config("references"),
-    .config = getOption("rcbms.config")) {
-  db_conn <- db_connect()
+  .output,
+  .references,
+  .config,
+  ...,
+  .name = NULL,
+  .prefix = "",
+  .suffix = "",
+  .add_primary_key = TRUE,
+  .add_table_ref = FALSE,
+  .local_infile = FALSE
+) {
+
+  db_conn <- db_connect(.local_infile = .local_infile)
 
   if (.prefix != "") {
     prefix <- paste0(.prefix, "_")
@@ -112,11 +116,14 @@ db_migrate <- function(
 #' @export
 #'
 #' @examples
+#'
 db_connect <- function(
-    .config = getOption("rcbms.config"),
-    .db_name = NULL,
-    .local_infile = FALSE,
-    ...) {
+  .config = getOption("rcbms.config"),
+  .db_name = NULL,
+  .local_infile = FALSE,
+  ...
+) {
+
   env <- .config$env
   stage <- .config$portal$stage
 
@@ -148,6 +155,7 @@ db_connect <- function(
   }
 
   return(db_connection)
+
 }
 
 
@@ -170,6 +178,7 @@ add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary
       dplyr::filter(table_name %in% .table_ids) |>
       dplyr::distinct(table_name, category, .keep_all = T) |>
       dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
+      dplyr::mutate(meta = jsonlite::toJSON(meta, pretty = T)) |>
       dplyr::tibble()
 
     DBI::dbWriteTable(

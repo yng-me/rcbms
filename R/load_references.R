@@ -128,7 +128,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 #' @export
 #'
 #' @examples
-fetch_gsheet <- function(.gid, ..., .range = NULL) {
+fetch_gsheet <- function(.gid, ..., .sheet_name = NULL, .range = NULL) {
   googlesheets4::gs4_deauth()
 
   sheet_pattern <- "^\\d{4}_(bp|hp|cph|bs|ilq)$"
@@ -139,7 +139,11 @@ fetch_gsheet <- function(.gid, ..., .range = NULL) {
     dplyr::filter(grepl(sheet_pattern, value)) |>
     dplyr::pull(value)
 
-  if (length(ss_names) == 0) ss_names <- 1
+  if(!is.null(.sheet_name)) {
+    ss_names <- .sheet_name
+  } else {
+    if (length(ss_names) == 0) ss_names <- 1
+  }
 
   ss_df <- list()
 
@@ -185,13 +189,13 @@ validate_required_cols <- function(.data, .required_cols) {
 }
 
 
-load_refs_from_gsheet <- function(.gid, .required_cols, ..., .start_at = 1) {
+load_refs_from_gsheet <- function(.gid, .required_cols, ..., .sheet_name = NULL, .start_at = 1) {
 
   range <- paste0(
     LETTERS[.start_at], ":",
     LETTERS[length(.required_cols) + .start_at - 1]
   )
-  dd <- fetch_gsheet(.gid, ..., .range = range)
+  dd <- fetch_gsheet(.gid, ..., .range = range, .sheet_name = .sheet_name)
   return(validate_required_cols(dd, .required_cols))
 }
 
@@ -323,6 +327,7 @@ load_validation_refs <- function(.gid) {
 #'
 #' @examples
 load_tabulation_refs <- function(.gid) {
+
   required_cols <- c(
     "tabulation_id",
     "tab_name",
@@ -367,11 +372,35 @@ load_macrodata_refs <- function(.gid) {
     "description"
   )
 
-  load_refs_from_gsheet(
+  meta <- load_refs_from_gsheet(
     .gid,
-    required_cols,
-    col_types = "ccccc"
+    .required_cols = c(
+      'table_name',
+      'variable_name',
+      'label',
+      'type'
+    ),
+    .sheet_name = "Variables",
+    col_types = "ccci"
   )
+
+  meta_all <- meta |>dplyr::filter(type == 0)
+  meta_unique <- meta |> dplyr::filter(type == 1)
+  table_names <- meta_unique$table_name
+  for(i in seq_along(table_names)) {
+    meta <- meta_all |>
+      dplyr::mutate(table_name = table_names[i])
+
+    meta_unique <- dplyr::bind_rows(meta, meta_unique)
+  }
+
+  meta_unique <- meta_unique |>
+    dplyr::distinct(table_name, variable_name, .keep_all = T)
+
+  load_refs_from_gsheet(.gid, required_cols, col_types = "ccccc") |>
+    dplyr::right_join(meta_unique, by = 'table_name') |>
+    dplyr::group_by(table_name, category, title, subtitle, description) |>
+    tidyr::nest(.key = 'meta')
 }
 
 
