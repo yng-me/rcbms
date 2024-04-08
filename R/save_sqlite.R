@@ -115,13 +115,18 @@ save_current_logs <- function(
     }
 
 
+    priority_ref <- .references$validation[[.config$survey_round]][[.input_data]] |>
+      dplyr::select(validation_id, dplyr::matches("^priority_level$"))
+
+
+    if(!("priority_level" %in% names(priority_ref))) {
+      priority_ref <- priority_ref |>
+        dplyr::mutate(priority_level = NA_character_)
+    }
+
     priority_df <- cv_data |>
       dplyr::select(validation_id) |>
-      dplyr::left_join(
-        .references$validation[[.config$survey_round]][[.input_data]] |>
-          dplyr::select(validation_id, priority_level),
-        by = "validation_id"
-      ) |>
+      dplyr::left_join(priority_ref, by = "validation_id") |>
       dplyr::mutate(priority_level = stringr::str_trim(tolower(priority_level)))
 
     get_priority <- function(.level) {

@@ -32,7 +32,7 @@ add_metadata <- function(.data, .dictionary, .valueset) {
         stringr::str_trim(variable_name_new)
       )
     ) |>
-    dplyr::select(variable, label, valueset, item, sub_item, type) |>
+    dplyr::select(variable, label, valueset, dplyr::any_of(c('item', 'sub_item')), type) |>
     dplyr::distinct(.keep_all = T) |>
     dplyr::filter(variable %in% df_name, !is.na(label))
 
@@ -40,14 +40,18 @@ add_metadata <- function(.data, .dictionary, .valueset) {
     v <- .dictionary$variable[i]
     attr(.data[[v]], "label") <- as.character(.dictionary$label[i])
 
-    item <- .dictionary$item[i]
-    if (!is.na(item)) {
-      attr(.data[[v]], "item") <- as.character(item)
+    if('item' %in% names(.dictionary)) {
+      item <- .dictionary$item[i]
+      if (!is.na(item)) {
+        attr(.data[[v]], "item") <- as.character(item)
+      }
     }
 
-    sub_item <- .dictionary$sub_item[i]
-    if (!is.na(sub_item)) {
-      attr(.data[[v]], "sub_item") <- as.character(sub_item)
+    if('sub_item' %in% names(.dictionary)) {
+      sub_item <- .dictionary$sub_item[i]
+      if (!is.na(sub_item)) {
+        attr(.data[[v]], "sub_item") <- as.character(sub_item)
+      }
     }
 
     data_type <- .dictionary$type[i]
