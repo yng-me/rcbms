@@ -6,9 +6,6 @@
 \usage{
 load_record_refs(.gid)
 }
-\arguments{
-\item{.gid}{}
-}
 \description{
 Load record references
 }

@@ -4,12 +4,12 @@
 \alias{execute_script}
 \title{Execute script}
 \usage{
-execute_script(.config_file, ..., .survey_round = NULL)
+execute_script(survey_round, input_data, ..., config_file = NULL)
 }
 \arguments{
-\item{.config_file}{Path to config file}
-
 \item{...}{Additional arguments pass to \code{\link{load_required_packages}}}
+
+\item{.config_file}{Path to config file}
 
 \item{.survey_round}{}
 }

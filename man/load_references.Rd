@@ -4,10 +4,10 @@
 \alias{load_references}
 \title{Load references}
 \usage{
-load_references(.config)
+load_references(.config, .wd = NULL, .reload = FALSE)
 }
 \arguments{
-\item{.config}{}
+\item{.reload}{}
 }
 \description{
 Load references

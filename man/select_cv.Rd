@@ -4,20 +4,7 @@
 \alias{select_cv}
 \title{Title}
 \usage{
-select_cv(
-  .data,
-  ...,
-  .id = NULL,
-  .references = get_config("references"),
-  .title = get_from_validation_id(.id, .references, "title"),
-  .description = get_from_validation_id(.id, .references, "description"),
-  .section = get_from_validation_id(.id, .references, "section"),
-  .priority_level = get_from_validation_id(.id, .references, "priority_level"),
-  .primary_data_item = get_from_validation_id(.id, .references, "primary_data_item"),
-  .validation_type = get_from_validation_id(.id, .references, "validation_type"),
-  .status = get_from_validation_id(.id, .references, "status"),
-  .date_introduced = get_from_validation_id(.id, .references, "date_introduced")
-)
+select_cv(.data, ...)
 }
 \arguments{
 \item{.date_introduced}{}

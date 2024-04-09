@@ -142,7 +142,10 @@ utils::globalVariables(
         stage = "dev",
         db_migration = list(
           overwrite = TRUE,
-          append = FALSE
+          append = FALSE,
+          local_infile = TRUE,
+          migrate_refs = FALSE,
+          geojson_path = ""
         )
       ),
       version = list(

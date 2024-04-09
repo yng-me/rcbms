@@ -4,13 +4,7 @@
 \alias{harmonize_variable}
 \title{Harmonize variable}
 \usage{
-harmonize_variable(
-  .data,
-  .dictionary,
-  .survey_round,
-  .input_data,
-  .config = getOption("rcbms.config")
-)
+harmonize_variable(.data, .input_data, .survey_round, .dictionary, .config)
 }
 \arguments{
 \item{.config}{}

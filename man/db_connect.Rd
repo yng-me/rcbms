@@ -4,12 +4,7 @@
 \alias{db_connect}
 \title{Title}
 \usage{
-db_connect(
-  .config = getOption("rcbms.config"),
-  .db_name = NULL,
-  .local_infile = FALSE,
-  ...
-)
+db_connect(.config = getOption("rcbms.config"), .db_name = NULL, ...)
 }
 \arguments{
 \item{...}{}

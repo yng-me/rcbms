@@ -2,13 +2,13 @@
 % Please edit documentation in R/tidy_area_name.R
 \name{tidy_area_name}
 \alias{tidy_area_name}
-\title{Title}
+\title{Tidy area name}
 \usage{
-tidy_area_name(.references, .add_length)
+tidy_area_name(.area_name, .add_length)
 }
 \arguments{
-\item{.references}{}
+\item{.area_name}{}
 }
 \description{
-Title
+Tidy area name
 }

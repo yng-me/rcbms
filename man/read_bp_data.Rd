@@ -4,7 +4,7 @@
 \alias{read_bp_data}
 \title{Title}
 \usage{
-read_bp_data(.base_path, .references, .config)
+read_bp_data(.dictionary, .config)
 }
 \arguments{
 \item{.config}{}

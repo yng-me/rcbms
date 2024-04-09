@@ -5,10 +5,10 @@
 \title{Execute script for a given mode}
 \usage{
 execute_mode(
-  .parquet = get_config("parquet"),
-  .references = get_config("references"),
-  .aggregation = get_config("aggregation"),
-  .config = getOption("rcbms.config"),
+  .parquet,
+  .references,
+  .aggregation,
+  .config,
   .excluded_cases = NULL
 )
 }

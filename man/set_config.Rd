@@ -6,7 +6,6 @@
 \usage{
 set_config(
   .config_dir = "configs",
-  .config = getOption("rcbms.config"),
   .survey_round = NULL,
   .input_data = NULL,
   .include_env = TRUE
@@ -26,6 +25,5 @@ Set initial configuration for the project
 \examples{
 
 set_config("./configs/global.yml")
-
 
 }

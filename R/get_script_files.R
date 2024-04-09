@@ -53,11 +53,17 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
       dplyr::rename(file = value) |>
       dplyr::select(input_data, file, order)
 
-    selected_scripts <- .section[[.config$survey_round]][[.input_data]] |>
-      dplyr::filter(included) |>
-      dplyr::pull(validation.script_file) |>
-      unlist() |>
-      unique()
+    section_ref <- .section[[.config$survey_round]][[.input_data]]
+    selected_scripts <- NULL
+
+    if(!is.null(section_ref)) {
+
+      selected_scripts <- section_ref |>
+        dplyr::filter(included) |>
+        dplyr::pull(validation.script_file) |>
+        unlist() |>
+        unique()
+    }
 
     if(!is.null(.section) & length(selected_scripts) > 0) {
       script_files <- script_files |>

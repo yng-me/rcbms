@@ -6,8 +6,8 @@
 \usage{
 generate_validation(
   .cv,
-  .config = getOption("rcbms.config"),
-  .references = get_config("references"),
+  .references,
+  .config,
   .detailed_output = FALSE,
   .include_additional_info = FALSE,
   .add_uuid = FALSE,

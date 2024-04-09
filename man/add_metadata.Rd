@@ -4,7 +4,7 @@
 \alias{add_metadata}
 \title{Add metadata}
 \usage{
-add_metadata(.data, .dictionary, .valueset, .survey_round, .input_data)
+add_metadata(.data, .dictionary, .valueset)
 }
 \arguments{
 \item{.valueset}{}

@@ -4,10 +4,10 @@
 \alias{load_data_dictionary_refs}
 \title{Load data dictionary references}
 \usage{
-load_data_dictionary_refs(.gid)
+load_data_dictionary_refs(.gid, .transform = T)
 }
 \arguments{
-\item{.survey_round}{}
+\item{.gid}{}
 }
 \description{
 Load data dictionary references

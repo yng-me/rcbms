@@ -2,13 +2,11 @@
 #'
 #' @param .output
 #' @param ...
+#' @param .config
 #' @param .name
 #' @param .prefix
-#' @param .add_primary_key
-#' @param .add_table_ref
 #' @param .suffix
-#' @param .references
-#' @param .config
+#' @param .add_primary_key
 #'
 #' @return
 #' @export
@@ -17,18 +15,15 @@
 #'
 db_migrate <- function(
   .output,
-  .references,
-  .config,
   ...,
+  .config = getOption("rcbms.config"),
   .name = NULL,
   .prefix = "",
   .suffix = "",
-  .add_primary_key = TRUE,
-  .add_table_ref = FALSE,
-  .local_infile = FALSE
+  .add_primary_key = TRUE
 ) {
 
-  db_conn <- db_connect(.local_infile = .local_infile)
+  db_conn <- db_connect()
 
   if (.prefix != "") {
     prefix <- paste0(.prefix, "_")
@@ -46,6 +41,30 @@ db_migrate <- function(
   tb_overwrite <- rlang::list2(...)$overwrite
   if (is.null(tb_overwrite)) tb_overwrite <- FALSE
 
+  add_id_column <- function(.tb_name, .with_survey_round_col = F) {
+    if(.add_primary_key) {
+      DBI::dbSendQuery(
+        db_conn,
+        paste0(
+          "ALTER TABLE ",
+          .ts_name,
+          " ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;"
+        )
+      )
+    }
+
+    if(.with_survey_round_col) {
+      DBI::dbExecute(
+        conn = db_conn,
+        paste0(
+          "ALTER TABLE ",
+          .tb_name,
+          " MODIFY survey_round YEAR;"
+        )
+      )
+    }
+  }
+
   if (inherits(.output, "rcbms_ts_list")) {
     db_tables <- names(.output)
     table_ids <- db_tables
@@ -62,47 +81,31 @@ db_migrate <- function(
         row.names = F
       )
 
-      if (.add_primary_key) {
-        DBI::dbSendQuery(
-          db_conn,
-          paste0("ALTER TABLE ", ts_name, " ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;")
-        )
-      }
+      add_id_column(ts_name, "survey_round" %in% names(ts))
+
     }
 
-    if (tb_overwrite) {
-      add_stat_table_ref(db_conn, .references, table_ids, ..., .add_primary_key = .add_primary_key)
-      add_score_card_ref(db_conn, .references, ..., .add_primary_key = .add_primary_key)
-    }
   } else {
     if (is.null(.name)) {
       stop("Table name is required")
     }
 
+    ts <- .output |> dplyr::tibble()
     tb_name <- paste0(prefix, .name, suffix)
 
     DBI::dbWriteTable(
       conn = db_conn,
       name = tb_name,
-      value = .output |> dplyr::tibble(),
+      value = ts,
       ...,
       row.names = F
     )
 
-    if (.add_table_ref) {
-      add_stat_table_ref(db_conn, .references, table_ids, append = T, .add_primary_key = .add_primary_key)
-      add_score_card_ref(db_conn, .references, append = T, .add_primary_key = .add_primary_key)
-    }
+    add_id_column(tb_name, "survey_round" %in% names(ts))
 
-    if (.add_primary_key) {
-      DBI::dbSendQuery(
-        db_conn,
-        paste0("ALTER TABLE ", tb_name, " ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;")
-      )
-    }
   }
 
-  suppressWarnings(DBI::dbDisconnect(db_conn))
+  suppressWarnings(DBI::dbDisconnect(db_conn, shutdown = T))
 }
 
 
@@ -120,12 +123,12 @@ db_migrate <- function(
 db_connect <- function(
   .config = getOption("rcbms.config"),
   .db_name = NULL,
-  .local_infile = FALSE,
   ...
 ) {
 
   env <- .config$env
   stage <- .config$portal$stage
+  local_infile <- .config$portal$db_migration$local_infile
 
   if (is.null(env)) stop("Environment variable not provided.")
   if (!(stage %in% c("dev", "qa", "test", "prod", ""))) stage <- "dev"
@@ -150,7 +153,7 @@ db_connect <- function(
     ...
   )
 
-  if (.local_infile) {
+  if (local_infile) {
     DBI::dbSendQuery(db_connection, "SET GLOBAL local_infile = true;")
   }
 
@@ -161,75 +164,89 @@ db_connect <- function(
 
 #' Title
 #'
-#' @param .conn
-#' @param .references
-#' @param .table_ids
-#' @param ...
-#' @param .add_primary_key
+#' @param refs
 #'
 #' @return
 #' @export
 #'
 #' @examples
-add_stat_table_ref <- function(.conn, .references, .table_ids, ..., .add_primary_key = T) {
-  if (!is.null(.references$macrodata)) {
-    stat_tables <- .references$macrodata |>
-      dplyr::collect() |>
-      dplyr::filter(table_name %in% .table_ids) |>
-      dplyr::distinct(table_name, category, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
-      dplyr::mutate(meta = jsonlite::toJSON(meta, pretty = T)) |>
-      dplyr::tibble()
+#'
+db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card"), ...) {
 
-    DBI::dbWriteTable(
-      conn = .conn,
-      name = "stat_tables",
-      value = stat_tables,
-      ...,
-      row.names = F
-    )
+  conn <- db_connect()
 
-    if (.add_primary_key) {
-      DBI::dbSendQuery(
-        .conn,
-        "ALTER TABLE stat_tables ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;"
-      )
-    }
+  for(i in seq_along(refs)) {
+    db_migrate_ref(conn, refs[i], ...)
   }
+
+  anm <- tidy_area_name(load_references("anm"), .add_length = 0) |>
+    tibble::tibble()
+
+  DBI::dbWriteTable(
+    conn = conn,
+    name = "area_names",
+    value = anm,
+    ...,
+    row.names = F
+  )
+
+  suppressWarnings(DBI::dbDisconnect(conn, shutdown = T))
 }
 
-#' Title
-#'
-#' @param .conn
-#' @param .references
-#' @param ...
-#' @param .add_primary_key
-#'
-#' @return
-#' @export
-#'
-#' @examples
-add_score_card_ref <- function(.conn, .references, ..., .add_primary_key = T) {
-  if (!is.null(.references$score_card)) {
-    score_cards <- .references$score_card |>
-      dplyr::collect() |>
-      dplyr::distinct(variable_name, category, .keep_all = T) |>
-      dplyr::select(-dplyr::any_of(c("input_data", "survey_round"))) |>
-      dplyr::tibble()
 
-    DBI::dbWriteTable(
-      conn = .conn,
-      name = "score_cards",
-      value = score_cards,
-      ...,
-      row.names = F
-    )
+db_migrate_ref <- function(.conn, .ref, ...) {
 
-    if (.add_primary_key) {
-      DBI::dbSendQuery(
-        .conn,
-        "ALTER TABLE score_cards ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;"
+  gid <- gid_references() |>
+    dplyr::filter(ref == .ref) |>
+    dplyr::pull(gid)
+
+  load_reference_fn <- eval(as.name(paste0("load_", .ref, "_refs")))
+
+  if(.ref == "data_dictionary") {
+    ref_df <- invisible(load_reference_fn(gid[1], FALSE))
+    table_name <- .ref
+
+    ref_df <- ref_df |>
+      dplyr::filter(is_included == 1) |>
+      dplyr::select(
+        survey_round,
+        input_data,
+        variable_name = variable_name_new,
+        item,
+        sub_item,
+        label,
+        valueset,
+        type,
+        length,
+        privacy_level
       )
+
+  } else {
+    ref_df <- invisible(load_reference_fn(gid[1]))
+    if(.ref == "macrodata") {
+      table_name <- "stat_tables"
+      ref_df <- ref_df |>
+        dplyr::mutate(meta = jsonlite::toJSON(meta))
+    } else if(.ref == "score_card") {
+      table_name <- "score_cards"
     }
   }
+
+  DBI::dbWriteTable(
+    conn = .conn,
+    name = table_name,
+    value = ref_df,
+    ...,
+    row.names = F
+  )
+
+  if(.ref == "data_dictionary") {
+    DBI::dbExecute(
+      conn = .conn,
+      "ALTER TABLE data_dictionary MODIFY survey_round YEAR;"
+    )
+  }
+
+  # return(ref_df)
+
 }

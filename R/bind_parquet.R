@@ -67,8 +67,6 @@ bind_parquet <- function(
   bind_rows(df) |>
     add_metadata(
       .dictionary = .references$data_dictionary,
-      .valueset = .references$valueset,
-      .survey_round = .config$survey_round,
-      .input_data = .input_data
+      .valueset = .references$valueset
     )
 }

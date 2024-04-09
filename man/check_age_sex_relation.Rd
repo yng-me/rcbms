@@ -13,7 +13,7 @@ check_age_sex_relation(
   .condition = "<",
   .conjuction = NULL,
   .relation_to_hh_head_var = NULL,
-  .config = getOption("rcbms.config")
+  .config
 )
 }
 \arguments{

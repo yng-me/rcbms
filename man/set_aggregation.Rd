@@ -4,14 +4,7 @@
 \alias{set_aggregation}
 \title{Title}
 \usage{
-set_aggregation(
-  ...,
-  .parquet = get_config("parquet"),
-  .references = get_config("references"),
-  .config = getOption("rcbms.config"),
-  .update_config = TRUE,
-  .config_key = "aggregation"
-)
+set_aggregation(.parquet, .area_name, .config)
 }
 \arguments{
 \item{.config}{}

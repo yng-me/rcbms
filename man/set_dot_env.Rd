@@ -4,10 +4,10 @@
 \alias{set_dot_env}
 \title{Read Environment Variable}
 \usage{
-set_dot_env(.path)
+set_dot_env(.env_path)
 }
 \arguments{
-\item{.path}{}
+\item{.env_path}{}
 }
 \value{
 List of environment variables defined

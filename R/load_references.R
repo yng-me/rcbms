@@ -202,14 +202,14 @@ load_refs_from_gsheet <- function(.gid, .required_cols, ..., .sheet_name = NULL,
 
 #' Load data dictionary references
 #'
+#' @param .transform
 #' @param .gid
-#' @param .survey_round
 #'
 #' @return
 #' @export
 #'
 #' @examples
-load_data_dictionary_refs <- function(.gid) {
+load_data_dictionary_refs <- function(.gid, .transform = T) {
   required_cols <- c(
     "variable_name",
     "variable_name_new",
@@ -228,7 +228,11 @@ load_data_dictionary_refs <- function(.gid) {
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciiiii') |>
     dplyr::filter(!is.na(variable_name))
 
-  transform_refs(df)
+  if(.transform) {
+    df <- transform_refs(df)
+  }
+
+  return(df)
 
 }
 
@@ -369,7 +373,8 @@ load_macrodata_refs <- function(.gid) {
     "category",
     "title",
     "subtitle",
-    "description"
+    "description",
+    "status"
   )
 
   meta <- load_refs_from_gsheet(
@@ -384,21 +389,28 @@ load_macrodata_refs <- function(.gid) {
     col_types = "ccci"
   )
 
-  meta_all <- meta |>dplyr::filter(type == 0)
-  meta_unique <- meta |> dplyr::filter(type == 1)
+  meta_all <- meta |>
+    dplyr::filter(type == 0) |>
+    dplyr::select(-type)
+
+  meta_unique <- meta |>
+    dplyr::filter(type == 1) |>
+    dplyr::select(-type)
+
   table_names <- meta_unique$table_name
   for(i in seq_along(table_names)) {
     meta <- meta_all |>
       dplyr::mutate(table_name = table_names[i])
-
     meta_unique <- dplyr::bind_rows(meta, meta_unique)
   }
 
   meta_unique <- meta_unique |>
     dplyr::distinct(table_name, variable_name, .keep_all = T)
 
-  load_refs_from_gsheet(.gid, required_cols, col_types = "ccccc") |>
-    dplyr::right_join(meta_unique, by = 'table_name') |>
+  load_refs_from_gsheet(.gid, required_cols, col_types = "ccccci") |>
+    dplyr::filter(status == 1) |>
+    dplyr::select(-status) |>
+    dplyr::left_join(meta_unique, by = 'table_name') |>
     dplyr::group_by(table_name, category, title, subtitle, description) |>
     tidyr::nest(.key = 'meta')
 }
@@ -446,7 +458,7 @@ load_score_card_refs <- function(.gid) {
 #' Load record references
 #'
 #' @param .gid
-#'
+#
 #' @return
 #' @export
 #'

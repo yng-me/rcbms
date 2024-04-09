@@ -6,14 +6,14 @@
 \usage{
 db_migrate(
   .output,
+  .references,
   ...,
+  .config = getOption("rcbms.config"),
   .name = NULL,
   .prefix = "",
   .suffix = "",
   .add_primary_key = TRUE,
-  .add_table_ref = FALSE,
-  .references = get_config("references"),
-  .config = getOption("rcbms.config")
+  .add_table_ref = FALSE
 )
 }
 \arguments{
