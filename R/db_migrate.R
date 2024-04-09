@@ -47,7 +47,7 @@ db_migrate <- function(
         db_conn,
         paste0(
           "ALTER TABLE ",
-          .ts_name,
+          .tb_name,
           " ADD COLUMN `id` int(10) unsigned PRIMARY KEY AUTO_INCREMENT FIRST;"
         )
       )
