@@ -42,8 +42,9 @@ db_migrate <- function(
   if (is.null(tb_overwrite)) tb_overwrite <- FALSE
 
   add_id_column <- function(.tb_name, .with_survey_round_col = F) {
+
     if(.add_primary_key) {
-      DBI::dbSendQuery(
+      DBI::dbExecute(
         db_conn,
         paste0(
           "ALTER TABLE ",
@@ -171,7 +172,7 @@ db_connect <- function(
 #'
 #' @examples
 #'
-db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card"), ...) {
+db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card"), table_names, ..., .include_area_names = T) {
 
   conn <- db_connect()
 
@@ -179,16 +180,18 @@ db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card
     db_migrate_ref(conn, refs[i], ...)
   }
 
-  anm <- tidy_area_name(load_references("anm"), .add_length = 0) |>
-    tibble::tibble()
+  if(.include_area_names) {
+    anm <- tidy_area_name(load_references("anm"), .add_length = 0) |>
+      tibble::tibble()
 
-  DBI::dbWriteTable(
-    conn = conn,
-    name = "area_names",
-    value = anm,
-    ...,
-    row.names = F
-  )
+    DBI::dbWriteTable(
+      conn = conn,
+      name = "area_names",
+      value = anm,
+      ...,
+      row.names = F
+    )
+  }
 
   suppressWarnings(DBI::dbDisconnect(conn, shutdown = T))
 }
@@ -203,7 +206,7 @@ db_migrate_ref <- function(.conn, .ref, ...) {
   load_reference_fn <- eval(as.name(paste0("load_", .ref, "_refs")))
 
   if(.ref == "data_dictionary") {
-    ref_df <- invisible(load_reference_fn(gid[1], FALSE))
+    ref_df <- load_reference_fn(gid[1], FALSE)
     table_name <- .ref
 
     ref_df <- ref_df |>
@@ -222,11 +225,15 @@ db_migrate_ref <- function(.conn, .ref, ...) {
       )
 
   } else {
-    ref_df <- invisible(load_reference_fn(gid[1]))
+    ref_df <- load_reference_fn(gid[1])
+
     if(.ref == "macrodata") {
+
       table_name <- "stat_tables"
       ref_df <- ref_df |>
+        dplyr::filter(table_name %in% table_names) |>
         dplyr::mutate(meta = jsonlite::toJSON(meta))
+
     } else if(.ref == "score_card") {
       table_name <- "score_cards"
     }
@@ -246,7 +253,5 @@ db_migrate_ref <- function(.conn, .ref, ...) {
       "ALTER TABLE data_dictionary MODIFY survey_round YEAR;"
     )
   }
-
-  # return(ref_df)
 
 }
