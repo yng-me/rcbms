@@ -172,12 +172,16 @@ db_connect <- function(
 #'
 #' @examples
 #'
-db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card"), table_names, ..., .include_area_names = T) {
+db_migrate_refs <- function(
+    refs = c("data_dictionary", "macrodata", "score_card"), ...,
+    .table_names = NULL,
+    .include_area_names = T
+  ) {
 
   conn <- db_connect()
 
   for(i in seq_along(refs)) {
-    db_migrate_ref(conn, refs[i], ...)
+    db_migrate_ref(conn, refs[i], ..., .table_names = .table_names)
   }
 
   if(.include_area_names) {
@@ -197,7 +201,7 @@ db_migrate_refs <- function(refs = c("data_dictionary", "macrodata", "score_card
 }
 
 
-db_migrate_ref <- function(.conn, .ref, ...) {
+db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
 
   gid <- gid_references() |>
     dplyr::filter(ref == .ref) |>
@@ -231,8 +235,12 @@ db_migrate_ref <- function(.conn, .ref, ...) {
 
       table_name <- "stat_tables"
       ref_df <- ref_df |>
-        dplyr::filter(table_name %in% table_names) |>
         dplyr::mutate(meta = jsonlite::toJSON(meta))
+
+      if(!is.null(.table_names)) {
+        ref_df <- ref_df |>
+          dplyr::filter(table_name %in% .table_names)
+      }
 
     } else if(.ref == "score_card") {
       table_name <- "score_cards"
