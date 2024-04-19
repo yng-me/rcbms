@@ -20,7 +20,7 @@ tidy_geojson <- function(
     paste0(tolower(stringr::str_sub(y, 1, 1)), stringr::str_sub(y, 2, -1))
   }
 
-  geo_path <- paste0(.path, .subfolders)
+  geo_path <- file.path(.path, .subfolders)
   geo_json_files <- list.files(geo_path, full.names = T, pattern = "\\.json$")
 
   geo_json_list <- list()

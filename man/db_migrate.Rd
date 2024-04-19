@@ -6,18 +6,16 @@
 \usage{
 db_migrate(
   .output,
-  .references,
   ...,
   .config = getOption("rcbms.config"),
   .name = NULL,
   .prefix = "",
   .suffix = "",
-  .add_primary_key = TRUE,
-  .add_table_ref = FALSE
+  .add_primary_key = TRUE
 )
 }
 \arguments{
-\item{.config}{}
+\item{.add_primary_key}{}
 }
 \description{
 Title

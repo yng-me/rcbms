@@ -8,6 +8,8 @@
 #' @export
 #'
 #' @examples
+#'
+
 get_script_files <- function(.input_data, .section = NULL, .config = getOption("rcbms.config")) {
   script_files <- list.files(
     join_path(.config$base, "scripts", .config$mode$type, .input_data),
@@ -19,12 +21,18 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     return(NULL)
   }
 
-  if(.config$mode$edit == 0) {
+  if(.config$mode$edit == 0 | .config$mode$edit == 4) {
+
+    if(.config$mode$edit == 4) {
+      grepl_file <- "^__[initial|signature]"
+    } else if (.config$mode$edit == 0) {
+      grepl_file <- "^__[initial|preliminary]"
+    }
 
     script_files <- script_files |>
       dplyr::as_tibble() |>
       dplyr::mutate(title = stringr::str_remove(basename(tolower(value)), '\\.(r|R)$')) |>
-      dplyr::filter(grepl('^__[initial|preliminary]', title)) |>
+      dplyr::filter(grepl(grepl_file, title)) |>
       dplyr::mutate(order = seq(1:dplyr::n())) |>
       dplyr::mutate(order = dplyr::if_else(grepl('__', value), 0L, order)) |>
       dplyr::transmute(

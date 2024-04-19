@@ -32,10 +32,19 @@ validation:
   generate_output: false
   detailed_output: false
   include_additional_info: false
-  validate_signatures: false
   add_uuid: true
   save_as_excel: false
   save_as_json: true
+  signature:
+    ink_threshold: 375
+    img_threshold: 100000
+    path: ~
+    valid:
+      path: ~
+      action: ~
+    invalid:
+      path: ~
+      action: ~
 tabulation: ~
 portal:
   stage: dev

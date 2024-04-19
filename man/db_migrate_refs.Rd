@@ -4,7 +4,12 @@
 \alias{db_migrate_refs}
 \title{Title}
 \usage{
-db_migrate_refs(refs = c("data_dictionary", "macrodata", "score_card"))
+db_migrate_refs(
+  refs = c("data_dictionary", "macrodata", "score_card", ""),
+  ...,
+  .table_names = NULL,
+  .include_area_names = T
+)
 }
 \arguments{
 \item{refs}{}

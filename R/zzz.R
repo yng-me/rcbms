@@ -133,7 +133,20 @@ utils::globalVariables(
         validate_signatures = FALSE,
         add_uuid = TRUE,
         save_as_excel = FALSE,
-        save_as_json = TRUE
+        save_as_json = TRUE,
+        signature = list(
+          ink_threshold = 375,
+          img_threshold = 100000,
+          path = NULL,
+          valid = list(
+            path = NULL,
+            action = NULL
+          ),
+          invalid = list(
+            path = NULL,
+            action = NULL
+          )
+        )
       ),
       tabulation = list(
         generate_output = FALSE

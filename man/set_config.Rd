@@ -12,9 +12,13 @@ set_config(
 )
 }
 \arguments{
-\item{.include_env}{Include \code{.env} file. Default is \code{TRUE}. This will be switched to \code{FALSE} if the \code{.env} file is not present. The default location is \code{"./configs/.env"}.}
+\item{.config_dir}{Path to directory containing valid configuration files. Default config files will be generated if the directory specified does not exist.}
 
-\item{.config_file}{Path to config file. Default is \code{"./configs/global.yml"}. If the file is not present, a default config file will be generated.}
+\item{.survey_round}{Survey round which points to the \code{src} folder of your project directory.}
+
+\item{.input_data}{Input data which, by default, points to the \code{src} > \code{data} folder of your project directory.}
+
+\item{.include_env}{Include \code{.env} file. Default is \code{TRUE}. This will be switched to \code{FALSE} if the \code{.env} file is not present. The default location is \code{"./configs/.env"}.}
 }
 \value{
 A list of configuration settings use to execute the script.
