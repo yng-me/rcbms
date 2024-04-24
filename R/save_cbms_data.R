@@ -10,17 +10,18 @@ save_cbms_data <- function(
   .summary_record = NULL
 ) {
 
-  uid <- "case_id"
-  if (.input_data == "bp") uid <- "barangay_geo"
+  proj <- .config$project[[.input_data]]
+  uid <- proj$id
 
   geo_cols_name <- c("region", "province", "city_mun", "barangay")
   geo_cols <- paste0(geo_cols_name, "_code")
   sn_cols <- c("ean", "bsn", "husn", "hsn", "line_number")
 
-  rov_var <- .config$project[[.input_data]]$variable$result_of_visit
-  unfiltered_records <- .config$project[[.input_data]]$unfiltered_records
+  rov_var <- proj$variable$result_of_visit
+  unfiltered_records <- proj$unfiltered_records
 
   dcf <- .references$data_dictionary[[.config$survey_round]][[.input_data]]
+
   if(tolower(.config$mode$stage[1]) > 3) {
     dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
   }
@@ -57,6 +58,7 @@ save_cbms_data <- function(
   if(.is_first_record) {
 
     df_temp <- df_temp |>
+      dplyr::select(-dplyr::any_of(geo_cols_name)) |>
       create_case_id(.input_data = .input_data) |>
       create_barangay_geo() |>
       dplyr::select(
@@ -80,42 +82,51 @@ save_cbms_data <- function(
       }
 
       df_temp <- df_temp |>
+        dplyr::select(-dplyr::any_of(geo_cols_name)) |>
         create_case_id(.input_data = .input_data) |>
         dplyr::left_join(summary_record_only, by = uid)
+
     }
 
     if(.config$complete_cases & !(.p_name %in% unfiltered_records)) {
 
-      if(rov_var %in% names(df_temp)) {
-        df_temp <- df_temp |>
-          dplyr::filter(!!as.name(rov_var) == 1)
-      }
+      if(!is.null(rov_var) & .config$mode$type != 'validation' & !is.null(proj$result_of_visit_value)) {
 
-      if ("hsn" %in% names(df_temp)) {
-        df_temp <- df_temp |>
-          dplyr::filter(
-            as.integer(hsn) < as.integer(
-              paste(rep(7, 4 + .config$project$add_length), collapse = "")
+        if(rov_var %in% names(df_temp)) {
+          df_temp <- df_temp |>
+            dplyr::filter(tolower(as.character(!!as.name(rov_var))) == tolower(as.character(proj$result_of_visit_value)))
+        }
+
+        if ("hsn" %in% names(df_temp)) {
+          df_temp <- df_temp |>
+            dplyr::filter(
+              as.integer(hsn) < as.integer(
+                paste(rep(7, 4 + .config$project$add_length), collapse = "")
+              )
             )
-          )
+        }
       }
     }
   }
 
+  if('barangay_geo' %in% names(df_temp)) {
+
+    df_temp <- df_temp |>
+      dplyr::left_join(
+        transform_area_name(.references$area_name, .config$project$add_length) |>
+          dplyr::select(
+            barangay_geo,
+            dplyr::any_of(c(geo_cols_name, 'is_huc', '2020_popn', 'class'))
+          ),
+        by = "barangay_geo"
+      )
+
   df_temp <- df_temp |>
-    dplyr::left_join(
-      transform_area_name(.references$area_name, .config$project$add_length) |>
-        dplyr::select(
-          barangay_geo,
-          dplyr::any_of(c(geo_cols_name, 'is_huc', '2020_popn', 'class'))
-        ),
-      by = "barangay_geo"
-    ) |>
     dplyr::select(
-      dplyr::any_of(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age")),
+      dplyr::any_of(unique(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age"))),
       sort(names(df_temp))
     )
-
+  }
 
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
@@ -154,7 +165,11 @@ save_cbms_data <- function(
       tibble::tibble()
 
     key_pub <- .config$env$PQ_KEY_PUB
-    q_to_pq <- paste0("COPY df_temp TO '", .pq_path , "' (ENCRYPTION_CONFIG {footer_key: '", key_pub, "'});")
+    q_to_pq <- paste0(
+      "COPY df_temp TO '",
+      .pq_path ,
+      "' (ENCRYPTION_CONFIG {footer_key: '", key_pub, "'});"
+    )
 
     DBI::dbWriteTable(.conn, name = "df_temp", value = df_temp, overwrite = T)
     DBI::dbExecute(.conn, q_to_pq)

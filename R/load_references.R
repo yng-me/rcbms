@@ -226,7 +226,8 @@ load_data_dictionary_refs <- function(.gid, .transform = T) {
   )
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciiiii') |>
-    dplyr::filter(!is.na(variable_name))
+    dplyr::filter(!is.na(variable_name)) |>
+    dplyr::mutate(valueset = dplyr::if_else(is.na(valueset), '--', valueset))
 
   if(.transform) {
     df <- transform_refs(df)

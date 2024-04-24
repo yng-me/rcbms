@@ -15,7 +15,7 @@ add_metadata <- function(.data, .dictionary, .valueset) {
 
   validate_required_cols(
     .dictionary,
-    c("variable_name", "variable_name_new", "valueset", "label")
+    c("variable_name", "variable_name_new", "label")
   )
 
   validate_required_cols(.valueset, c('name', 'value', 'label'))
@@ -32,7 +32,7 @@ add_metadata <- function(.data, .dictionary, .valueset) {
         stringr::str_trim(variable_name_new)
       )
     ) |>
-    dplyr::select(variable, label, valueset, dplyr::any_of(c('item', 'sub_item')), type) |>
+    dplyr::select(variable, label, dplyr::any_of(c('valueset', 'item', 'sub_item')), type) |>
     dplyr::distinct(.keep_all = T) |>
     dplyr::filter(variable %in% df_name, !is.na(label))
 

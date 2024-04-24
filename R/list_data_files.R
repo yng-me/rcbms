@@ -79,19 +79,28 @@ list_data_files <- function(.input_data, .references, .config) {
     ) |>
     dplyr::arrange(n)
 
-  selected_records <- .references$section[[.config$survey_round]][[.input_data]] |>
-    dplyr::filter(included) |>
-    dplyr::pull(validation.record) |>
-    unlist() |>
-    unique() |>
-    tolower() |>
-    stringr::str_trim()
+  selected_records <- .references$section[[.config$survey_round]][[.input_data]]
 
-  ref_records <- .references$record[[.config$survey_round]][[.input_data]] |>
-    dplyr::filter(type > 0) |>
-    dplyr::pull(record_name) |>
-    tolower() |>
-    stringr::str_trim()
+  if(!is.null(selected_records)) {
+
+    selected_records <- selected_records |>
+      dplyr::filter(included) |>
+      dplyr::pull(validation.record) |>
+      unlist() |>
+      unique() |>
+      tolower() |>
+      stringr::str_trim()
+  }
+
+  ref_records <- .references$record[[.config$survey_round]][[.input_data]]
+
+  if(!is.null(ref_records)) {
+    ref_records <- ref_records |>
+      dplyr::filter(type > 0) |>
+      dplyr::pull(record_name) |>
+      tolower() |>
+      stringr::str_trim()
+  }
 
   records_filter <- unique(c(selected_records, ref_records))
 

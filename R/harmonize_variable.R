@@ -17,7 +17,7 @@ harmonize_variable <- function(.data, .input_data, .survey_round, .dictionary, .
 
   validate_required_cols(
     .dictionary,
-    c('variable_name', 'variable_name_new', 'valueset', 'label')
+    c('variable_name', 'variable_name_new', 'label')
   )
 
   .dictionary <- .dictionary |>
@@ -143,8 +143,12 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
   from_dcf <- .dictionary$variable_name
   from_data_without_dcf <- setdiff(names(.data), from_dcf)
 
+  if(is.null(.config$warning)) {
+    .config$warning <- FALSE
+  }
+
   if (length(from_data_without_dcf) > 0) {
-    if (.config$verbose) {
+    if (.config$verbose & .config$warning) {
       cli::cli_alert(
         cli::col_br_red("No matching data dictionary entries and will be coerced as character type:")
       )
