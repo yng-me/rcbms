@@ -51,6 +51,7 @@ check_duplicate_code <- function(
   .var,
   .response_code,
   ...,
+  .included_cols = NULL,
   .config = getOption("rcbms.config")
 ) {
 
@@ -60,13 +61,14 @@ check_duplicate_code <- function(
   if(is.null(stringify_info)) stringify_info <- TRUE
 
   .data <- .data |>
-    dplyr::filter({{.var}} == .response_code, ...) |>
+    dplyr::filter({{.var}} %in% .response_code) |>
     dplyr::select(
       case_id,
-      dplyr::any_of(c("line_number", line_number_var)),
+      ...,
+      dplyr::any_of(c("line_number", line_number_var, .included_cols)),
       {{.var}}
     ) |>
-    dplyr::add_count(case_id) |>
+    dplyr::add_count(case_id, ...) |>
     dplyr::filter(n > 1) |>
     dplyr::select(-n) |>
     dplyr::group_by(case_id) |>
@@ -83,5 +85,4 @@ check_duplicate_code <- function(
     .data |>
       select_cv(data)
   }
-
 }

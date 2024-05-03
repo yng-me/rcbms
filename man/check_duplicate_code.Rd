@@ -9,6 +9,7 @@ check_duplicate_code(
   .var,
   .response_code,
   ...,
+  .included_cols = NULL,
   .config = getOption("rcbms.config")
 )
 }
