@@ -179,6 +179,7 @@ fetch_gsheet <- function(.gid, ..., .sheet_name = NULL, .range = NULL) {
 
 validate_required_cols <- function(.data, .required_cols) {
 
+  print(names(.data))
   required_cols_which <- which(.required_cols %in% names(.data))
 
   if (length(required_cols_which) < length(.required_cols)) {
@@ -286,11 +287,39 @@ load_area_name_refs <- function(.gid) {
 #'
 #' @examples
 load_valueset_refs <- function(.gid) {
-  load_refs_from_gsheet(
-    .gid,
-    c('name', 'value', 'label'),
+
+  googlesheets4::gs4_deauth()
+  cols <- c('name', 'value', 'label')
+
+  psced <- load_refs_from_gsheet(
+    'qcYa2Xlp7ASqAy0_mWK7PlLBKnWCe_Li1Znujv5B5e0',
+    cols,
     col_types = 'ccc'
   )
+
+  psic <-  load_refs_from_gsheet(
+    'hV1MMqMiUx2_ApgeepaQq1KhR6hcFrwXhqjqF4h0gEk',
+    cols,
+    col_types = 'ccc'
+  )
+
+  psoc <- load_refs_from_gsheet(
+    'eA8iQT-20pMs8UXKUZBw1IGIAoLeFaHfh5DOT7eJgYo',
+    cols,
+    col_types = 'ccc'
+  )
+
+  load_refs_from_gsheet(.gid, cols, col_types = 'ccc') |>
+    dplyr::bind_rows(psced) |>
+    dplyr::bind_rows(psic) |>
+    dplyr::bind_rows(psoc) |>
+    dplyr::filter(!is.na(name), !is.na(value), !is.na(label)) |>
+    dplyr::mutate(
+      name = stringr::str_squish(stringr::str_trim(name)),
+      value = stringr::str_squish(stringr::str_trim(value)),
+      label = stringr::str_squish(stringr::str_trim(label))
+    ) |>
+    dplyr::distinct(name, value, label)
 }
 
 
@@ -452,7 +481,7 @@ load_score_card_refs <- function(.gid) {
     .gid,
     required_cols,
     col_types = "ccicccciiiiccccccci"
-  )
+  ) |> dplyr::filter(is_published == 1)
 }
 
 
@@ -506,6 +535,30 @@ load_record_refs <- function(.gid) {
   )
 }
 
+load_mpi_spec_refs <- function(.gid) {
+
+  df <- list()
+
+  sheets <- c('cbms', 'interim', 'balisacan')
+  for(i in seq_along(sheets)) {
+
+    df[[sheets[i]]] <- load_refs_from_gsheet(
+      .gid,
+      .required_cols = c(
+        "Dimension",
+        "Indicator",
+        "Variable",
+        "Weight",
+        "Description"
+      ),
+      col_types = "cccdc",
+      .sheet_name = sheets[i],
+    )
+  }
+
+  df
+
+}
 
 
 #' Load record references
@@ -615,6 +668,7 @@ gid_references <- function(.wd = NULL) {
       "section",
       "macrodata",
       "score_card"
+      # "mpi_spec"
     ),
     ref_short = c(
       "anm",
@@ -626,6 +680,7 @@ gid_references <- function(.wd = NULL) {
       "sec",
       "macro",
       "sc"
+      # "mpi"
     ),
     type = c("parquet", rep("json", 8)),
     gid = c(
@@ -638,6 +693,7 @@ gid_references <- function(.wd = NULL) {
       "oRBIz5Q0h-wkkrSk2JVdTU5oJINZQTwq4Liti2b1rn0",
       "XC0f3hiCbbd2THEm0cxwR9pI6Eexw-qn_LTm4QmePNg",
       "MohdYBGbYYLVWoL1zmKxAW5i0XNXq-CMsVYDsybQ5G0"
+      # "7Ut5Pc1cyh26Yf7eMzKXorLmx0K3OGURMg6z18gH2T8"
     )
   ) |> dplyr::mutate(filename = file.path(wd_base_ref, paste0("ref_", ref, ".", type)))
 }

@@ -5,10 +5,10 @@
 \title{Title}
 \usage{
 db_migrate_refs(
-  refs = c("data_dictionary", "macrodata", "score_card", ""),
+  refs = c("data_dictionary", "macrodata", "score_card"),
   ...,
   .table_names = NULL,
-  .include_area_names = T
+  .include_area_names = F
 )
 }
 \arguments{

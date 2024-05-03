@@ -173,9 +173,9 @@ db_connect <- function(
 #' @examples
 #'
 db_migrate_refs <- function(
-    refs = c("data_dictionary", "macrodata", "score_card", ""), ...,
+    refs = c("data_dictionary", "macrodata", "score_card"), ...,
     .table_names = NULL,
-    .include_area_names = T
+    .include_area_names = F
   ) {
 
   conn <- db_connect()
@@ -214,7 +214,7 @@ db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
     table_name <- .ref
 
     ref_df <- ref_df |>
-      dplyr::filter(is_included == 1) |>
+      dplyr::filter(is_included == 1, input_data %in% c('hp', 'bp')) |>
       dplyr::select(
         survey_round,
         input_data,

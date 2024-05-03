@@ -105,7 +105,8 @@ utils::globalVariables(
         macrodata = FALSE,
         score_card = FALSE,
         record = FALSE,
-        section = FALSE
+        section = FALSE,
+        mpi_spec = FALSE
       ),
       check_if_online = TRUE,
       complete_cases = TRUE,
@@ -134,6 +135,7 @@ utils::globalVariables(
         add_uuid = TRUE,
         save_as_excel = FALSE,
         save_as_json = TRUE,
+        stringify_info = TRUE,
         signature = list(
           ink_threshold = 375,
           img_threshold = 100000,
