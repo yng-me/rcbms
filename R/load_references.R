@@ -179,7 +179,6 @@ fetch_gsheet <- function(.gid, ..., .sheet_name = NULL, .range = NULL) {
 
 validate_required_cols <- function(.data, .required_cols) {
 
-  print(names(.data))
   required_cols_which <- which(.required_cols %in% names(.data))
 
   if (length(required_cols_which) < length(.required_cols)) {

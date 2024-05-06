@@ -96,7 +96,7 @@ list_data_files <- function(.input_data, .references, .config) {
 
   if(!is.null(ref_records)) {
     ref_records <- ref_records |>
-      dplyr::filter(type > 0) |>
+      dplyr::filter(type > 0 | include == 1) |>
       dplyr::pull(record_name) |>
       tolower() |>
       stringr::str_trim()
