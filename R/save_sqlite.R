@@ -44,17 +44,16 @@ create_remarks_table <- function(.conn, .tables) {
 }
 
 save_current_logs <- function(
-    .conn,
-    .data,
-    .input_data,
-    .tables,
-    .references,
-    .config) {
+  .conn,
+  .data,
+  .input_data,
+  .tables,
+  .references,
+  .config
+) {
   created_date <- lubridate::now()
 
-  if (!exists("current_area_code")) {
-    current_area_code <- ""
-  }
+  current_area_code <- .config$aggregation$areas[1]
 
   if (!("logs" %in% .tables)) {
     DBI::dbExecute(
