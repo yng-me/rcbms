@@ -87,6 +87,12 @@ set_config <- function(
     config_final$input_data <- .input_data
   }
 
+  if(config_final$mode$type == 'cv') {
+    config_final$mode$type <- 'validation'
+  } else if(config_final$mode$type == 'ts') {
+    config_final$mode$type <- 'tabulation'
+  }
+
   return(invisible(set_class(config_final, "rcbms_config")))
 
 }

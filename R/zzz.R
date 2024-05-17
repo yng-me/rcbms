@@ -124,7 +124,7 @@ utils::globalVariables(
         station = "co"
       ),
       aggregation = list(
-        level = 1,
+        level = 4,
         areas = "all"
       ),
       validation = list(
