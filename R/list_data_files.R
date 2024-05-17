@@ -20,7 +20,7 @@ list_data_files <- function(.input_data, .references, .config) {
 
   if(!convert_to_parquet) df_input_folder <- "parquet"
 
-  if (!is.null(.config$project[[.input_data]]$directory)) {
+  if (!is.null(.config$project[[.input_data]]$directory) & convert_to_parquet) {
     input_data_path <- .config$project[[.input_data]]$directory
   } else {
     input_data_path <- get_data_path(df_input_folder, .input_data, .config)

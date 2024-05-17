@@ -74,9 +74,15 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     }
 
     if(!is.null(.section) & length(selected_scripts) > 0) {
+      
+      start_files_grep <- 'initial'
+      if(.config$mode$stage == 1) {
+        start_files_grep <- 'initial|preliminary'
+      }
+
       script_files <- script_files |>
         dplyr::mutate(name = stringr::str_remove_all(basename(file), '\\.R$')) |>
-        dplyr::filter(name %in% selected_scripts | grepl('initial', name)) |>
+        dplyr::filter(name %in% selected_scripts | grepl(start_files_grep, name)) |>
         dplyr::select(-name)
     }
 
