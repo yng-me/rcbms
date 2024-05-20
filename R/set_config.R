@@ -93,6 +93,10 @@ set_config <- function(
     config_final$mode$type <- 'tabulation'
   }
 
+  if(config_final$mode$type == 'portal') {
+    config_final$convert$parquet <- FALSE
+  }
+
   return(invisible(set_class(config_final, "rcbms_config")))
 
 }

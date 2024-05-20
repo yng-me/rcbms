@@ -179,7 +179,18 @@ save_cbms_data <- function(
       add_metadata(dcf, .references$valueset) |>
       create_case_id(.input_data = .input_data)
 
+    chunk <- .config$parquet$partition & !is.null(.config$parquet$partition_by)
+    with_cols <- .config$parquet$partition_by %in% names(df_temp)
+    with_cols <- length(with_cols[with_cols]) == length(.config$parquet$partition_by)
+
+    if(chunk & with_cols) {
+
+      df_temp <- df_temp |>
+        group_by(!!as.name(.config$parquet$partition_by))
+    }
+
     arrow::write_parquet(df_temp, .pq_path)
+
   }
 
   if (.config$verbose) {
