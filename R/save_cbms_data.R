@@ -186,7 +186,10 @@ save_cbms_data <- function(
     if(chunk & with_cols) {
 
       df_temp <- df_temp |>
-        group_by(!!as.name(.config$parquet$partition_by))
+        dplyr::group_by(dplyr::pick(dplyr::any_of(.config$parquet$partition_by)))
+
+      print(dplyr::group_vars(df_temp))
+
     }
 
     arrow::write_parquet(df_temp, .pq_path)
