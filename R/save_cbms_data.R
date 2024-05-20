@@ -192,7 +192,10 @@ save_cbms_data <- function(
 
     }
 
-    arrow::write_parquet(df_temp, .pq_path)
+    arrow::write_dataset(df_temp, .pq_path, format = 'parquet')
+
+    df_temp <- df_temp |>
+      dplyr::ungroup()
 
   }
 
