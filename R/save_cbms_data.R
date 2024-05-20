@@ -185,6 +185,7 @@ save_cbms_data <- function(
 
     if(chunk & with_cols) {
 
+      .pq_path <- stringr::str_remove(.pq_path, '\\.parquet$')
       df_temp <- df_temp |>
         dplyr::group_by(dplyr::pick(dplyr::any_of(.config$parquet$partition_by)))
 
