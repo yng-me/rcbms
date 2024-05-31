@@ -16,6 +16,7 @@ list_data_files <- function(.input_data, .references, .config) {
 
   file_format <- get_file_format(.config, .input_data)
   convert_to_parquet <- .config$parquet$convert
+  partition <- .config$parquet$partition
   df_input_folder <- "raw"
 
   if(!convert_to_parquet) df_input_folder <- "parquet"
@@ -35,31 +36,54 @@ list_data_files <- function(.input_data, .references, .config) {
   if (is.null(summary_record)) summary_record <- "~~~"
   if (is.na(summary_record)) summary_record <- "~~~"
 
+
   if(!convert_to_parquet) {
-    return(
-      list(
-        unique = list.files(input_data_path, pattern = "\\.parquet$", recursive = T) |>
+
+    if(partition) {
+
+      file_list <- list(
+        unique = list.files(input_data_path) |>
           dplyr::as_tibble() |>
-          dplyr::filter(grepl("\\.parquet$", value, ignore.case = T)) |>
-          dplyr::mutate(
-            value = stringr::str_remove_all(value, "__\\d{4}\\.parquet$")
-          ) |>
           dplyr::distinct(value, .keep_all = T) |>
           dplyr::mutate(
-            name = tolower(stringr::str_remove(basename(value), "\\.parquet$")),
+            name = tolower(basename(value)),
             n = seq(1:dplyr::n()),
             n = dplyr::if_else(grepl(paste0("^", summary_record), name), 0L, n)
           ) |>
           dplyr::arrange(n)
       )
-    )
+
+    } else {
+      file_list <- list(
+        unique = list.files(
+          input_data_path,
+          pattern = "\\.parquet$",
+          recursive = T
+        ) |>
+        dplyr::as_tibble() |>
+        dplyr::filter(grepl("\\.parquet$", value, ignore.case = T)) |>
+        dplyr::mutate(
+          value = stringr::str_remove_all(value, "__\\d{4}\\.parquet$")
+        ) |>
+        dplyr::distinct(value, .keep_all = T) |>
+        dplyr::mutate(
+          name = tolower(stringr::str_remove(basename(value), "\\.parquet$")),
+          n = seq(1:dplyr::n()),
+          n = dplyr::if_else(grepl(paste0("^", summary_record), name), 0L, n)
+        ) |>
+        dplyr::arrange(n)
+      )
+    }
+
+    return(file_list)
   }
 
   all_data_files <- list.files(
     input_data_path,
     pattern = file_format,
-    recursive = T,
-    full.names = T
+    recursive = !partition,
+    full.names = T,
+    include.dirs = partition
   ) |>
     dplyr::as_tibble() |>
     dplyr::filter(grepl(file_format, value, ignore.case = T)) |>

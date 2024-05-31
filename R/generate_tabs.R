@@ -16,16 +16,18 @@
 #'
 #' @examples
 generate_tabs <- function(
-    .data,
-    ...,
-    .agg_levels = NULL,
-    .total_by_cols = FALSE,
-    .keep_col_names = FALSE,
-    .multiple_response = FALSE,
-    .valueset = NULL,
-    .extract_name_position = 5,
-    .sort = TRUE,
-    .config = getOption("rcbms.config")) {
+  .data,
+  ...,
+  .agg_levels = NULL,
+  .total_by_cols = FALSE,
+  .keep_col_names = FALSE,
+  .multiple_response = FALSE,
+  .valueset = NULL,
+  .extract_name_position = 5,
+  .sort = TRUE,
+  .include_overall = FALSE,
+  .config = getOption("rcbms.config")
+) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
   if (is.null(.agg_levels)) {
@@ -40,6 +42,7 @@ generate_tabs <- function(
           .agg_levels = .agg_levels,
           .valueset = .valueset,
           .extract_name_position = .extract_name_position,
+          .include_overall = .include_overall,
           .config = .config
         )
     )
@@ -67,15 +70,17 @@ generate_tabs <- function(
       dplyr::mutate(level = as.integer(level_i))
   }
 
-  tbl_list[["overall"]] <- .data |>
-    dplyr::add_count(name = "total") |>
-    generate_tab(
-      .cols = cols,
-      .total_by_cols = .total_by_cols,
-      .sort = .sort
-    ) |>
-    factor_cols(...) |>
-    dplyr::mutate(area_code = "0", level = 0L)
+  if(.include_overall) {
+    tbl_list[["overall"]] <- .data |>
+      dplyr::add_count(name = "total") |>
+      generate_tab(
+        .cols = cols,
+        .total_by_cols = .total_by_cols,
+        .sort = .sort
+      ) |>
+      factor_cols(...) |>
+      dplyr::mutate(area_code = "0", level = 0L)
+  }
 
   tbl_list <- bind_rows(tbl_list)
 
@@ -101,7 +106,7 @@ generate_tabs <- function(
     }
   }
 
-  tbl_list |>
+  tbl <- tbl_list |>
     dplyr::mutate(
       area_code = stringr::str_pad(
         area_code,
@@ -119,6 +124,12 @@ generate_tabs <- function(
       dplyr::contains(c("x", "y")),
       dplyr::everything()
     )
+
+  if(!.include_overall) {
+    tbl <- tbl |> filter(level != 0)
+  }
+
+  return(tbl)
 }
 
 
@@ -147,7 +158,9 @@ generate_tab_multiple <- function(
     .agg_levels = NULL,
     .valueset = NULL,
     .extract_name_position = 5,
-    .config = getOption("rcbms.config")) {
+    .include_overall = FALSE,
+    .config = getOption("rcbms.config")
+) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 
   if (is.null(.agg_levels)) {
@@ -232,7 +245,7 @@ generate_tab_multiple <- function(
       dplyr::select(-c(value, name))
   }
 
-  tbl |>
+  tbl <- tbl |>
     dplyr::mutate(
       area_code = stringr::str_pad(
         area_code,
@@ -251,6 +264,12 @@ generate_tab_multiple <- function(
       dplyr::matches("_fct$"),
       everything()
     )
+
+  if(!.include_overall) {
+    tbl <- tbl |> filter(level != 0)
+  }
+
+  return(tbl)
 }
 
 

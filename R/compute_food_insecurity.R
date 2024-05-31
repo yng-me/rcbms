@@ -123,6 +123,7 @@ compute_food_insecurity <- function(
 
 
 compute_food_insecurity_prevalence <- function(.data) {
+
   rm <- RM.weights::RM.w(.data)
 
   rm_prob <- RM.weights::equating.fun(rm)

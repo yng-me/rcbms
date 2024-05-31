@@ -21,6 +21,8 @@ read_cbms_data <- function(.references, .config) {
     convert_to_parquet <- .config$parquet$convert
   }
 
+  partition <- .config$parquet$partition
+
   use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
 
   if(use_encryption) {
@@ -74,6 +76,7 @@ read_cbms_data <- function(.references, .config) {
 
         p_file <- df_files$unique$value[j]
         p_name <- set_file_name(p_file, file_format, convert_to_parquet)
+        pq_dir <- file.path(pq_folder, p_name)
         pq_path <- file.path(pq_folder, paste0(p_name, ".parquet"))
 
         if(convert_to_parquet) {
@@ -110,7 +113,7 @@ read_cbms_data <- function(.references, .config) {
           cli::cli_text(paste0('Importing ', p_name, ' record'))
         }
 
-        if(file.exists(pq_path)) {
+        if(file.exists(pq_path) | file.exists(pq_dir)) {
 
           if(use_encryption) {
 
@@ -134,7 +137,14 @@ read_cbms_data <- function(.references, .config) {
             df[[input_data]][[p_name]] <- df_from_db
 
           } else {
-            df[[input_data]][[p_name]] <- arrow::open_dataset(pq_path)
+
+            if(partition) {
+              df[[input_data]][[p_name]] <- arrow::open_dataset(pq_dir)
+
+            } else {
+              df[[input_data]][[p_name]] <- arrow::open_dataset(pq_path)
+
+            }
           }
         }
       }

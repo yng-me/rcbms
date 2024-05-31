@@ -74,13 +74,28 @@ db_migrate <- function(
       ts <- .output[[i]] |> dplyr::tibble()
       ts_name <- paste0(prefix, db_tables[i], suffix)
 
-      DBI::dbWriteTable(
-        conn = db_conn,
-        name = ts_name,
-        value = ts,
-        ...,
-        row.names = F
-      )
+      tables <- DBI::dbListTables(db_conn)
+
+      if(ts_name %in% tables) {
+
+        DBI::dbWriteTable(
+          conn = db_conn,
+          name = ts_name,
+          value = ts,
+          append = T,
+          row.names = F
+        )
+
+      } else {
+
+        DBI::dbWriteTable(
+          conn = db_conn,
+          name = ts_name,
+          value = ts,
+          ...,
+          row.names = F
+        )
+      }
 
       add_id_column(ts_name, "survey_round" %in% names(ts))
 

@@ -17,28 +17,44 @@ create_case_id <- function(
 ) {
 
   if (is.null(.input_data)) {
-    if (exists("current_input_data")) {
+    if (exists("CURRENT_INPUT_DATA")) {
       .input_data <- current_input_data
     }
+  } else {
+    if (.input_data == "bp") return(.data)
   }
 
+  add_length <- .config$project$add_length
   .data <- collect_first(.data)
-
-  if (.input_data == "bp") {
-    return(.data)
-  }
 
   if (!("case_id" %in% names(.data))) {
     if (.input_data == "ilq") {
       .data <- .data |>
         dplyr::mutate(
-          case_id = paste0(region_code, province_code, city_mun_code, barangay_code, ean, bsn, isn),
+          case_id = paste0(
+            stringr::str_pad(region_code, pad = '0', width = 2),
+            stringr::str_pad(province_code, pad = '0', width = 2 + add_length),
+            stringr::str_pad(city_mun_code, pad = '0', width = 2),
+            stringr::str_pad(barangay_code, pad = '0', width = 3),
+            stringr::str_pad(ean, pad = '0', width = 6),
+            stringr::str_pad(bsn, pad = '0', width = 4 + add_length),
+            stringr::str_pad(isn, pad = '0', width = 4 + add_length)
+          ),
           .before = 1
         )
     } else if (.input_data == "hp") {
       .data <- .data |>
         dplyr::mutate(
-          case_id = paste0(region_code, province_code, city_mun_code, barangay_code, ean, bsn, husn, hsn),
+          case_id = paste0(
+            stringr::str_pad(region_code, pad = '0', width = 2),
+            stringr::str_pad(province_code, pad = '0', width = 2 + add_length),
+            stringr::str_pad(city_mun_code, pad = '0', width = 2),
+            stringr::str_pad(barangay_code, pad = '0', width = 3),
+            stringr::str_pad(ean, pad = '0', width = 6),
+            stringr::str_pad(bsn, pad = '0', width = 4 + add_length),
+            stringr::str_pad(husn, pad = '0', width = 4 + add_length),
+            stringr::str_pad(hsn, pad = '0', width = 4 + add_length)
+          ),
           .before = 1
         )
     }
@@ -108,12 +124,21 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #'
 #' @examples
 
-create_barangay_geo <- function(.data) {
+create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
 
   if(!("barangay_geo" %in% names(.data))) {
+
+    add_length <- .config$project$add_length
     .data <- .data |>
       collect_first() |>
-      dplyr::mutate(barangay_geo = paste0(region_code, province_code, city_mun_code, barangay_code))
+      dplyr::mutate(
+        barangay_geo = paste0(
+          stringr::str_pad(region_code, pad = '0', width = 2),
+          stringr::str_pad(province_code, pad = '0', width = 2 + add_length),
+          stringr::str_pad(city_mun_code, pad = '0', width = 2),
+          stringr::str_pad(barangay_code, pad = '0', width = 3)
+        )
+      )
   }
 
   attr(.data$barangay_geo, "label") <- "Barangay geo ID"

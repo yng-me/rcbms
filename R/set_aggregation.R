@@ -42,6 +42,7 @@ set_aggregation <- function(.parquet, .area_name, .config) {
 
     if (!is.null(agg_record)) {
       agg[[input_data]]$areas_all <- .parquet[[input_data]][[agg_record]] |>
+        dplyr::distinct(region_code, province_code, city_mun_code, barangay_code) |>
         dplyr::collect() |>
         create_barangay_geo() |>
         dplyr::select(-dplyr::contains("_code")) |>
