@@ -10,6 +10,7 @@
 tidy_geojson <- function(
     .path,
     .subfolders = c("region", "province", "city-mun", "barangay")) {
+
   to_camel_case <- function(x) {
     y <- x |>
       stringr::str_to_lower() |>
@@ -92,6 +93,91 @@ tidy_geojson <- function(
         collection = tbl |> pluck("type") |> pluck(1),
         group = geo_json_name,
         level = as.integer(which(.subfolders == agg_labels[1]))
+      )
+  }
+
+  dplyr::bind_rows(geo_json_list)
+}
+
+
+#' Title
+#'
+#' @param .path
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tidy_geojson_official <- function(.path) {
+
+  geo_json_files <- list.files(.path, full.names = T, pattern = "\\.json$")
+
+  agg_levels <- c('region', 'province', 'city-mun', 'barangay')
+  geo_json_list <- list()
+
+  for (i in seq_along(geo_json_files)) {
+
+    geo_file <- geo_json_files[i]
+
+    agg_label <- stringr::str_remove(basename(geo_file), "\\.json$")
+
+    tbl <- geo_file |> jsonlite::read_json()
+
+    geo_json_list[[agg_label]] <- tbl |>
+      purrr::pluck("features") |>
+      purrr::map(\(x) {
+        x |>
+          purrr::pluck("properties") |>
+          dplyr::bind_rows() |>
+          dplyr::select(
+            area_code = geocode,
+            land_area = `Area/km sq`
+          )
+      }) |>
+      dplyr::bind_rows() |>
+      dplyr::bind_cols(
+        tbl |>
+          purrr::pluck("features") |>
+          purrr::map(\(x) {
+            geometry <- x |>
+              purrr::pluck("geometry")
+
+            if (!is.null(geometry)) {
+              type <- geometry |>
+                purrr::pluck("type")
+
+              if (length(type) == 0) {
+                type <- ""
+              } else {
+                type <- type |> purrr::pluck(1)
+              }
+
+              type <- type |>
+                dplyr::as_tibble() |>
+                dplyr::rename(type = value)
+
+              coordinates <- geometry |>
+                purrr::pluck("coordinates")
+
+              if (length(coordinates) > 0) {
+                coordinates <- as.character(jsonlite::toJSON(coordinates, auto_unbox = T))
+              } else {
+                coordinates <- "[]"
+              }
+
+              coordinates |>
+                dplyr::as_tibble() |>
+                dplyr::rename(coordinates = value) |>
+                dplyr::bind_cols(type)
+            }
+          }) |>
+          dplyr::bind_rows()
+      ) |>
+      dplyr::mutate(
+        collection = tbl |>
+          purrr::pluck("type") |>
+          purrr::pluck(1),
+        level = as.integer(which(agg_levels == agg_label))
       )
   }
 

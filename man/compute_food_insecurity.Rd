@@ -7,10 +7,12 @@
 compute_food_insecurity(
   .data,
   ...,
+  .thres = NULL,
   .type = 1,
   .agg_levels = NULL,
   .valueset = get_config("references")$valueset,
   .extract_name_position = 5,
+  .include_overall = FALSE,
   .config = getOption("rcbms.config")
 )
 }

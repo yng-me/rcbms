@@ -200,12 +200,17 @@ db_migrate_refs <- function(
   }
 
   if(.include_area_names) {
-    anm <- tidy_area_name(load_references("anm"), .add_length = 0) |>
-      tibble::tibble()
+
+    ref_anm <- load_references("anm")
+
+    anm <- ref_anm |>
+      tidy_area_name(.add_length = 0) |>
+      bind_rows(tidy_area_name(ref_anm, .add_length = 1)) |>
+      arrange(level, area_code)
 
     DBI::dbWriteTable(
       conn = conn,
-      name = "area_names",
+      name = "ref_area_names",
       value = anm,
       ...,
       row.names = F
@@ -226,7 +231,7 @@ db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
 
   if(.ref == "data_dictionary") {
     ref_df <- load_reference_fn(gid[1], FALSE)
-    table_name <- .ref
+    table_name <- paste0('ref_', .ref)
 
     ref_df <- ref_df |>
       dplyr::filter(is_included == 1, input_data %in% c('hp', 'bp')) |>
@@ -248,7 +253,7 @@ db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
 
     if(.ref == "macrodata") {
 
-      table_name <- "stat_tables"
+      table_name <- "ref_macrodata"
       ref_df <- ref_df |>
         dplyr::mutate(meta = jsonlite::toJSON(meta))
 
@@ -258,7 +263,7 @@ db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
       }
 
     } else if(.ref == "score_card") {
-      table_name <- "score_cards"
+      table_name <- "ref_score_cards"
     }
   }
 
@@ -273,7 +278,7 @@ db_migrate_ref <- function(.conn, .ref, ..., .table_names = NULL) {
   if(.ref == "data_dictionary") {
     DBI::dbExecute(
       conn = .conn,
-      "ALTER TABLE data_dictionary MODIFY survey_round YEAR;"
+      "ALTER TABLE ref_data_dictionary MODIFY survey_round YEAR;"
     )
   }
 

@@ -14,6 +14,7 @@ generate_tabs(
   .valueset = NULL,
   .extract_name_position = 5,
   .sort = TRUE,
+  .include_overall = FALSE,
   .config = getOption("rcbms.config")
 )
 }
