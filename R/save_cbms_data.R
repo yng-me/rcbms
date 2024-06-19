@@ -1,13 +1,13 @@
 save_cbms_data <- function(
-  .conn,
-  .df_src_files,
-  .input_data,
-  .pq_path,
-  .p_name,
-  .references,
-  .config,
-  .is_first_record = FALSE,
-  .summary_record = NULL
+    .conn,
+    .df_src_files,
+    .input_data,
+    .pq_path,
+    .p_name,
+    .references,
+    .config,
+    .is_first_record = FALSE,
+    .summary_record = NULL
 ) {
 
   proj <- .config$project[[.input_data]]
@@ -121,11 +121,11 @@ save_cbms_data <- function(
         by = "barangay_geo"
       )
 
-  df_temp <- df_temp |>
-    dplyr::select(
-      dplyr::any_of(unique(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age"))),
-      sort(names(df_temp))
-    )
+    df_temp <- df_temp |>
+      dplyr::select(
+        dplyr::any_of(unique(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age"))),
+        sort(names(df_temp))
+      )
   }
 
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
@@ -158,7 +158,7 @@ save_cbms_data <- function(
   if(.config$parquet$encrypt &
      !is.null(.config$env$PQ_KEY_PUB) &
      !is.null(.config$env$PQ_KEY_PRV)
-     ) {
+  ) {
 
     df_temp <- df_temp |>
       create_case_id(.input_data = .input_data) |>
@@ -191,9 +191,10 @@ save_cbms_data <- function(
 
       print(dplyr::group_vars(df_temp))
 
+      arrow::write_dataset(df_temp, .pq_path, format = 'parquet')
+    } else {
+      arrow::write_parquet(df_temp |> dplyr::ungroup(), .pq_path)
     }
-
-    arrow::write_dataset(df_temp, .pq_path, format = 'parquet')
 
     df_temp <- df_temp |>
       dplyr::ungroup()
