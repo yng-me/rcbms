@@ -90,7 +90,9 @@ tidy_geojson <- function(
           dplyr::bind_rows()
       ) |>
       dplyr::mutate(
-        collection = tbl |> pluck("type") |> pluck(1),
+        collection = tbl |>
+          purrr::pluck("type") |>
+          purrr::pluck(1),
         group = geo_json_name,
         level = as.integer(which(.subfolders == agg_labels[1]))
       )

@@ -20,6 +20,8 @@ generate_tabs <- function(
   ...,
   .agg_levels = NULL,
   .total_by_cols = FALSE,
+  .invert = FALSE,
+  .complete = TRUE,
   .keep_col_names = FALSE,
   .multiple_response = FALSE,
   .valueset = NULL,
@@ -66,7 +68,7 @@ generate_tabs <- function(
         .total_by_cols = .total_by_cols,
         .sort = .sort
       ) |>
-      factor_cols(...) |>
+      factor_cols(..., .complete = .complete) |>
       dplyr::mutate(level = as.integer(level_i))
   }
 
@@ -78,7 +80,7 @@ generate_tabs <- function(
         .total_by_cols = .total_by_cols,
         .sort = .sort
       ) |>
-      factor_cols(...) |>
+      factor_cols(..., .complete = .complete) |>
       dplyr::mutate(area_code = "0", level = 0L)
   }
 
@@ -115,7 +117,36 @@ generate_tabs <- function(
         pad = "0"
       ),
       survey_round = as.integer(.config$survey_round)
-    ) |>
+    )
+
+  if(!.include_overall) {
+    tbl <- tbl |> filter(level != 0)
+  }
+
+  if(.invert & .total_by_cols & length(cols) > 1) {
+
+    tbl <- tbl |>
+      dplyr::rename(xx = x) |>
+      dplyr::rename(x = y) |>
+      dplyr::rename(y = xx)
+
+    if('x_fct' %in% names(tbl) & 'y_fct' %in% names(tbl)) {
+      tbl <- tbl |>
+        dplyr::rename(xx_fct = x_fct) |>
+        dplyr::rename(x_fct = y_fct) |>
+        dplyr::rename(y_fct = xx_fct)
+    } else if ('x_fct' %in% names(tbl) & !('y_fct' %in% names(tbl))) {
+      tbl <- tbl |>
+        dplyr::rename(y_fct = x_fct)
+
+    } else if ('y_fct' %in% names(tbl) & !('x_fct' %in% names(tbl))) {
+      tbl <- tbl |>
+        dplyr::rename(x_fct = y_fct)
+    }
+  }
+
+
+  tbl |>
     dplyr::select(
       area_code,
       survey_round,
@@ -124,12 +155,6 @@ generate_tabs <- function(
       dplyr::contains(c("x", "y")),
       dplyr::everything()
     )
-
-  if(!.include_overall) {
-    tbl <- tbl |> filter(level != 0)
-  }
-
-  return(tbl)
 }
 
 
@@ -142,6 +167,7 @@ generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE
       dplyr::group_by(..., total, total_y, dplyr::pick(dplyr::any_of(.cols))) |>
       dplyr::count(name = "count", sort = .sort) |>
       dplyr::mutate(percent = 100 * (count / total_y))
+
   } else {
     .data |>
       dplyr::add_count(..., name = "total") |>

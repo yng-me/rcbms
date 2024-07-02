@@ -24,6 +24,7 @@ get_household_summary <- function(
     .include_survey_round = T,
     .include_individuals = T,
     .config = getOption("rcbms.config")) {
+
   hh_demog_list <- list()
 
   agg_labels <- c("region", "province", "city_mun", "barangay")
@@ -108,7 +109,8 @@ get_household_summary <- function(
       dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
   }
 
-  df_final <- hh_demog_list |> dplyr::bind_rows()
+  df_final <- hh_demog_list |>
+    dplyr::bind_rows()
 
   if (.include_survey_round) {
     df_final <- df_final |>
@@ -117,3 +119,24 @@ get_household_summary <- function(
 
   df_final
 }
+
+#
+# get_coverage <- function(.data, .agg, .ref_area_name) {
+#
+#   agg_geo <- paste0(.agg, '_geo')
+#   if(!(agg_geo %in% .ref_area_name)) {
+#     stop("Invalid geo column.")
+#   }
+#
+#   .data |>
+#     dplyr::group_by(!!as.name(.agg)) |>
+#     dplyr::count(name = 'area_covered') |>
+#     dplyr::left_join(
+#       tidy_area_name(
+#         .ref_area_name
+#       ),
+#       by = .agg
+#     )
+#
+# }
+

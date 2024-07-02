@@ -397,51 +397,88 @@ load_tabulation_refs <- function(.gid) {
 #'
 #' @examples
 load_macrodata_refs <- function(.gid) {
-  required_cols <- c(
-    "table_name",
-    "category",
-    "title",
-    "subtitle",
-    "description",
-    "status"
-  )
 
-  meta <- load_refs_from_gsheet(
+  metadata <- load_refs_from_gsheet(
     .gid,
     .required_cols = c(
       'table_name',
       'variable_name',
       'label',
-      'type'
+      'data_type'
     ),
     .sheet_name = "Variables",
     col_types = "ccci"
+  ) |>
+    dplyr::group_by(table_name) |>
+    tidyr::nest(.key = 'meta')
+
+  categories <- load_refs_from_gsheet(
+    .gid,
+    .required_cols = c(
+      'id',
+      'module',
+      'name',
+      'title',
+      'subtitle',
+      'order',
+      'icon',
+      'is_available'
+    ),
+    .sheet_name = "Categories",
+    col_types = "iccccici"
   )
 
-  meta_all <- meta |>
-    dplyr::filter(type == 0) |>
-    dplyr::select(-type)
+  footnotes <- load_refs_from_gsheet(
+      .gid,
+      .required_cols = c('footnote', 'table_name'),
+      .sheet_name = 'Footnotes',
+      col_types = "cc"
+    ) |>
+    dplyr::mutate(
+      table_name = stringr::str_split(table_name, ',')
+    ) |>
+    tidyr::unnest() |>
+    dplyr::mutate(
+      footnote = stringr::str_trim(footnote),
+      table_name = stringr::str_trim(table_name)
+    ) |>
+    dplyr::group_by(table_name) |>
+    tidyr::nest(.key = 'footnote')
 
-  meta_unique <- meta |>
-    dplyr::filter(type == 1) |>
-    dplyr::select(-type)
+  macrodata <- load_refs_from_gsheet(
+      .gid,
+      .required_cols = c(
+        "table_name",
+        "category",
+        "title",
+        "subtitle",
+        "description",
+        "max_agg"
+      ),
+      col_types = "ccccci"
+    ) |>
+    dplyr::left_join(metadata, by = 'table_name') |>
+    dplyr::left_join(footnotes, by = 'table_name') |>
+    dplyr::left_join(
+      categories |>
+        dplyr::distinct(id, name) |>
+        dplyr::select(category_id = id, category = name),
+      by = 'category'
+    ) |>
+    dplyr::select(
+      table_name,
+      category_id,
+      category,
+      dplyr::everything()
+    )
 
-  table_names <- meta_unique$table_name
-  for(i in seq_along(table_names)) {
-    meta <- meta_all |>
-      dplyr::mutate(table_name = table_names[i])
-    meta_unique <- dplyr::bind_rows(meta, meta_unique)
-  }
 
-  meta_unique <- meta_unique |>
-    dplyr::distinct(table_name, variable_name, .keep_all = T)
+  list(
+    main = macrodata,
+    categories = categories,
+    footnotes = footnotes
+  )
 
-  load_refs_from_gsheet(.gid, required_cols, col_types = "ccccci") |>
-    dplyr::filter(status == 1) |>
-    dplyr::select(-status) |>
-    dplyr::left_join(meta_unique, by = 'table_name') |>
-    dplyr::group_by(table_name, category, title, subtitle, description) |>
-    tidyr::nest(.key = 'meta')
 }
 
 

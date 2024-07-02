@@ -20,6 +20,7 @@ db_migrate <- function(
   .name = NULL,
   .prefix = "",
   .suffix = "",
+  .unique_fields = NULL,
   .add_primary_key = TRUE
 ) {
 
@@ -95,6 +96,10 @@ db_migrate <- function(
           ...,
           row.names = F
         )
+
+
+        ts_name
+
       }
 
       add_id_column(ts_name, "survey_round" %in% names(ts))

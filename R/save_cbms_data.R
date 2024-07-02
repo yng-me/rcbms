@@ -1,13 +1,13 @@
 save_cbms_data <- function(
-    .conn,
-    .df_src_files,
-    .input_data,
-    .pq_path,
-    .p_name,
-    .references,
-    .config,
-    .is_first_record = FALSE,
-    .summary_record = NULL
+  .conn,
+  .df_src_files,
+  .input_data,
+  .pq_path,
+  .p_name,
+  .references,
+  .config,
+  .is_first_record = FALSE,
+  .summary_record = NULL
 ) {
 
   proj <- .config$project[[.input_data]]
@@ -175,6 +175,7 @@ save_cbms_data <- function(
     DBI::dbExecute(.conn, q_to_pq)
 
   } else {
+
     df_temp <- df_temp |>
       add_metadata(dcf, .references$valueset) |>
       create_case_id(.input_data = .input_data)

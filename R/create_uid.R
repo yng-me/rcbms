@@ -25,6 +25,7 @@ create_case_id <- function(
   }
 
   add_length <- .config$project$add_length
+
   .data <- collect_first(.data)
 
   if (!("case_id" %in% names(.data))) {
@@ -42,7 +43,7 @@ create_case_id <- function(
           ),
           .before = 1
         )
-    } else if (.input_data == "hp") {
+    } else if (.input_data %in% c("hp", "cph")) {
       .data <- .data |>
         dplyr::mutate(
           case_id = paste0(

@@ -45,6 +45,7 @@ compute_food_insecurity <- function(
     area_codes <- unique(.data[[agg_geo]])
 
     for (k in seq_along(area_codes)) {
+
       rm <- .data |>
         filter(!!as.name(agg_geo) == area_codes[k]) |>
         select(...) |>
