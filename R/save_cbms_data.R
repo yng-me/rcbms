@@ -147,13 +147,13 @@ save_cbms_data <- function(
     }
     df_temp_dim <- paste0("(", df_temp_dim, ") ")
   }
-
-  if (.input_data %in% c("cph", "bs") & .config$survey_round == "2020") {
-    df_temp <- df_temp |>
-      dplyr::mutate(
-        province_code = stringr::str_sub(province_code, 2, 3)
-      )
-  }
+#
+#   if (.input_data %in% c("cph", "bs") & .config$survey_round == "2020") {
+#     df_temp <- df_temp |>
+#       dplyr::mutate(
+#         province_code = stringr::str_sub(province_code, 2, 3)
+#       )
+#   }
 
   if(.config$parquet$encrypt &
      !is.null(.config$env$PQ_KEY_PUB) &
