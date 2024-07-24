@@ -23,7 +23,9 @@ read_cbms_data <- function(.references, .config) {
 
   partition <- .config$parquet$partition
 
-  use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
+  use_encryption <- .config$parquet$encrypt &
+    !is.null(.config$env$PQ_KEY_PUB) &
+    !is.null(.config$env$PQ_KEY_PRV)
 
   if(use_encryption) {
 
@@ -42,13 +44,14 @@ read_cbms_data <- function(.references, .config) {
     input_data <- .config$input_data[i]
 
     is_bp_data <- input_data == "bp" & as.character(.config$survey_round) == "2024"
+    is_shp_data <- input_data == "shp" & as.character(.config$survey_round) == "2024"
 
     df_files <- list_data_files(input_data, .references, .config)
     pq_folder <- create_new_folder(get_data_path("parquet", input_data, .config))
 
     if(convert_to_parquet) {
 
-      if(!is_bp_data) {
+      if(!is_bp_data | !is_shp_data) {
 
         if (.config$verbose) {
           if (length(input_data) > 1) {
@@ -66,6 +69,10 @@ read_cbms_data <- function(.references, .config) {
     if(is_bp_data & convert_to_parquet) {
 
       df$bp <- save_bp_data(conn, pq_folder, .references, .config)
+
+    } else if (is_shp_data & convert_to_parquet) {
+
+      df$shp <- save_shp_data(conn, pq_folder, .references, .config)
 
     } else {
 
@@ -147,6 +154,12 @@ read_cbms_data <- function(.references, .config) {
             }
           }
         }
+      }
+
+      if(convert_to_parquet & input_data == "hp" & .config$parquet$delete_source) {
+        raw_data_path <- get_data_path("raw", input_data, .config)
+        unlink(raw_data_path, recursive = T, force = T)
+        create_new_folder(raw_data_path)
       }
     }
   }

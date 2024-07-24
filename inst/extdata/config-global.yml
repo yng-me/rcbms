@@ -1,8 +1,18 @@
 # Global config default values
 survey_round: '2024'
-convert_to_parquet: false
+parquet:
+  convert: true
+  encrypt: true
+  overwrite: true
+  partition: false
+  delete_source: false
+  partition_by:
+    - region_code
+    - province_code
+    - city_mun_code
 reload_references:
   area_name: true
+  area_name_new: true
   valueset: true
   validation: true
   tabulation: true

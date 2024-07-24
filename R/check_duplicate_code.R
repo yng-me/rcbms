@@ -57,7 +57,7 @@ check_duplicate_code <- function(
 
   var <- .config$project$hp$variable
   line_number_var <- var$line_number
-  stringify_info <- config$validation$stringify_info
+  stringify_info <- .config$validation$stringify_info
   if(is.null(stringify_info)) stringify_info <- TRUE
 
   .data <- .data |>
@@ -72,7 +72,7 @@ check_duplicate_code <- function(
     dplyr::filter(n > 1) |>
     dplyr::select(-n) |>
     dplyr::group_by(case_id) |>
-    nest()
+    tidyr::nest()
 
   if(stringify_info) {
     .data |>

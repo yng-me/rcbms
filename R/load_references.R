@@ -76,7 +76,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
     if(is_online & (ref_reload_i | !file.exists(pq_i) | .reload)) {
 
       load_reference_fn <- eval(as.name(paste0("load_", ref_i, "_refs")))
-      if(ref_short_i == "anm") {
+      if(ref_short_i == "anm" | ref_short_i == "anmn") {
         arrow::write_parquet(suppressWarnings(load_reference_fn(gid_i)), pq_i)
       } else {
         jsonlite::write_json(load_reference_fn(gid_i), pq_i, pretty = TRUE)
@@ -89,7 +89,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
       )
     }
 
-    if(ref_short_i == "anm") {
+    if(ref_short_i == "anm" | ref_short_i == "anmn") {
       refs[[ref_i]] <- arrow::read_parquet(pq_i)
     } else {
       refs[[ref_i]] <- jsonlite::fromJSON(pq_i, flatten = T)
@@ -131,7 +131,7 @@ load_references <- function(.config, .wd = NULL, .reload = FALSE) {
 fetch_gsheet <- function(.gid, ..., .sheet_name = NULL, .range = NULL) {
   googlesheets4::gs4_deauth()
 
-  sheet_pattern <- "^\\d{4}_(bp|hp|cph|bs|ilq)$"
+  sheet_pattern <- "^\\d{4}_(bp|hp|cph|bs|ilq|shp)$"
   ss <- paste0("https://docs.google.com/spreadsheets/d/1", .gid)
 
   ss_names <- googlesheets4::sheet_names(ss) |>
@@ -235,46 +235,6 @@ load_data_dictionary_refs <- function(.gid, .transform = T) {
 
   return(df)
 
-}
-
-
-#' Load area name references
-#'
-#' @param .gid
-#'
-#' @return
-#' @export
-#'
-#' @examples
-load_area_name_refs <- function(.gid) {
-  required_cols <- c(
-    'region',
-    'province',
-    'city_mun',
-    'barangay',
-    'barangay_geo_new',
-    'barangay_geo',
-    'income_class',
-    'is_huc',
-    'class',
-    '2015_popn',
-    '2020_popn',
-    'funding_source'
-  )
-
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccciiciciii') |>
-  dplyr::mutate(
-    barangay_geo_new = stringr::str_pad(
-      stringr::str_extract(barangay_geo_new, '\\d+'),
-      width = 10,
-      pad = '0'
-    ),
-    barangay_geo = stringr::str_pad(
-      stringr::str_extract(barangay_geo, '\\d+'),
-      width = 9,
-      pad = '0'
-    )
-  )
 }
 
 #' Load valueset references
@@ -696,6 +656,7 @@ gid_references <- function(.wd = NULL) {
   tibble::tibble(
     ref = c(
       "area_name",
+      "area_name_new",
       "valueset",
       "validation",
       "tabulation",
@@ -708,6 +669,7 @@ gid_references <- function(.wd = NULL) {
     ),
     ref_short = c(
       "anm",
+      "anmn",
       "vs",
       "cv",
       "ts",
@@ -718,9 +680,10 @@ gid_references <- function(.wd = NULL) {
       "sc"
       # "mpi"
     ),
-    type = c("parquet", rep("json", 8)),
+    type = c("parquet", "parquet", rep("json", 8)),
     gid = c(
       "seNZ_CbplwpBrOQiUwIJ2koZONLLFHSicaGFWEKzbrE",
+      "P026km-5_YTMjVwdyLOuIMjJ10fZWMBWWmT_e2cQ144",
       "eR-sYyLaHMRPRVOkOECTy-iiPQJ-QC8ailyXtNPAA6A",
       "PV5NwM-W3jp8lHmCkE0E84JzeObPYD116bU-xKVVuaY",
       "jfXp-Hao1J4Dkis6E2G_-FZ_mUyA3vGEk0B4aFZvTAE",

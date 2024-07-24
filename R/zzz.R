@@ -94,10 +94,12 @@ utils::globalVariables(
         encrypt = TRUE,
         overwrite = TRUE,
         partition = FALSE,
+        delete_source = FALSE,
         partition_by = c("region_code", "province_code", "city_mun_code")
       ),
       reload_references = list(
         area_name = FALSE,
+        area_name_new = FALSE,
         valueset = FALSE,
         validation = FALSE,
         tabulation = FALSE,

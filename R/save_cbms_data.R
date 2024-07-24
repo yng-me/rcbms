@@ -12,6 +12,13 @@ save_cbms_data <- function(
 
   proj <- .config$project[[.input_data]]
   uid <- proj$id
+  if(.config$project$add_length == 0) {
+    anm_src <- 'area_name'
+  } else if(.config$project$add_length == 1) {
+    anm_src <- 'area_name_new'
+  } else {
+    stop('Invalid add_length argument.')
+  }
 
   geo_cols_name <- c("region", "province", "city_mun", "barangay")
   geo_cols <- paste0(geo_cols_name, "_code")
@@ -90,11 +97,16 @@ save_cbms_data <- function(
 
     if(.config$complete_cases & !(.p_name %in% unfiltered_records)) {
 
-      if(!is.null(rov_var) & .config$mode$type != 'validation' & !is.null(proj$result_of_visit_value)) {
+      if(!is.null(rov_var) &
+         .config$mode$type != 'validation' &
+         !is.null(proj$result_of_visit_value)
+        ) {
 
         if(rov_var %in% names(df_temp)) {
           df_temp <- df_temp |>
-            dplyr::filter(tolower(as.character(!!as.name(rov_var))) == tolower(as.character(proj$result_of_visit_value)))
+            dplyr::filter(
+              tolower(as.character(!!as.name(rov_var))) == tolower(as.character(proj$result_of_visit_value))
+            )
         }
 
         if ("hsn" %in% names(df_temp)) {
@@ -113,17 +125,38 @@ save_cbms_data <- function(
 
     df_temp <- df_temp |>
       dplyr::left_join(
-        transform_area_name(.references$area_name, .config$project$add_length) |>
+        transform_area_name(.references[[anm_src]], .config$project$add_length) |>
           dplyr::select(
             barangay_geo,
-            dplyr::any_of(c(geo_cols_name, 'is_huc', '2020_popn', 'class'))
+            dplyr::any_of(
+              c(
+                geo_cols_name,
+                'total_population',
+                'total_hh',
+                'average_hh_size',
+                'is_huc',
+                '2020_popn',
+                'class'
+              )
+            )
           ),
         by = "barangay_geo"
       )
 
     df_temp <- df_temp |>
       dplyr::select(
-        dplyr::any_of(unique(c(uid, geo_cols, sn_cols, geo_cols_name, rov_var, "sex", "age"))),
+        dplyr::any_of(unique(c(
+          uid,
+          geo_cols,
+          sn_cols,
+          geo_cols_name,
+          "total_population",
+          "total_hh",
+          "average_hh_size",
+          rov_var,
+          "sex",
+          "age"
+        ))),
         sort(names(df_temp))
       )
   }

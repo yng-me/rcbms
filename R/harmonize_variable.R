@@ -91,10 +91,21 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
     nc <- as_nc[i]
     .data <- .data |>
       dplyr::mutate(
-        !!as.name(nc) := stringr::str_pad(
-          as.integer(!!as.name(nc)),
-          pad = "0",
-          width = .dictionary$length[.dictionary$variable_name == nc][1]
+        !!as.name(nc) := stringr::str_trim(as.character(!!as.name(nc)))
+      ) |>
+      dplyr::mutate(
+        !!as.name(nc) := dplyr::if_else(
+          nchar(!!as.name(nc)) >= 10,
+          stringr::str_pad(
+            as.numeric(!!as.name(nc)),
+            pad = "0",
+            width = .dictionary$length[.dictionary$variable_name == nc][1]
+          ),
+          stringr::str_pad(
+            as.integer(!!as.name(nc)),
+            pad = "0",
+            width = .dictionary$length[.dictionary$variable_name == nc][1]
+          )
         )
       )
   }

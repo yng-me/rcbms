@@ -33,6 +33,14 @@
       relation_to_hh_head: a02_relation_to_hh_head
       sex: a03_sex
       age: a05_age
+  shp:
+    id: cbms_geoid
+    directory: null
+    sub_directory: null
+    file_format: gpkg
+    aggregation:
+      level: 3
+      areas: all
   ilq:
     id: case_id
     directory: null

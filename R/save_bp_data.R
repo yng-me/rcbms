@@ -10,7 +10,9 @@ save_bp_data <- function(.conn, .pq_folder, .references, .config) {
     dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
   }
 
-  use_encryption <- .config$parquet$encrypt & !is.null(.config$env$PQ_KEY_PUB) & !is.null(.config$env$PQ_KEY_PRV)
+  use_encryption <- .config$parquet$encrypt &
+    !is.null(.config$env$PQ_KEY_PUB) &
+    !is.null(.config$env$PQ_KEY_PRV)
 
   df_temp <- read_bp_data(dcf, .config)
   df_bp_names <- names(df_temp)
@@ -44,7 +46,9 @@ save_bp_data <- function(.conn, .pq_folder, .references, .config) {
       q_to_pq <- paste0("COPY df_temp TO '", pq , "' (ENCRYPTION_CONFIG {footer_key: '", key_pub, "'});")
       DBI::dbExecute(.conn, q_to_pq)
 
-      pq_query <- paste0("SELECT * FROM read_parquet('", pq, "', encryption_config = { footer_key: '", key_pub, "' });")
+      pq_query <- paste0(
+        "SELECT * FROM read_parquet('", pq, "', encryption_config = { footer_key: '", key_pub, "' });"
+      )
 
       df[[bp_i]] <- DBI::dbGetQuery(.conn, pq_query) |>
         add_metadata(dcf, .references$valueset)
