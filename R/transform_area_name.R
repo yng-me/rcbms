@@ -61,8 +61,8 @@ transform_area_name <- function(.area_name, .add_length = 0) {
       ) |>
       dplyr::select(-add_length, -barangay_geo_new)
 
-    attr(df$region, 'label') <- 'Region'
     attr(df$is_huc, 'label') <- 'Highly Ubranized City (HUC)'
+    attr(df$region, 'label') <- 'Region'
     attr(df$province, 'label') <- 'Province'
     attr(df$city_mun, 'label') <- 'City/Municipality'
     attr(df$barangay, 'label') <- 'Barangay'
@@ -103,9 +103,30 @@ transform_area_name <- function(.area_name, .add_length = 0) {
         average_hh_size = mean(average_hh_size, na.rm = T),
         .groups = 'drop'
       )
+
+    attr(df$total_population, 'label') <- 'Total population'
+    attr(df$total_hh, 'label') <- 'Total households'
+    attr(df$average_hh_size, 'label') <- 'Average household size'
+
+    attr(df$total_population, 'type') <- 'i'
+    attr(df$total_hh, 'type') <- 'i'
+    attr(df$average_hh_size, 'type') <- 'd'
+
   } else {
     stop('Invalid add_length argument.')
   }
+
+  attr(df$region, 'label') <- 'Region'
+  attr(df$province, 'label') <- 'Province'
+  attr(df$city_mun, 'label') <- 'City/Municipality'
+  attr(df$barangay, 'label') <- 'Barangay'
+  attr(df$barangay_geo, 'label') <- 'Barangay Geo ID'
+
+  attr(df$region, 'type') <- 'c'
+  attr(df$province, 'type') <- 'c'
+  attr(df$city_mun, 'type') <- 'c'
+  attr(df$barangay, 'type') <- 'c'
+  attr(df$barangay_geo, 'type') <- 'nc'
 
   return(df)
 }

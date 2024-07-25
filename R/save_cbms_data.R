@@ -150,6 +150,7 @@ save_cbms_data <- function(
           geo_cols,
           sn_cols,
           geo_cols_name,
+          'barangay_geo',
           "total_population",
           "total_hh",
           "average_hh_size",
