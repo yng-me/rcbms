@@ -11,6 +11,7 @@ db_migrate(
   .name = NULL,
   .prefix = "",
   .suffix = "",
+  .unique_fields = NULL,
   .add_primary_key = TRUE
 )
 }

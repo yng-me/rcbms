@@ -9,6 +9,8 @@ generate_tabs(
   ...,
   .agg_levels = NULL,
   .total_by_cols = FALSE,
+  .invert = FALSE,
+  .complete = TRUE,
   .keep_col_names = FALSE,
   .multiple_response = FALSE,
   .valueset = NULL,

@@ -16,7 +16,10 @@ bind_parquet <- function(
     .input_data = NULL,
     .references = get_config("references"),
     .config = getOption("rcbms.config")) {
+
   retain_cols <- c()
+  final_status <- .config$project[[.input_data]]$final_status$variable
+
 
   if (is.null(.input_data)) {
     if (exists("current_input_data")) {
@@ -38,7 +41,7 @@ bind_parquet <- function(
             "husn",
             "hsn",
             "line_number",
-            "result_of_visit"
+            final_status,
           )),
           ...
         )
@@ -57,7 +60,7 @@ bind_parquet <- function(
           "husn",
           "hsn",
           "line_number",
-          "result_of_visit"
+          final_status
         )),
         ...
       ) |>

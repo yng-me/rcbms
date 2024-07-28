@@ -4,7 +4,7 @@
 \alias{tidy_area_name}
 \title{Tidy area name}
 \usage{
-tidy_area_name(.area_name, .add_length)
+tidy_area_name(.area_name, .add_length, ...)
 }
 \arguments{
 \item{.area_name}{}

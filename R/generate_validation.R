@@ -157,7 +157,7 @@ generate_validation <- function(
         output <- output |> add_uuid(.id_name = "id")
       }
     }
-    
+
   }
 
   save_rcbms_logs(output, input_data, .references, .config)

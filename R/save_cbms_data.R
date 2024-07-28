@@ -10,8 +10,8 @@ save_cbms_data <- function(
   .summary_record = NULL
 ) {
 
-  proj <- .config$project[[.input_data]]
-  uid <- proj$id
+  current_project <- .config$project[[.input_data]]
+  uid <- current_project$id
   if(.config$project$add_length == 0) {
     anm_src <- 'area_name'
   } else if(.config$project$add_length == 1) {
@@ -23,9 +23,6 @@ save_cbms_data <- function(
   geo_cols_name <- c("region", "province", "city_mun", "barangay")
   geo_cols <- paste0(geo_cols_name, "_code")
   sn_cols <- c("ean", "bsn", "husn", "hsn", "line_number")
-
-  rov_var <- proj$variable$result_of_visit
-  unfiltered_records <- proj$unfiltered_records
 
   dcf <- .references$data_dictionary[[.config$survey_round]][[.input_data]]
 
@@ -62,6 +59,10 @@ save_cbms_data <- function(
   df_temp_dim_before <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_before_tidy") <- df_temp_dim_before
 
+  final_status <- current_project$final_status
+  final_status_vars <- final_status$variable
+  unfiltered_records <- current_project$unfiltered_records
+
   if(.is_first_record) {
 
     df_temp <- df_temp |>
@@ -69,7 +70,7 @@ save_cbms_data <- function(
       create_case_id(.input_data = .input_data) |>
       create_barangay_geo() |>
       dplyr::select(
-        dplyr::any_of(c(uid, geo_cols, "barangay_geo", rov_var)),
+        dplyr::any_of(c(uid, geo_cols, "barangay_geo", final_status_vars)),
         dplyr::everything()
       )
 
@@ -81,11 +82,11 @@ save_cbms_data <- function(
 
       if(length(with_geo_code) == 4) {
         summary_record_only <- .summary_record |>
-          dplyr::select(dplyr::any_of(c(uid, "barangay_geo", rov_var)))
+          dplyr::select(dplyr::any_of(c(uid, "barangay_geo", final_status_vars)))
 
       } else {
         summary_record_only <- .summary_record |>
-          dplyr::select(dplyr::any_of(c(uid, geo_cols, "barangay_geo", rov_var)))
+          dplyr::select(dplyr::any_of(c(uid, geo_cols, "barangay_geo", final_status_vars)))
       }
 
       df_temp <- df_temp |>
@@ -97,15 +98,19 @@ save_cbms_data <- function(
 
     if(.config$complete_cases & !(.p_name %in% unfiltered_records)) {
 
-      if(!is.null(rov_var) &
-         .config$mode$type != 'validation' &
-         !is.null(proj$result_of_visit_value)
+      if(.config$mode$type != 'validation' &
+        !is.null(final_status) &
+        !is.null(final_status_vars) &
+        !is.null(final_status$value) &
+        !is.null(final_status$index)
         ) {
+        
+        final_status_var <- final_status$variable[[final_status$index]]
 
-        if(rov_var %in% names(df_temp)) {
+        if(final_status_var %in% names(df_temp)) {
           df_temp <- df_temp |>
             dplyr::filter(
-              tolower(as.character(!!as.name(rov_var))) == tolower(as.character(proj$result_of_visit_value))
+              tolower(as.character(!!as.name(final_status_var))) == tolower(as.character(final_status$value))
             )
         }
 
@@ -143,23 +148,7 @@ save_cbms_data <- function(
         by = "barangay_geo"
       )
 
-    df_temp <- df_temp |>
-      dplyr::select(
-        dplyr::any_of(unique(c(
-          uid,
-          geo_cols,
-          sn_cols,
-          geo_cols_name,
-          'barangay_geo',
-          "total_population",
-          "total_hh",
-          "average_hh_size",
-          rov_var,
-          "sex",
-          "age"
-        ))),
-        sort(names(df_temp))
-      )
+    df_temp <- sort_variable_names(df_temp, .input_data, .config)
   }
 
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
@@ -181,13 +170,6 @@ save_cbms_data <- function(
     }
     df_temp_dim <- paste0("(", df_temp_dim, ") ")
   }
-#
-#   if (.input_data %in% c("cph", "bs") & .config$survey_round == "2020") {
-#     df_temp <- df_temp |>
-#       dplyr::mutate(
-#         province_code = stringr::str_sub(province_code, 2, 3)
-#       )
-#   }
 
   if(.config$parquet$encrypt &
      !is.null(.config$env$PQ_KEY_PUB) &
@@ -231,8 +213,7 @@ save_cbms_data <- function(
       arrow::write_parquet(df_temp |> dplyr::ungroup(), .pq_path)
     }
 
-    df_temp <- df_temp |>
-      dplyr::ungroup()
+    df_temp <- df_temp |> dplyr::ungroup()
 
   }
 

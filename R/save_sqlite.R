@@ -27,7 +27,8 @@ create_remarks_table <- function(.conn, .tables) {
     DBI::dbExecute(
       .conn,
       "CREATE TABLE remarks (
-        id varchar(36),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cv_id varchar(36),
         user_id varchar(36),
         username varchar(36),
         first_name varchar(36),
@@ -37,19 +38,20 @@ create_remarks_table <- function(.conn, .tables) {
         tag_status tinyint CHECK (tag_status IN (0, 1)),
         remarks text,
         uploaded tinyint CHECK (uploaded IN (0, 1)),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT NULL
       );"
     )
   }
 }
 
 save_current_logs <- function(
-  .conn,
-  .data,
-  .input_data,
-  .tables,
-  .references,
-  .config
+    .conn,
+    .data,
+    .input_data,
+    .tables,
+    .references,
+    .config
 ) {
   created_date <- lubridate::now()
 
@@ -74,6 +76,9 @@ save_current_logs <- function(
         total_priority_b int,
         total_priority_c int,
         total_priority_d int,
+        total int,
+        summary text,
+        user text,
         user_id varchar(36),
         status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         version_app varchar(10),
@@ -86,7 +91,9 @@ save_current_logs <- function(
         pc_os_version varchar(36),
         pc_pid int,
         pc_hardware varchar(16),
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT NULL,
+        validated_at DATETIME DEFAULT NULL
       );"
     )
   }
@@ -152,6 +159,85 @@ save_current_logs <- function(
     log_status <- 2
   }
 
+  total <- NULL
+  summary_info <- list()
+
+  if(exists('parquet')) {
+
+    summary_record <- .config$project[[.input_data]]$summary_record
+
+    if(!is.null(summary_record)) {
+
+      final_status_vars <- .config$project[[.input_data]]$final_status$variable
+
+      summary_df <- parquet[[.input_data]][[summary_record]] |>
+        dplyr::select(dplyr::any_of(final_status_vars)) |>
+        dplyr::collect()
+
+      if(!is.null(summary_df)) {
+
+
+        if(.input_data == 'hp') {
+
+          # household
+          for(k in seq_along(final_status_vars)) {
+
+            final_status_var <- final_status_vars[k]
+
+            summary_info[[final_status_var]] <- summary_df |>
+              dplyr::count(!!as.name(final_status_var))
+          }
+
+          # roster
+          roster_record <- .config$project$hp$roster_record
+          sex_var <- .config$project$hp$variable$sex
+          age_var <- .config$project$hp$variable$age
+
+          if(!is.null(roster_record) & !is.null(sex_var) & !is.null(age_var)) {
+
+            roster_df <- parquet[[.input_data]][[roster_record]] |>
+              dplyr::select(hsn, dplyr::any_of(sex_var), dplyr::contains('_age')) |>
+              dplyr::collect() |>
+              dplyr::filter(
+                as.integer(hsn) < as.integer(
+                  paste(rep(7, 4 + .config$project$add_length), collapse = "")
+                )
+              )
+
+            roster_df_names <- names(roster_df)
+
+            summary_info$sex <- roster_df |>
+              dplyr::count(!!as.name(sex_var))
+
+            if(length(grepl('_age_group_five_year$', roster_df_names)) >= 1) {
+
+              age_group_var <- roster_df_names[grepl('_age_group_five_year$', names(roster_df))]
+
+              roster_df <- roster_df |>
+                dplyr::select(
+                  age = !!as.name(age_group_var[1]),
+                  sex = !!as.name(sex_var)
+                )
+
+              summary_info$age_group <- roster_df |>
+                generate_tab(.cols = c('age', 'sex'), .total_by_cols = T) |>
+                factor_col('age') |>
+                factor_col('sex') |>
+                dplyr::bind_rows(
+                  roster_df |>
+                    generate_tab(.cols = 'age') |>
+                    factor_col('age') |>
+                    dplyr::mutate(y = 0, y_fct = 'Both sexes', total_y = total)
+                )
+            }
+          }
+        }
+
+        total <- summary_df |> nrow()
+      }
+    }
+
+  }
 
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
@@ -165,6 +251,8 @@ save_current_logs <- function(
       level = .config$aggregation$level,
       input_data = .input_data,
       area_code = current_area_code,
+      total = total,
+      summary = as.character(jsonlite::toJSON(summary_info)),
       total_cases = total_cases,
       total_cases_unique = total_cases_unique,
       total_priority_a = total_priority_a,
@@ -192,10 +280,10 @@ save_current_logs <- function(
     if (.input_data %in% c("hp", "ilq")) {
       by_cv_cols <- c("case_id", "validation_id", "line_number")
     } else if (.input_data == "bp") {
-      by_cv_cols <- c("uuid", "validation_id")
+      by_cv_cols <- c("barangay_geo", "validation_id")
     }
 
-    last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid()")
+    last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid();")
     current_id <- as.integer(last_row[[1]])
 
     cv_data <- cv_data |>

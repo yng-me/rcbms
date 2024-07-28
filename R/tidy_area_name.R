@@ -10,11 +10,11 @@
 
 tidy_area_name <- function(.area_name, .add_length, ...) {
 
+  barangay_geo_var <- "barangay_geo"
   if(.add_length == 1) {
-    barangay_geo_var <- 'barangay_geo_new'
+    # barangay_geo_var <- 'barangay_geo_new'
     over_all_code <- "0000000000"
   } else {
-    barangay_geo_var <- "barangay_geo"
     over_all_code <- "000000000"
   }
   .area_name |>

@@ -82,6 +82,10 @@ transform_area_name <- function(.area_name, .add_length = 0) {
       ) |>
       dplyr::select(
         barangay_geo,
+        region_code,
+        province_code,
+        city_mun_code,
+        barangay_code,
         region,
         province,
         city_mun,
@@ -92,6 +96,10 @@ transform_area_name <- function(.area_name, .add_length = 0) {
       ) |>
       dplyr::group_by(
         barangay_geo,
+        region_code,
+        province_code,
+        city_mun_code,
+        barangay_code,
         region,
         province,
         city_mun,
@@ -117,7 +125,7 @@ transform_area_name <- function(.area_name, .add_length = 0) {
   }
 
   attr(df$region, 'label') <- 'Region'
-  attr(df$province, 'label') <- 'Province'
+  attr(df$province, 'label') <- 'Province/HUC'
   attr(df$city_mun, 'label') <- 'City/Municipality'
   attr(df$barangay, 'label') <- 'Barangay'
   attr(df$barangay_geo, 'label') <- 'Barangay Geo ID'

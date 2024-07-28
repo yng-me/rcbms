@@ -74,10 +74,12 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     }
 
     if(!is.null(.section) & length(selected_scripts) > 0) {
-      
+
       start_files_grep <- 'initial'
-      if(.config$mode$stage == 1) {
+      if(.config$mode$stage > 1) {
         start_files_grep <- 'initial|preliminary'
+      } else {
+        start_files_grep <- 'initial'
       }
 
       script_files <- script_files |>

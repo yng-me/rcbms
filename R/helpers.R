@@ -117,3 +117,51 @@ sum_rows <- function(.data, .name, ...) {
     tibble::add_column(`s__`) |>
     dplyr::rename(!!as.name(.name) := `s__`)
 }
+
+
+#' Title
+#'
+#' @param .data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+sort_variable_names <- function(.data, .input_data, .config = getOption('rcbms.config')) {
+
+  final_status <- .config$project[[.input_data]]$final_status$variable
+
+  .data |>
+    dplyr::select(
+      dplyr::any_of(unique(c(
+        'case_id',
+        'uuid',
+        'geocode',
+        'region_code',
+        'province_code',
+        'city_mun_code',
+        'barangay_code',
+        'ean',
+        'bsn',
+        'husn',
+        'hsn',
+        'isn',
+        'line_number',
+        'region',
+        'province',
+        'city_mun',
+        'barangay',
+        'barangay_geo',
+        'total_population',
+        'total_hh',
+        'average_hh_size',
+        final_status,
+        "sex",
+        "age"
+      ))),
+      sort(names(.data))
+    )
+}
+
