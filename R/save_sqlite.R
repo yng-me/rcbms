@@ -28,7 +28,7 @@ create_remarks_table <- function(.conn, .tables) {
       .conn,
       "CREATE TABLE remarks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cv_id varchar(36),
+        uuid varchar(36),
         user_id varchar(36),
         username varchar(36),
         first_name varchar(36),
