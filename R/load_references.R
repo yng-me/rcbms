@@ -227,7 +227,11 @@ load_data_dictionary_refs <- function(.gid, .transform = T) {
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccciiiii') |>
     dplyr::filter(!is.na(variable_name)) |>
-    dplyr::mutate(valueset = dplyr::if_else(is.na(valueset), '--', valueset))
+    dplyr::mutate(valueset = dplyr::if_else(is.na(valueset), '--', valueset)) |>
+    dplyr::mutate(
+      variable_name = stringr::str_squish(stringr::str_trim(variable_name)),
+      variable_name_new = stringr::str_squish(stringr::str_trim(variable_name_new))
+    )
 
   if(.transform) {
     df <- transform_refs(df)
@@ -302,9 +306,10 @@ load_validation_refs <- function(.gid) {
     "date_introduced"
   )
 
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccccc') |>
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccic') |>
     dplyr::filter(status == 1) |>
-    dplyr::select(-status)
+    dplyr::select(-status) |>
+    dplyr::mutate(type = 1)
 
   transform_refs(df)
 

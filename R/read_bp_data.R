@@ -45,8 +45,14 @@ read_bp_data <- function(.dictionary, .config) {
       stringr::str_extract(pattern = "^\\d{10}")
 
     bpq_data[[i]] <- openxlsx::read.xlsx(path, sheet = "bpq_data") |>
-      dplyr::select(variable_name, value) |>
       janitor::clean_names() |>
+      dplyr::select(variable_name, value) |>
+      dplyr::mutate(
+        variable_name = stringr::str_squish(stringr::str_trim(variable_name)),
+        value = stringr::str_squish(stringr::str_trim(value))
+      ) |>
+      convert_to_na() |>
+      convert_to_na('NA') |>
       dplyr::filter_all(dplyr::any_vars(!is.na(.))) |>
       tidyr::pivot_wider(names_from = variable_name, values_from = value) |>
       add_geo_info(barangay_code) |>
@@ -55,34 +61,26 @@ read_bp_data <- function(.dictionary, .config) {
         .survey_round = .config$survey_round,
         .input_data = "bp",
         .config = .config
-      )
+      ) |>
+      suppressWarnings()
 
     bpq_data_list[[i]] <- openxlsx::read.xlsx(path, sheet = "Lists", startRow = 2) |>
       janitor::clean_names() |>
-      dplyr::select(2, 4, 6) |>
+      dplyr::select(2, 4) |>
       dplyr::filter_all(dplyr::any_vars(!is.na(.))) |>
       dplyr::mutate_all(as.character) |>
       tidyr::pivot_longer(dplyr::everything()) |>
       dplyr::filter(!is.na(value)) |>
       dplyr::rename(variable_name = name) |>
-      add_geo_info(barangay_code)
+      add_geo_info(barangay_code) |>
+      suppressWarnings()
 
-    bpq_data_mode_of_transport[[i]] <- openxlsx::read.xlsx(path, sheet = "Other Transportation", startRow = 3) |>
-      janitor::clean_names() |>
-      dplyr::select(mode_of_transport = 2, transport_frequency_of_operation = 3) |>
-      dplyr::filter_all(dplyr::any_vars(!is.na(.))) |>
-      dplyr::mutate(
-        mode_of_transport = as.character(mode_of_transport),
-        transport_frequency_of_operation = as.integer(transport_frequency_of_operation)
-      ) |>
-      add_geo_info(barangay_code)
   }
 
   return(
     list(
       bpq_data = dplyr::bind_rows(bpq_data),
-      bpq_data_list = dplyr::bind_rows(bpq_data_list),
-      bpq_data_mode_of_transport = dplyr::bind_rows(bpq_data_mode_of_transport)
+      bpq_data_list = dplyr::bind_rows(bpq_data_list)
     )
   )
 }

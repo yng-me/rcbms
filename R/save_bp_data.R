@@ -66,16 +66,8 @@ save_bp_data <- function(.conn, .pq_folder, .references, .config) {
       df_temp$bpq_data_list,
       file.path(.pq_folder, 'bpq_data_list.parquet')
     )
-
-    arrow::write_parquet(
-      df_temp$bpq_data_mode_of_transport,
-      file.path(.pq_folder, 'bpq_data_mode_of_transport.parquet')
-    )
-
     df$bpq_data <- arrow::open_dataset(file.path(.pq_folder, 'bpq_data.parquet'))
     df$bpq_data_list <- arrow::open_dataset(file.path(.pq_folder, 'bpq_data_list.parquet'))
-    df$bpq_data_mode_of_transport <- arrow::open_dataset(file.path(.pq_folder, 'bpq_data_mode_of_transport.parquet'))
-
   }
 
   return(df)
