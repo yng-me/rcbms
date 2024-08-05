@@ -39,6 +39,9 @@ aggregation:
   level: 5
   areas: all
 validation:
+  include_signature: false
+  include_extension: false
+  include_prelim: false
   generate_output: false
   detailed_output: false
   include_additional_info: false

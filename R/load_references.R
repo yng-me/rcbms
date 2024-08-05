@@ -608,7 +608,11 @@ load_section_refs <- function(.gid) {
               )
             ) |>
             dplyr::select(-dplyr::starts_with("validation_"), -section) |>
-            dplyr::mutate(included = TRUE)
+            dplyr::mutate(
+              included = TRUE,
+              builtin_included = TRUE,
+              extension_included = FALSE
+            )
         }),
         input
       )

@@ -130,6 +130,9 @@ utils::globalVariables(
         areas = "all"
       ),
       validation = list(
+        include_signature = FALSE,
+        include_extension = FALSE,
+        include_prelim = FALSE,
         generate_output = FALSE,
         detailed_output = FALSE,
         include_additional_info = FALSE,
