@@ -104,7 +104,7 @@ save_cbms_data <- function(
         !is.null(final_status$value) &
         !is.null(final_status$index)
         ) {
-        
+
         final_status_var <- final_status$variable[[final_status$index]]
 
         if(final_status_var %in% names(df_temp)) {
@@ -194,7 +194,8 @@ save_cbms_data <- function(
 
     df_temp <- df_temp |>
       add_metadata(dcf, .references$valueset) |>
-      create_case_id(.input_data = .input_data)
+      create_case_id(.input_data = .input_data) |>
+      dplyr::mutate(row_id = dplyr::row_number(), .before = 1)
 
     chunk <- .config$parquet$partition & !is.null(.config$parquet$partition_by)
     with_cols <- .config$parquet$partition_by %in% names(df_temp)

@@ -61,7 +61,7 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_char)),
-        as.character
+        ~ stringr::str_trim(stringr::str_squish(as.character(.)))
       )
   }
 

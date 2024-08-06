@@ -31,6 +31,9 @@ generate_validation <- function(
   }
 
   cv_ref <- .references$validation[[.config$survey_round]][[input_data]]
+  cv_ref <- cv_ref |>
+    dplyr::filter(tolower(priority_level) %in% tolower(stringr::str_trim(.config$validation$priority_level)))
+
   result_names <- names(.cv)
   result_names <- result_names[result_names %in% cv_ref$validation_id]
 
@@ -97,6 +100,10 @@ generate_validation <- function(
 
   for (i in seq_along(result_names)) {
     result_name <- result_names[i]
+
+    if(.config$verbose) {
+      cat(paste0(str_pad(formatC(nrow(.cv[[result_name]]), big.mark = ','), width = 7), ': ', result_name, '\n'))
+    }
 
     output_temp <- .cv[[result_name]] |>
       dplyr::mutate(validation_id = result_name)

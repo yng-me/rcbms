@@ -130,6 +130,7 @@ utils::globalVariables(
         areas = "all"
       ),
       validation = list(
+        priority_level = c("A", "B", "C", "D"),
         include_signature = FALSE,
         include_extension = FALSE,
         include_prelim = FALSE,

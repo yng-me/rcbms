@@ -58,6 +58,14 @@ create_case_id <- function(
           ),
           .before = 1
         )
+    } else if (.input_data == 'shp' & .config$survey_round) {
+      .data <- .data |>
+        dplyr::mutate(
+          cbms_geoid = paste0(
+            stringr::str_pad(geocode, pad = '0', width = 14),
+            stringr::str_pad(bsn, pad = '0', width = 5)
+          )
+        )
     }
   }
 
