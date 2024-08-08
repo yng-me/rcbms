@@ -125,12 +125,13 @@ generate_validation <- function(
 
     output_temp <- output_temp |>
       tidyr::nest(.key = "info") |>
-      dplyr::mutate(info = purrr::map(info, \(x) {
+      dplyr::mutate(info = purrr::map_chr(info, \(x) {
         x |>
           dplyr::mutate_all(as.character) |>
-          dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .))
+          dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
+          jsonlite::toJSON() |>
+          as.character()
       })) |>
-      dplyr::mutate(info = as.character(jsonlite::toJSON(info))) |>
       dplyr::ungroup()
 
     if (i == 1) {

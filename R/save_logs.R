@@ -37,7 +37,9 @@ save_logs <- function(.config = getOption("rcbms.config")) {
     if (input_df %in% c("hp", "ilq")) {
       by_cv_cols <- c("case_id", "validation_id", "line_number")
     } else if (input_df == "bp") {
-      by_cv_cols <- c("uuid", "validation_id")
+      by_cv_cols <- c("barangay_geo", "validation_id")
+    } else if (input_df == "shp") {
+      by_cv_cols <- c("cbms_geoid", "validation_id")
     }
 
     cv_logs <- DBI::dbReadTable(conn, cv_name) |>

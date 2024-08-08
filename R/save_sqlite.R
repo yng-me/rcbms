@@ -121,14 +121,20 @@ save_current_logs <- function(
       total_cases_unique <- 0
     }
 
-
     priority_ref <- .references$validation[[.config$survey_round]][[.input_data]] |>
-      dplyr::select(validation_id, dplyr::matches("^priority_level$"))
-
+      dplyr::select(
+        validation_id,
+        dplyr::any_of(c('priority_level', 'section'))
+      )
 
     if(!("priority_level" %in% names(priority_ref))) {
       priority_ref <- priority_ref |>
         dplyr::mutate(priority_level = NA_character_)
+    }
+
+    if(!("section" %in% names(priority_ref))) {
+      priority_ref <- priority_ref |>
+        dplyr::mutate(section = NA_character_)
     }
 
     priority_df <- cv_data |>
@@ -149,6 +155,7 @@ save_current_logs <- function(
 
     log_status <- 0
     total_cases <- nrow(cv_data)
+
   } else {
     total_cases_unique <- 0
     total_cases <- 0
@@ -160,7 +167,14 @@ save_current_logs <- function(
   }
 
   total <- NULL
-  summary_info <- list()
+  summary_info <- list(
+    priority_level = priority_df |>
+      dplyr::count(priority_level, name = 'value') |>
+      dplyr::rename(key = priority_level),
+    section = priority_df |>
+      dplyr::count(section, name = 'value') |>
+      dplyr::rename(key = section)
+  )
 
   if(exists('parquet')) {
 
@@ -185,7 +199,16 @@ save_current_logs <- function(
             final_status_var <- final_status_vars[k]
 
             summary_info[[final_status_var]] <- summary_df |>
-              dplyr::count(!!as.name(final_status_var))
+              dplyr::rename(key = !!as.name(final_status_var)) |>
+              dplyr::count(key, name = 'value') |>
+              dplyr::mutate(
+                key = dplyr::if_else(
+                  is.na(key),
+                  'NA',
+                  as.character(key)
+                )
+              ) |>
+              janitor::adorn_totals()
           }
 
           # roster
@@ -207,7 +230,16 @@ save_current_logs <- function(
             roster_df_names <- names(roster_df)
 
             summary_info$sex <- roster_df |>
-              dplyr::count(!!as.name(sex_var))
+              dplyr::rename(key = !!as.name(sex_var)) |>
+              dplyr::count(key, name = 'value') |>
+              dplyr::mutate(
+                key = dplyr::if_else(
+                  is.na(key),
+                  'NA',
+                  as.character(key)
+                )
+              ) |>
+              janitor::adorn_totals()
 
             if(length(grepl('_age_group_five_year$', roster_df_names)) >= 1) {
 

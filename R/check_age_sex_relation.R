@@ -60,24 +60,20 @@ check_age_sex_relation <- function(
       dplyr::ends_with("_geo"),
       dplyr::ends_with("_code")
     ) |>
+    dplyr::filter(
+      !!as.namae(.relation_to_primary_member) %in% c(.relation_to_primary_member),
+      !!as.name(sex_var) %in% .sex_of_primary_member
+    ) |>
     tidyr::nest()
 
 
 
   ddf |>
     dplyr::mutate(
-      data = purrr::map(data, function(x) {
-
-        df <- x |>
-          dplyr::mutate(
-            age = !!as.name(age_var),
-            relation_to_hh_head = as.integer(!!as.name(.relation_to_hh_head_var)),
-            is_primary_member = relation_to_hh_head == .primary_member & !!as.name(sex_var) %in% .sex_of_primary_member,
-            with_relation = relation_to_hh_head == .relation_to_primary_member
-          ) |>
-          dplyr::filter(is_primary_member | with_relation)
+      data = purrr::map(data, function(df) {
 
         df_list <- list()
+
         df_first <- df |>
           dplyr::filter(relation_to_hh_head == .primary_member) |>
           dplyr::mutate(
