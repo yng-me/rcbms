@@ -148,8 +148,9 @@ save_cbms_data <- function(
         by = "barangay_geo"
       )
 
-    df_temp <- sort_variable_names(df_temp, .input_data, .config)
   }
+
+  df_temp <- sort_variable_names(df_temp, .input_data, .config)
 
   df_temp_dim_after <- c(nrow(df_temp), ncol(df_temp))
   attr(df_temp, "dim_after_tidy") <- df_temp_dim_after
@@ -208,7 +209,7 @@ save_cbms_data <- function(
       .pq_path <- stringr::str_remove(.pq_path, '\\.parquet$')
       df_temp <- df_temp |>
         dplyr::group_by(dplyr::pick(dplyr::any_of(.config$parquet$partition_by)))
-        
+
       arrow::write_dataset(df_temp, .pq_path, format = 'parquet')
     } else {
       arrow::write_parquet(df_temp |> dplyr::ungroup(), .pq_path)

@@ -48,22 +48,51 @@ set_aggregation <- function(.parquet, .area_name, .config) {
 
       cols_geo <- paste0(agg$levels[cols], "_code")
 
-      agg[[input_data]]$areas_unique <- .parquet[[input_data]][[agg_record]] |>
+      df_temp <- .parquet[[input_data]][[agg_record]] |>
         dplyr::select(dplyr::any_of(cols_geo)) |>
         dplyr::distinct() |>
         dplyr::collect() |>
+        dplyr::mutate_at(
+          dplyr::vars(dplyr::any_of(cols_geo)),
+          as.integer
+        ) |>
         dplyr::left_join(
           transform_area_name(
             .area_name,
             .add_length = config$project$add_length
           ) |>
-            dplyr::select(
-              dplyr::any_of(cols_geo),
-              dplyr::any_of(agg$levels[cols]),
-              dplyr::any_of('is_huc')
-            ),
+          dplyr::mutate_at(
+            dplyr::vars(dplyr::any_of(cols_geo)),
+            as.integer
+          ) |>
+          dplyr::select(
+            dplyr::any_of(cols_geo),
+            dplyr::any_of(agg$levels[cols]),
+            dplyr::any_of('is_huc')
+          ),
           by = cols_geo
-        ) |>
+        )
+
+      if('region_code' %in% names(df_temp)) {
+        df_temp <- df_temp |>
+          dplyr::mutate(region_code = stringr::str_pad(region_code, pad = '0', width = 2))
+      }
+
+      if('province_code' %in% names(df_temp)) {
+        df_temp <- df_temp |>
+          dplyr::mutate(
+            province_code = stringr::str_pad(
+              province_code, pad = '0', width = 2 + config$project$add_length
+            )
+          )
+      }
+
+      if('city_mun_code' %in% names(df_temp)) {
+        df_temp <- df_temp |>
+          dplyr::mutate(city_mun_code = stringr::str_pad(city_mun_code, pad = '0', width = 2))
+      }
+
+      agg[[input_data]]$areas_unique <- df_temp |>
         tidyr::unite('area_code', dplyr::any_of(cols_geo), sep = '') |>
         tidyr::unite('area_name', dplyr::any_of(rev(agg$levels[cols])), sep = ', ', na.rm = T) |>
         dplyr::distinct()
@@ -74,10 +103,10 @@ set_aggregation <- function(.parquet, .area_name, .config) {
       if (tolower(agg_areas_i[1]) != "all") {
         if (grepl("\\d+", agg_areas_i)) {
           agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
-            dplyr::filter(area_code %in% agg_areas_i)
+            dplyr::filter(area_code %in% as.integer(agg_areas_i))
         } else {
           agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
-            dplyr::filter(area_name %in% agg_areas_i)
+            dplyr::filter(area_name %in% as.integer(agg_areas_i))
         }
       }
 
