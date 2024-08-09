@@ -171,6 +171,8 @@ save_cbms_data <- function(
     df_temp_dim <- paste0("(", df_temp_dim, ") ")
   }
 
+  attr(df_temp, "date_extracted") <- Sys.time()
+
   if(.config$parquet$encrypt &
      !is.null(.config$env$PQ_KEY_PUB) &
      !is.null(.config$env$PQ_KEY_PRV)
@@ -206,9 +208,7 @@ save_cbms_data <- function(
       .pq_path <- stringr::str_remove(.pq_path, '\\.parquet$')
       df_temp <- df_temp |>
         dplyr::group_by(dplyr::pick(dplyr::any_of(.config$parquet$partition_by)))
-
-      print(dplyr::group_vars(df_temp))
-
+        
       arrow::write_dataset(df_temp, .pq_path, format = 'parquet')
     } else {
       arrow::write_parquet(df_temp |> dplyr::ungroup(), .pq_path)

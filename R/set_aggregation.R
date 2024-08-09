@@ -24,66 +24,60 @@ set_aggregation <- function(.parquet, .area_name, .config) {
 
   agg_level <- .config$aggregation$level
   agg_areas <- .config$aggregation$areas
-  agg$levels <- c("barangay", "city_mun", "province", "region", "all_area")
-  agg$labels <- c("Barangay", "City/Municipality", "Province", "Region", "Philippines")
-
+  agg$levels <- c("all", "region", "province", "city_mun", "barangay", "ean")
 
   for (i in seq_along(.config$input_data)) {
+
     input_data <- .config$input_data[[i]]
     agg_record <- .config$project[[input_data]][['summary_record']]
+
     agg_level_i <- .config$project[[input_data]]$aggregation$level
 
     if (is.null(agg_level_i)) agg_level_i <- agg_level
-    if (agg_level_i > 4) agg_level_i <- 4
-    if (agg_level_i < 1) agg_level_i <- 1
 
-    agg[[input_data]]$value <- agg$levels[agg_level_i]
-    agg[[input_data]]$label <- agg$labels[agg_level_i]
+    if (agg_level_i > 5) agg_level_i <- 5
+    if (agg_level_i < 0) agg_level_i <- 0
 
     if (!is.null(agg_record)) {
-      agg[[input_data]]$areas_all <- .parquet[[input_data]][[agg_record]] |>
-        dplyr::distinct(region_code, province_code, city_mun_code, barangay_code) |>
-        dplyr::collect() |>
-        create_barangay_geo() |>
-        dplyr::select(-dplyr::contains("_code")) |>
-        dplyr::left_join(
-          transform_area_name(.area_name, .add_length = .config$project$add_length),
-          by = 'barangay_geo'
-        ) |>
-        dplyr::select(
-          dplyr::starts_with(c("region", "province", "city_mun", "barangay")),
-          dplyr::any_of("is_huc")
-        ) |>
+
+      if(agg_level_i == 5) {
+        cols <- (1:5) + 1
+      } else {
+        cols <- (1:agg_level_i) + 1
+      }
+
+      cols_geo <- paste0(agg$levels[cols], "_code")
+
+      agg[[input_data]]$areas_unique <- .parquet[[input_data]][[agg_record]] |>
+        dplyr::select(dplyr::any_of(cols_geo)) |>
         dplyr::distinct() |>
-        tidyr::drop_na() |>
-        dplyr::mutate(
-          all_area_geo = "",
-          all_area_agg = "All Areas",
-          region_geo = region_code,
-          .before = 1
-        )
+        dplyr::collect() |>
+        dplyr::left_join(
+          transform_area_name(
+            .area_name,
+            .add_length = config$project$add_length
+          ) |>
+            dplyr::select(
+              dplyr::any_of(cols_geo),
+              dplyr::any_of(agg$levels[cols]),
+              dplyr::any_of('is_huc')
+            ),
+          by = cols_geo
+        ) |>
+        tidyr::unite('area_code', dplyr::any_of(cols_geo), sep = '') |>
+        tidyr::unite('area_name', dplyr::any_of(rev(agg$levels[cols])), sep = ', ', na.rm = T) |>
+        dplyr::distinct()
 
-      geo_name <- paste0(agg$levels[agg_level_i + 1], "_geo")
-      geo_agg <- paste0(agg$levels[agg_level_i + 1], "_agg")
-
-      agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_all |>
-        dplyr::select(dplyr::any_of(c(geo_name, geo_agg))) |>
-        dplyr::distinct(!!as.name(geo_name), .keep_all = T) |>
-        dplyr::rename(
-          code = !!as.name(geo_name),
-          label = !!as.name(geo_agg)
-        )
-
-      agg_areas_i <- .config$project[[input_data]]$aggregation$areas
+      agg_areas_i <- config$project[[input_data]]$aggregation$areas
       if (is.null(agg_areas_i)) agg_areas_i <- agg_areas
 
       if (tolower(agg_areas_i[1]) != "all") {
         if (grepl("\\d+", agg_areas_i)) {
           agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
-            dplyr::filter(code %in% agg_areas_i)
+            dplyr::filter(area_code %in% agg_areas_i)
         } else {
           agg[[input_data]]$areas_unique <- agg[[input_data]]$areas_unique |>
-            dplyr::filter(label %in% agg_areas_i)
+            dplyr::filter(area_name %in% agg_areas_i)
         }
       }
 
@@ -98,12 +92,12 @@ set_aggregation <- function(.parquet, .area_name, .config) {
         )
 
         areas_cli <- agg[[input_data]]$areas_unique |>
-          dplyr::select(code, label)
+          dplyr::select(area_code, area_name)
 
         cli::cli_ul(
           paste0(
-            cli::style_bold(areas_cli$code), " ",
-            areas_cli$label, " ",
+            cli::style_bold(areas_cli$area_code), " ",
+            areas_cli$area_name, " ",
             cli::col_br_cyan("✓")
           )
         )
