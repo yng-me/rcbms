@@ -38,12 +38,14 @@ mode:
 aggregation:
   level: 5
   areas: all
+  by_area: false
 validation:
   include_signature: false
   include_extension: false
   include_prelim: false
   generate_output: false
   detailed_output: false
+  check_duplicate_members: false
   include_additional_info: false
   add_uuid: true
   save_as_excel: false

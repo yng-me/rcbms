@@ -24,8 +24,8 @@ generate_validation <- function(
   .save_as_json = TRUE
 ) {
 
-  if(exists("current_input_data")) {
-    input_data <- current_input_data
+  if(exists("CURRENT_INPUT_DATA")) {
+    input_data <- CURRENT_INPUT_DATA
   } else {
     input_data <- .config$input_data[1]
   }
@@ -95,7 +95,7 @@ generate_validation <- function(
     }
   }
 
-  uid <- .config$project[[current_input_data]]$id
+  uid <- .config$project[[CURRENT_INPUT_DATA]]$id
   if (is.null(uid)) uid <- "case_id"
 
   for (i in seq_along(result_names)) {

@@ -174,20 +174,21 @@ save_cbms_data <- function(
 
   attr(df_temp, "date_extracted") <- Sys.time()
 
-  if(.config$parquet$encrypt &
-     !is.null(.config$env$PQ_KEY_PUB) &
-     !is.null(.config$env$PQ_KEY_PRV)
-  ) {
+  use_encryption <- .config$parquet$encrypt &
+    !is.null(.config$env$AES_KEY) &
+    !is.null(.config$env$AES_IV)
+
+  if(use_encryption) {
 
     df_temp <- df_temp |>
       create_case_id(.input_data = .input_data) |>
-      tibble::tibble()
+      tibble::tibble() |>
+      dplyr::mutate(row_id = dplyr::row_number(), .before = 1)
 
-    key_pub <- .config$env$PQ_KEY_PUB
     q_to_pq <- paste0(
       "COPY df_temp TO '",
       .pq_path ,
-      "' (ENCRYPTION_CONFIG {footer_key: '", key_pub, "'});"
+      "' (ENCRYPTION_CONFIG { footer_key: '", .config$env$AES_KEY, "' });"
     )
 
     DBI::dbWriteTable(.conn, name = "df_temp", value = df_temp, overwrite = T)
@@ -222,7 +223,7 @@ save_cbms_data <- function(
   if (.config$verbose) {
     cli::cli_alert_info(
       paste0(
-        "Importing ", cli::col_br_yellow(.p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
+        "Imported ", cli::col_br_yellow(.p_name), " record ", df_temp_dim, cli::col_br_cyan("✓")
       )
     )
   }

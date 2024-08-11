@@ -36,12 +36,12 @@ validate_select <- function(.data, ...) {
     config <- getOption('rcbms.config')
   }
 
-  uid <- config$project[[current_input_data]]$id
+  uid <- config$project[[CURRENT_INPUT_DATA]]$id
 
   if (is.null(uid)) uid <- "case_id"
 
-  if (!exists("current_input_data")) {
-    current_input_data <- config$input_data[1]
+  if (!exists("CURRENT_INPUT_DATA")) {
+    CURRENT_INPUT_DATA <- config$input_data[1]
   }
 
   add_length <- config$project$add_length
@@ -53,19 +53,19 @@ validate_select <- function(.data, ...) {
     .data <- .data |> create_barangay_geo()
   }
 
-  if (!("barangay_geo" %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
+  if (!("barangay_geo" %in% names(.data)) & CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length))
   }
 
-  if (current_input_data %in% c("hp", "ilq")) {
+  if (CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(
         ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length)
       )
   }
 
-  if (!("line_number" %in% names(.data)) & current_input_data %in% c("hp", "ilq")) {
+  if (!("line_number" %in% names(.data)) & CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
     .data <- .data |>
       dplyr::mutate(line_number = NA_character_)
   }
@@ -81,15 +81,15 @@ validate_select <- function(.data, ...) {
 
   join_hh_info <- config$validation$include_additional_info
 
-  summary_record <- config$project[[current_input_data]][['summary_record']]
+  summary_record <- config$project[[CURRENT_INPUT_DATA]][['summary_record']]
 
   if (isTRUE(join_hh_info) & !is.null(summary_record)) {
     parquet <- get_config("parquet")
-    summary_df <- parquet[[current_input_data]][[summary_record]]
+    summary_df <- parquet[[CURRENT_INPUT_DATA]][[summary_record]]
     if (!is.null(summary_df)) {
       hh_info <- summary_df |>
         dplyr::collect() |>
-        create_case_id(.input_data = current_input_data) |>
+        create_case_id(.input_data = CURRENT_INPUT_DATA) |>
         dplyr::select(
           dplyr::any_of(
             c(

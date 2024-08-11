@@ -77,9 +77,11 @@ check_duplicate_code <- function(
   if(stringify_info) {
     .data |>
       mutate(data = purrr::map(data, \(x) {
-        x |> dplyr::mutate_all(as.character)
+        x |>
+          dplyr::mutate_all(as.character) |>
+          jsonlite::toJSON() |>
+          as.character()
       })) |>
-      dplyr::mutate(data = as.character(jsonlite::toJSON(data))) |>
       select_cv(data)
   } else {
     .data |>

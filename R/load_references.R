@@ -273,6 +273,7 @@ load_valueset_refs <- function(.gid) {
   )
 
   load_refs_from_gsheet(.gid, cols, col_types = 'ccc') |>
+    dplyr::filter(value != '---') |>
     dplyr::bind_rows(psced) |>
     dplyr::bind_rows(psic) |>
     dplyr::bind_rows(psoc) |>

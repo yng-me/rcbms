@@ -18,7 +18,7 @@ create_case_id <- function(
 
   if (is.null(.input_data)) {
     if (exists("CURRENT_INPUT_DATA")) {
-      .input_data <- current_input_data
+      .input_data <- CURRENT_INPUT_DATA
     }
   } else {
     if (.input_data == "bp") return(.data)

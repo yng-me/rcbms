@@ -22,8 +22,8 @@ bind_parquet <- function(
 
 
   if (is.null(.input_data)) {
-    if (exists("current_input_data")) {
-      .input_data <- current_input_data
+    if (exists("CURRENT_INPUT_DATA")) {
+      .input_data <- CURRENT_INPUT_DATA
     } else {
       .input_data <- "hp"
     }

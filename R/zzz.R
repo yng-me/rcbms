@@ -60,7 +60,7 @@ utils::globalVariables(
     "Version",
     "survey_round",
     "current_area_code",
-    "current_input_data",
+    "CURRENT_INPUT_DATA",
     "relation_to_hh_head",
     "is_primary_member",
     "with_relation",
@@ -128,7 +128,8 @@ utils::globalVariables(
       ),
       aggregation = list(
         level = 4,
-        areas = "all"
+        areas = "all",
+        by_area = FALSE
       ),
       validation = list(
         priority_level = c("A", "B", "C", "D"),
@@ -137,6 +138,7 @@ utils::globalVariables(
         include_prelim = FALSE,
         generate_output = FALSE,
         detailed_output = FALSE,
+        check_duplicate_members = FALSE,
         include_additional_info = FALSE,
         validate_signatures = FALSE,
         add_uuid = TRUE,

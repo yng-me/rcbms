@@ -23,17 +23,18 @@ read_cbms_data <- function(.references, .config) {
 
   partition <- .config$parquet$partition
 
+  duckdb_conn <- NULL
   use_encryption <- .config$parquet$encrypt &
-    !is.null(.config$env$PQ_KEY_PUB) &
-    !is.null(.config$env$PQ_KEY_PRV)
+    !is.null(.config$env$AES_KEY) &
+    !is.null(.config$env$AES_IV)
 
   if(use_encryption) {
 
-    conn <- DBI::dbConnect(duckdb::duckdb())
-    key_pub <- .config$env$PQ_KEY_PUB
-    key_prv <- .config$env$PQ_KEY_PRV
-    q_encrypt <- paste0("PRAGMA add_parquet_key('", key_pub, "', '", key_prv, "');")
-    DBI::dbExecute(conn, q_encrypt)
+    duckdb_conn <- DBI::dbConnect(duckdb::duckdb())
+    aes_key <- .config$env$AES_KEY
+    aes_iv <- .config$env$AES_IV
+    q_encrypt <- paste0("PRAGMA add_parquet_key('", aes_key, "', '", aes_iv, "');")
+    DBI::dbExecute(duckdb_conn, q_encrypt)
 
   }
 
@@ -68,11 +69,11 @@ read_cbms_data <- function(.references, .config) {
 
     if(is_bp_data & convert_to_parquet) {
 
-      df$bp <- save_bp_data(conn, pq_folder, .references, .config)
+      df$bp <- save_bp_data(duckdb_conn, pq_folder, .references, .config)
 
     } else if (is_shp_data & convert_to_parquet) {
 
-      df$shp <- save_shp_data(conn, pq_folder, .references, .config)
+      df$shp <- save_shp_data(duckdb_conn, pq_folder, .references, .config)
 
     } else {
 
@@ -94,7 +95,7 @@ read_cbms_data <- function(.references, .config) {
           is_first_record <- j == 1 & df_files$unique$n[j] == 0
 
           df_temp <- save_cbms_data(
-            conn,
+            .conn = duckdb_conn,
             .df_src_files = df_src_files$value,
             .input_data = input_data,
             .pq_path = pq_path,
@@ -128,7 +129,7 @@ read_cbms_data <- function(.references, .config) {
               "SELECT * FROM read_parquet('",
               pq_path,
               "', encryption_config = { footer_key: '",
-              key_pub,
+              aes_key,
               "' });"
             )
 
@@ -137,11 +138,9 @@ read_cbms_data <- function(.references, .config) {
               dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
             }
 
-            df_from_db <- DBI::dbGetQuery(conn, q_pq) |>
+            df[[input_data]][[p_name]] <- DBI::dbGetQuery(duckdb_conn, q_pq) |>
               add_metadata(dcf, .references$valueset) |>
               arrow::arrow_table()
-
-            df[[input_data]][[p_name]] <- df_from_db
 
           } else {
 
@@ -165,7 +164,7 @@ read_cbms_data <- function(.references, .config) {
   }
 
 
-  if(use_encryption) DBI::dbDisconnect(conn, shutdown = TRUE)
+  if(use_encryption) DBI::dbDisconnect(duckdb_conn, shutdown = TRUE)
   df <- set_class(df, "rcbms_parquet")
 
   return(invisible(df))
