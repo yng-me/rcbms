@@ -21,6 +21,7 @@ Imports:
   arrow,
   duckdb,
   sf,
+  openssl (>= 2.1.1),
   janitor (>= 2.2.0),
   dplyr (>= 1.1.0),
   tidyr (>= 1.1.0),

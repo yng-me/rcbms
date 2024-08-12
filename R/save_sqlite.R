@@ -1,6 +1,6 @@
 save_rcbms_logs <- function(.data, .input_data, .references, .config) {
 
-  conn <- connect_to_rcbms_logs(.config)
+  conn <- connect_to_rcbms_logs(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
   save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
@@ -12,11 +12,11 @@ save_rcbms_logs <- function(.data, .input_data, .references, .config) {
 }
 
 
-connect_to_rcbms_logs <- function(.config) {
+connect_to_rcbms_logs <- function(.config, .input_data) {
   wd <- create_new_folder(file.path(.config$base, "data", "log"))
   v <- config$version$db
   if (is.null(v)) v <- "0.0.1"
-  db_name <- paste0(wd, "/rcbms_logs_v", v, ".db")
+  db_name <- file.path(wd, paste0(.input_data, "_rcbms_logs_v", v, ".db"))
   conn <- DBI::dbConnect(RSQLite::SQLite(), db_name)
   return(conn)
 }
@@ -107,6 +107,7 @@ save_current_logs <- function(
   uid <- "case_id"
   if (.input_data == "bp") uid <- "barangay_geo"
   current_id <- 1
+  summary_info <- list()
 
   if (!is.null(.data)) {
     cv_data <- .data |>
@@ -153,6 +154,15 @@ save_current_logs <- function(
     total_priority_c <- get_priority("c")
     total_priority_d <- get_priority("d")
 
+    summary_info <- list(
+      priority_level = priority_df |>
+        dplyr::count(priority_level, name = 'value') |>
+        dplyr::rename(key = priority_level),
+      section = priority_df |>
+        dplyr::count(section, name = 'value') |>
+        dplyr::rename(key = section)
+    )
+
     log_status <- 0
     total_cases <- nrow(cv_data)
 
@@ -167,14 +177,6 @@ save_current_logs <- function(
   }
 
   total <- NULL
-  summary_info <- list(
-    priority_level = priority_df |>
-      dplyr::count(priority_level, name = 'value') |>
-      dplyr::rename(key = priority_level),
-    section = priority_df |>
-      dplyr::count(section, name = 'value') |>
-      dplyr::rename(key = section)
-  )
 
   if(exists('parquet')) {
 

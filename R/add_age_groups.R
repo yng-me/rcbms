@@ -9,6 +9,7 @@
 #'
 #' @examples
 add_age_groups <- function(.data, .age, .prefix = "a07") {
+
   .data <- .data |>
     dplyr::mutate(
       add_age_group_five_year = dplyr::case_when(
@@ -73,85 +74,5 @@ add_age_groups <- function(.data, .age, .prefix = "a07") {
       dplyr::starts_with("add_age_group_")
     )
 
-  attr(.data[[paste0(.prefix, "_age_group_five_year")]], "type") <- "i"
-  attr(.data[[paste0(.prefix, "_age_group_five_year")]], "item") <- toupper(.prefix)
-  attr(.data[[paste0(.prefix, "_age_group_five_year")]], "label") <- "5-year age group"
-  attr(.data[[paste0(.prefix, "_age_group_five_year")]], "valueset") <- data.frame(
-    value = 1L:21L,
-    label = c(
-      "< 5",
-      "5-9",
-      "10-14",
-      "15-19",
-      "20-24",
-      "25-29",
-      "30-34",
-      "35-39",
-      "40-44",
-      "45-49",
-      "50-54",
-      "55-59",
-      "60-64",
-      "65-69",
-      "70-74",
-      "75-79",
-      "80-84",
-      "85-89",
-      "90-94",
-      "95-99",
-      "100+"
-    )
-  )
-
-  attr(.data[[paste0(.prefix, "_age_group_hh_head")]], "type") <- "i"
-  attr(.data[[paste0(.prefix, "_age_group_hh_head")]], "item") <- toupper(.prefix)
-  attr(.data[[paste0(.prefix, "_age_group_hh_head")]], "label") <- "15-year age group"
-  attr(.data[[paste0(.prefix, "_age_group_hh_head")]], "valueset") <- data.frame(
-    value = 1L:7L,
-    label = c(
-      "Less than 15",
-      "15-24",
-      "25-34",
-      "35-44",
-      "45-54",
-      "55-64",
-      "65 and over"
-    )
-  )
-
-  attr(.data[[paste0(.prefix, "_age_group_fertility")]], "type") <- "i"
-  attr(.data[[paste0(.prefix, "_age_group_fertility")]], "item") <- toupper(.prefix)
-  attr(.data[[paste0(.prefix, "_age_group_fertility")]], "label") <- "Age group (fertility)"
-  attr(.data[[paste0(.prefix, "_age_group_fertility")]], "valueset") <- data.frame(
-    value = 1L:9L,
-    label = c(
-      "Less than 15",
-      "15-19",
-      "20-24",
-      "25-29",
-      "30-34",
-      "35-39",
-      "40-44",
-      "45-49",
-      "50 and over"
-    )
-  )
-
-  attr(.data[[paste0(.prefix, "_age_group_schooling")]], "type") <- "i"
-  attr(.data[[paste0(.prefix, "_age_group_schooling")]], "item") <- toupper(.prefix)
-  attr(.data[[paste0(.prefix, "_age_group_schooling")]], "label") <- "Age group (schooling)"
-  attr(.data[[paste0(.prefix, "_age_group_schooling")]], "valueset") <- data.frame(
-    value = 1L:7L,
-    label = c(
-      "3-4 years old",
-      "5 years old",
-      "6-11 years old",
-      "12-15 years old",
-      "16-17 years old",
-      "18-20 years old",
-      "21-24 years old"
-    )
-  )
-
-  return(.data)
+  return(.data |> add_extra_meta(.age_prefix = .prefix))
 }
