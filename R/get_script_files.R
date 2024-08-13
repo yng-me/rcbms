@@ -12,57 +12,54 @@
 
 get_script_files <- function(.input_data, .section = NULL, .config = getOption("rcbms.config")) {
 
-  script_files <- list.files(
-    join_path(.config$base, "scripts", .config$mode$type, .input_data),
-    pattern = "\\.(r|R)$",
-    full.names = T
-  )
+  script_files_all <- list.files(
+      join_path(.config$base, "scripts", .config$mode$type, .input_data),
+      pattern = "\\.(r|R)$",
+      full.names = T
+    ) |>
+    dplyr::as_tibble() |>
+    dplyr::mutate(title = stringr::str_remove(basename(tolower(value)), '\\.(r|R)$')) |>
+    dplyr::mutate(order = seq(1:dplyr::n())) |>
+    dplyr::mutate(order = order + 2) |>
+    dplyr::arrange(order, value) |>
+    dplyr::mutate(order = dplyr::if_else(grepl('^__initial', value), 0L, order)) |>
+    dplyr::mutate(order = dplyr::if_else(grepl('^__*', value), 1L, order)) |>
+    dplyr::mutate(order = dplyr::if_else(grepl('^_.*', value), 2L, order)) |>
+    dplyr::transmute(
+      input_data = .input_data,
+      file = value,
+      order
+    )
 
-  if (length(script_files) == 0) {
+  if (length(script_files_all) == 0) {
     return(NULL)
   }
 
-  if(.config$mode$edit == 0 | .config$mode$edit == 4) {
 
-    if(.config$mode$edit == 4) {
-      grepl_file <- "^__[initial|signature]"
-    } else if (.config$mode$edit == 0) {
-      grepl_file <- "^__[initial|preliminary]"
-    }
+  # Prelim
+  if(.config$mode$edit == 0) {
 
-    script_files <- script_files |>
-      dplyr::as_tibble() |>
-      dplyr::mutate(title = stringr::str_remove(basename(tolower(value)), '\\.(r|R)$')) |>
-      dplyr::filter(grepl(grepl_file, title)) |>
-      dplyr::mutate(order = seq(1:dplyr::n())) |>
-      dplyr::mutate(order = order + 1) |>
-      dplyr::mutate(order = dplyr::if_else(grepl('^__*', value), 0L, order)) |>
-      dplyr::mutate(order = dplyr::if_else(grepl('^_.*', value), 1L, order)) |>
-      dplyr::transmute(
-        input_data = .input_data,
-        file = value,
-        order
+    script_files_final <- script_files_all |>
+      dplyr::filter(
+        grepl(
+          "^(__initial|_preliminary|_duplicate)",
+          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+        )
       )
 
-  } else {
+  # Signature
+  } else if (.config$mode$edit == 3) {
 
-    script_files <- script_files |>
-      dplyr::as_tibble() |>
-      dplyr::mutate(s = seq(1:dplyr::n())) |>
-      dplyr::mutate(s = dplyr::if_else(grepl('__', value), 0L, s)) |>
-      dplyr::arrange(s, value) |>
-      dplyr::select(value, order = s) |>
-      dplyr::mutate(title = stringr::str_remove(basename(value), '\\.(r|R)$')) |>
-      dplyr::mutate(
-        title = paste0(
-          toupper(stringr::str_sub(title, 1, 1)),
-          stringr::str_remove(stringr::str_sub(title, 2, -1), '-[a-z0-1]$'), ' ',
-          toupper(stringr::str_sub(title, -1))
-        ),
-        input_data = .input_data
-      ) |>
-      dplyr::rename(file = value) |>
-      dplyr::select(input_data, file, order)
+    script_files_final <- script_files_all |>
+      dplyr::filter(
+        grepl(
+          "^(__initial|_signature)",
+          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+        )
+      )
+
+  # Others
+  }  else {
 
     section_ref <- .section[[.config$survey_round]][[.input_data]]
     selected_scripts <- NULL
@@ -108,7 +105,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         start_files_grep <- 'initial'
       }
 
-      script_files_final <- script_files |>
+      script_files_final <- script_files_all |>
         dplyr::mutate(name = stringr::str_remove_all(basename(file), '\\.R$')) |>
         dplyr::filter(name %in% selected_scripts | grepl(start_files_grep, name)) |>
         dplyr::select(-name)
@@ -133,20 +130,33 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     }
 
     if(.config$validation$include_prelim) {
-      script_files_final <- dplyr::tibble(
-
+      script_files_final <- script_files_all |>
+        dplyr::filter(
+          grepl(
+            "^(__initial|_preliminary|_duplicate)",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
         ) |>
         dplyr::bind_rows(script_files_final)
 
     }
 
     if(.config$validation$include_signature) {
-
+      script_files_final <- script_files_all |>
+        dplyr::filter(
+          grepl(
+            "^(__initial|_signature)",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
+        ) |>
+        dplyr::bind_rows(script_files_final)
 
     }
-
   }
 
 
-  return(script_files_final)
+  script_files_final |>
+    dplyr::distinct(.keep_all = T) |>
+    dplyr::arrange(order, file)
+
 }
