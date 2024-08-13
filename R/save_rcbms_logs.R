@@ -131,6 +131,9 @@ save_current_logs <- function(
   total <- summary_stat$total
   summary_info <- summary_stat$summary_info
 
+  verified_at <- NULL
+  if(log_status == 2) verified_at <- Sys.time()
+
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
     name = "logs",
@@ -154,6 +157,7 @@ save_current_logs <- function(
       version_app = .config$version$app,
       version_package = .config$version$package,
       version_script = .config$version$script,
+      verified_at = verified_at,
       status = log_status,
       pc_os = tolower(pc[["sysname"]]),
       pc_user = pc[["user"]],
