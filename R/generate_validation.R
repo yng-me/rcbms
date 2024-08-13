@@ -15,7 +15,7 @@
 #' @examples
 generate_validation <- function(
   .cv,
-  .references,
+  .cv_ref,
   .config,
   .detailed_output = FALSE,
   .include_additional_info = FALSE,
@@ -30,12 +30,11 @@ generate_validation <- function(
     input_data <- .config$input_data[1]
   }
 
-  cv_ref <- .references$validation[[.config$survey_round]][[input_data]]
-  cv_ref <- cv_ref |>
+  .cv_ref <- .cv_ref |>
     dplyr::filter(tolower(priority_level) %in% tolower(stringr::str_trim(.config$validation$priority_level)))
 
   result_names <- names(.cv)
-  result_names <- result_names[result_names %in% cv_ref$validation_id]
+  result_names <- result_names[result_names %in% .cv_ref$validation_id]
 
   with_incon <- NULL
   is_not_rcbms_cv_tbl <- NULL
@@ -157,18 +156,9 @@ generate_validation <- function(
         "sitio_or_purok"
       )
     }
-
-    if (.add_uuid) {
-      if ("uuid" %in% names(output)) {
-        output <- output |> dplyr::rename(id = "uuid")
-      } else {
-        output <- output |> add_uuid(.id_name = "id")
-      }
-    }
-
   }
 
-  save_rcbms_logs(output, input_data, .references, .config)
+  save_rcbms_logs(output, input_data, .cv_ref, .config)
 
   return(output)
 }

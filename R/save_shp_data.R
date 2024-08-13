@@ -30,14 +30,15 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
     ) |>
     dplyr::as_tibble() |>
     dplyr::filter(!grepl('[$]', value)) |>
-    # dplyr::filter(grepl('^\\d{10}', basename(value))) |>
     dplyr::pull(value)
 
   df_list <- list()
 
   for(i in seq_along(shp_data_files)) {
 
-    df_temp <- sf::st_read(shp_data_files[i]) |>
+    shp_layer <- stringr::str_remove_all(basename(shp_data_files[i]), file_format)
+
+    df_temp <- sf::st_read(shp_data_files[i], layer = shp_layer) |>
       dplyr::tibble() |>
       janitor::clean_names()
 
@@ -53,6 +54,19 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
   arrow::write_parquet(
     df_list |>
       dplyr::bind_rows() |>
+      dplyr::mutate(
+        cbms_geoid = paste0(geocode, bsn),
+        province_code = stringr::str_sub(geocode, 1, 3),
+        city_mun_code = stringr::str_sub(geocode, 4, 5),
+        barangay_code = stringr::str_sub(geocode, 6, 8),
+        ean = stringr::str_sub(geocode, 9, 14),
+        .before = 1
+      ) |>
+      dplyr::left_join(
+        .references$area_name_new |>
+          dplyr::distinct(region_code, province_code),
+        by = 'province_code'
+      ) |>
       add_metadata(dcf, .references$valueset),
     file.path(.pq_folder, 'shp_data.parquet')
   )

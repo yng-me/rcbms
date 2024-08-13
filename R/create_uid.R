@@ -34,7 +34,7 @@ create_case_id <- function(
         dplyr::mutate(
           case_id = paste0(
             stringr::str_pad(region_code, pad = '0', width = 2),
-            stringr::str_pad(province_code, pad = '0', width = 2 + add_length),
+            stringr::str_pad(province_huc_code, pad = '0', width = 2 + add_length),
             stringr::str_pad(city_mun_code, pad = '0', width = 2),
             stringr::str_pad(barangay_code, pad = '0', width = 3),
             stringr::str_pad(ean, pad = '0', width = 6),

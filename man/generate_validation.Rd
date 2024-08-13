@@ -6,7 +6,7 @@
 \usage{
 generate_validation(
   .cv,
-  .references,
+  .cv_ref,
   .config,
   .detailed_output = FALSE,
   .include_additional_info = FALSE,

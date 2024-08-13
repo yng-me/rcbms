@@ -116,8 +116,12 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_date_col)),
-        lubridate::ymd
+        ~ stringr::str_trim(stringr::str_squish(as.character(.)))
       )
+      # dplyr::mutate_at(
+      #   dplyr::vars(dplyr::any_of(as_date_col)),
+      #   lubridate::mdy
+      # )
   }
 
   # convert to year
@@ -126,8 +130,12 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_year)),
-        ~ lubridate::year(as.Date(as.character(.), format = "%Y"))
+        as.integer
       )
+      # dplyr::mutate_at(
+      #   dplyr::vars(dplyr::any_of(as_year)),
+      #   ~ lubridate::year(as.Date(as.character(.), format = "%Y"))
+      # )
   }
 
   # convert to month
@@ -136,19 +144,27 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_month)),
-        ~ lubridate::month(as.Date(as.character(.), format = "%m"))
+        as.integer
       )
+      # dplyr::mutate_at(
+      #   dplyr::vars(dplyr::any_of(as_month)),
+      #   ~ lubridate::month(as.Date(as.character(.), format = "%m"))
+      # )
   }
 
-  # convert to month
+  # convert to time
   as_time <- get_col_type("t")
 
   if (length(as_time) > 0) {
     .data <- .data |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_time)),
-        as.character
+        ~ stringr::str_trim(stringr::str_squish(as.character(.)))
       )
+      # dplyr::mutate_at(
+      #   dplyr::vars(dplyr::any_of(as_time)),
+      #   as.character
+      # )
   }
 
   from_dcf <- .dictionary$variable_name
