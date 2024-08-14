@@ -1,10 +1,10 @@
-save_rcbms_logs <- function(.data, .input_data, .references, .config) {
+save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL) {
 
   conn <- connect_to_rcbms_logs_db(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
   create_logs_table(conn, log_tables)
-  save_current_logs(conn, .data, .input_data, log_tables, .references, .config)
+  save_current_logs(conn, .data, .input_data, log_tables, .references, .config, .section_ref)
 
   create_remarks_table(conn, log_tables)
 
@@ -18,7 +18,8 @@ save_current_logs <- function(
   .input_data,
   .tables,
   .references,
-  .config
+  .config,
+  .section_ref = NULL
 ) {
 
 
@@ -39,6 +40,7 @@ save_current_logs <- function(
   total_priority_b <- 0
   total_priority_c <- 0
   total_priority_d <- 0
+  partial <- 0
 
   mode <- .config$mode$type
 
@@ -112,6 +114,17 @@ save_current_logs <- function(
     log_status <- 0
     total_cases <- nrow(db_data_to_store)
 
+    if(!is.null(.section_ref)) {
+
+      selected_sec <- .section_ref |>
+        dplyr::filter(included, builtin_included) |>
+        nrow()
+
+      if(selected_sec < nrow(.section_ref)) {
+        partial <- 1
+      }
+    }
+
   }
 
   if((mode == "tabulation" | mode == "ts") & !is.null(.data)) {
@@ -134,6 +147,7 @@ save_current_logs <- function(
   verified_at <- NULL
   if(log_status == 2) verified_at <- Sys.time()
 
+
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
     name = "logs",
@@ -147,6 +161,7 @@ save_current_logs <- function(
       input_data = .input_data,
       area_code = current_area_code,
       total = total,
+      partial = partial,
       summary = as.character(jsonlite::toJSON(summary_info)),
       total_cases = total_cases,
       total_cases_unique = total_cases_unique,

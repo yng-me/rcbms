@@ -16,6 +16,7 @@
 generate_validation <- function(
   .cv,
   .cv_ref,
+  .section_ref,
   .config,
   .detailed_output = FALSE,
   .include_additional_info = FALSE,
@@ -158,7 +159,7 @@ generate_validation <- function(
     }
   }
 
-  save_rcbms_logs(output, input_data, .cv_ref, .config)
+  save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
 
   return(output)
 }

@@ -11,7 +11,7 @@ create_logs_table <- function(.conn, .tables) {
         level tinyint CHECK (level IN (0, 1, 2, 3, 4, 5)),
         stage tinyint CHECK (stage IN (1, 2, 3)),
         station char(5) CHECK (station IN ('CO', 'RO', 'PO', 'LGU')),
-        partial tinyint CHECK (partial IN (1, 2)),
+        partial tinyint CHECK (partial IN (0, 1)),
         input_data char(3) CHECK (input_data IN ('hp', 'bp', 'ilq', 'shp')),
         area_code varchar(16),
         total_cases int,
