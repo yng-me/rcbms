@@ -94,8 +94,12 @@ set_config <- function(
   }
 
   if(config_final$mode$type == 'portal') {
-    config_final$convert$parquet <- FALSE
+    config_final$parquet$convert <- FALSE
   }
+
+  config_final$use_encryption <- config_final$parquet$encrypt &
+    !is.null(config_final$env$AES_KEY) &
+    !is.null(config_final$env$AES_IV)
 
   return(invisible(set_class(config_final, "rcbms_config")))
 

@@ -37,6 +37,7 @@ create_logs_table <- function(.conn, .tables) {
         pc_hardware varchar(16),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT NULL,
+        verified_at DATETIME DEFAULT NULL,
         validated_at DATETIME DEFAULT NULL
       );"
     )

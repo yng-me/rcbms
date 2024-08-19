@@ -136,8 +136,10 @@ sort_variable_names <- function(.data, .input_data, .config = getOption('rcbms.c
   .data |>
     dplyr::select(
       dplyr::any_of(unique(c(
+        'row_id',
         'case_id',
-        'uuid',
+        'cbms_geoid',
+        'barangay_geo',
         'geocode',
         'region_code',
         'province_code',
@@ -153,10 +155,13 @@ sort_variable_names <- function(.data, .input_data, .config = getOption('rcbms.c
         'province',
         'city_mun',
         'barangay',
-        'barangay_geo',
         'total_population',
         'total_hh',
         'average_hh_size',
+        'mode_of_data_collection',
+        'date_of_visit',
+        'time_began',
+        'time_ended',
         final_status,
         "sex",
         "age"

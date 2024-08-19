@@ -52,6 +52,11 @@ save_current_logs <- function(
   if((mode == "validation" | mode == "cv") & !is.null(.data))  {
 
     db_table_name <- paste0(.input_data, "_cv")
+    cv_cols <- c("id", uid, "validation_id", "line_number", "info")
+
+    if(.config$validation$include_additional_info & 'contact' %in% names(.data)) {
+      cv_cols <- c(cv_cols, 'contact')
+    }
 
     if (.input_data %in% c("hp", "ilq")) {
       by_cv_cols <- c(uid, "validation_id", "line_number")
@@ -60,7 +65,7 @@ save_current_logs <- function(
     }
 
     db_data_to_store <- db_data_to_store |>
-      dplyr::select(dplyr::any_of(c("id", uid, "validation_id", "line_number", "info")))
+      dplyr::select(dplyr::any_of(cv_cols))
 
     if (uid %in% names(db_data_to_store)) {
       total_cases_unique <- db_data_to_store |>
@@ -142,7 +147,7 @@ save_current_logs <- function(
   summary_stat <- create_summary_stat(.input_data, .config)
 
   total <- summary_stat$total
-  summary_info <- summary_stat$summary_info
+  summary_info <- c(summary_info, summary_stat$summary_info)
 
   verified_at <- NULL
   if(log_status == 2) verified_at <- Sys.time()

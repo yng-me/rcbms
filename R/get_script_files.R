@@ -119,6 +119,15 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         dplyr::mutate(
           input_data = .input_data,
           order = nrow(script_files_all) + 10
+        ) |>
+        dplyr::bind_rows(
+          script_files_all |>
+            dplyr::filter(
+              grepl(
+                "^__initial",
+                stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+              )
+            )
         )
 
       if(!is.null(script_files_final)) {
@@ -153,7 +162,6 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
 
     }
   }
-
 
   script_files_final |>
     dplyr::distinct(.keep_all = T) |>

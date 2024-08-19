@@ -79,35 +79,65 @@ validate_select <- function(.data, ...) {
       )
   }
 
-  join_hh_info <- config$validation$include_additional_info
-
+  include_additional_info <- config$validation$include_additional_info
   summary_record <- config$project[[CURRENT_INPUT_DATA]][['summary_record']]
+  contact_info_vars <- config$project[[CURRENT_INPUT_DATA]]$variable$contact
 
-  if (isTRUE(join_hh_info) & !is.null(summary_record)) {
-    parquet <- get_config("parquet")
+  if (
+    include_additional_info &
+    exists('parquet') &
+    !is.null(summary_record) &
+    !is.null(contact_info_vars)
+  ) {
+
     summary_df <- parquet[[CURRENT_INPUT_DATA]][[summary_record]]
+
     if (!is.null(summary_df)) {
-      hh_info <- summary_df |>
+
+      contact_info <- summary_df |>
+        dplyr::select(dplyr::any_of(c(uid, contact_info_vars))) |>
         dplyr::collect() |>
-        create_case_id(.input_data = CURRENT_INPUT_DATA) |>
-        dplyr::select(
-          dplyr::any_of(
-            c(
-              uid,
-              "hh_head",
-              "respondent_contact_number",
-              "contact_number",
-              "email_add",
-              "address",
-              "floor_number",
-              "subdivision_or_village",
-              "sitio_or_purok"
-            )
+        dplyr::group_by(!!as.name(uid))
+
+      contact_info_names <- names(contact_info)
+      contact_info_names <- contact_info_names[contact_info_names != uid]
+
+
+      for(i in seq_along(contact_info_names)) {
+        info_name <- contact_info_names[i]
+
+        info_label <- attributes(contact_info[[info_name]])$label
+
+        if(!is.null(info_label)) {
+
+          contact_info <- contact_info |>
+            dplyr::rename(!!as.name(info_label) := !!as.name(info_name))
+        }
+      }
+
+      if(config$validation$stringify_info) {
+
+        contact_info <- contact_info |>
+          tidyr::nest(.key = 'contact__') |>
+          dplyr::mutate(
+            `contact__` = purrr::map_chr(`contact__`, \(x) {
+              x |>
+                dplyr::mutate_all(as.character) |>
+                jsonlite::toJSON() |>
+                as.character() |>
+                encrypt_info()
+            })
           )
-        )
+      }  else {
+        contact_info <- contact_info |>
+          tidyr::nest(.key = 'contact__')
+      }
 
       .data <- .data |>
-        dplyr::left_join(hh_info |> dplyr::collect(), by = uid)
+        dplyr::left_join(
+          contact_info,
+          by = uid
+        )
     }
   }
 
@@ -115,6 +145,7 @@ validate_select <- function(.data, ...) {
     dplyr::any_of(uid),
     dplyr::matches(paste0("^", geo_cols_name)),
     dplyr::any_of(c("ean", "line_number")),
-    ...
+    ...,
+    dplyr::any_of('contact__')
   )
 }

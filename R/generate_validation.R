@@ -1,29 +1,14 @@
 #' Generate validation output
 #'
 #' @param .cv
+#' @param .cv_ref
 #' @param .config
-#' @param .references
-#' @param .detailed_output
-#' @param .include_additional_info
-#' @param .add_uuid
-#' @param .save_as_excel
-#' @param .save_as_json
 #'
 #' @return
 #' @export
 #'
 #' @examples
-generate_validation <- function(
-  .cv,
-  .cv_ref,
-  .section_ref,
-  .config,
-  .detailed_output = FALSE,
-  .include_additional_info = FALSE,
-  .add_uuid = FALSE,
-  .save_as_excel = FALSE,
-  .save_as_json = TRUE
-) {
+generate_validation <- function(.cv, .cv_ref, .config) {
 
   if(exists("CURRENT_INPUT_DATA")) {
     input_data <- CURRENT_INPUT_DATA
@@ -31,8 +16,10 @@ generate_validation <- function(
     input_data <- .config$input_data[1]
   }
 
+  pl <- tolower(stringr::str_trim((.config$validation$priority_level)))
+
   .cv_ref <- .cv_ref |>
-    dplyr::filter(tolower(priority_level) %in% tolower(stringr::str_trim(.config$validation$priority_level)))
+    dplyr::filter(tolower(priority_level) %in% pl)
 
   result_names <- names(.cv)
   result_names <- result_names[result_names %in% .cv_ref$validation_id]
@@ -75,30 +62,12 @@ generate_validation <- function(
 
   output <- NULL
 
-  opt <- .config$validation
-
-  if (!is.null(opt)) {
-    if (!is.null(opt$detailed_output)) {
-      .detailed_output <- rlang::is_true(as.logical(opt$detailed_output))
-    }
-    if (!is.null(opt$include_additional_info)) {
-      .include_additional_info <- rlang::is_true(as.logical(opt$include_additional_info))
-    }
-    if (!is.null(opt$add_uuid)) {
-      .add_uuid <- rlang::is_true(as.logical(opt$add_uuid))
-    }
-    if (!is.null(opt$save_as_excel)) {
-      .save_as_excel <- rlang::is_true(as.logical(opt$save_as_excel))
-    }
-    if (!is.null(opt$save_as_json)) {
-      .save_as_json <- rlang::is_true(as.logical(opt$save_as_json))
-    }
-  }
-
+  add_info <- .config$validation$include_additional_info
   uid <- .config$project[[CURRENT_INPUT_DATA]]$id
   if (is.null(uid)) uid <- "case_id"
 
   for (i in seq_along(result_names)) {
+
     result_name <- result_names[i]
 
     if(.config$verbose) {
@@ -113,24 +82,27 @@ generate_validation <- function(
         dplyr::mutate(line_number = NA_character_)
     }
 
-    if ("line_number" %in% names(output_temp)) {
-      output_temp <- output_temp |>
-        dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
-        dplyr::group_by(validation_id, !!as.name(uid), line_number)
-    } else {
-      output_temp <- output_temp |>
-        dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
-        dplyr::group_by(validation_id, !!as.name(uid))
+    group_cols <- c('validation_id', uid)
+
+    if("line_number" %in% names(output_temp))  {
+      group_cols <- c(group_cols, 'line_number')
+    }
+
+    if(add_info & 'contact__' %in% names(output_temp)) {
+      group_cols <- c(group_cols, 'contact__')
     }
 
     output_temp <- output_temp |>
+      dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
+      dplyr::group_by(dplyr::pick(dplyr::any_of(group_cols))) |>
       tidyr::nest(.key = "info") |>
       dplyr::mutate(info = purrr::map_chr(info, \(x) {
         x |>
           dplyr::mutate_all(as.character) |>
           dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
           jsonlite::toJSON() |>
-          as.character()
+          as.character() |>
+          encrypt_info()
       })) |>
       dplyr::ungroup()
 
@@ -143,23 +115,12 @@ generate_validation <- function(
     }
   }
 
-  if (!is.null(output)) {
-    additiona_info <- NULL
-    if (.include_additional_info) {
-      additiona_info <- c(
-        "hh_head",
-        "respondent_contact_number",
-        "contact_number",
-        "email_add",
-        "address",
-        "floor_number",
-        "subdivision_or_village",
-        "sitio_or_purok"
-      )
-    }
+  if(add_info & 'contact__' %in% names(output)) {
+    output <- output |>
+      dplyr::rename(contact = contact__)
   }
 
-  save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
+  save_rcbms_logs(output, input_data, .cv_ref, .config)
 
   return(output)
 }

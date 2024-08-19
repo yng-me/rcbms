@@ -150,3 +150,95 @@ rcbms_list <- function(.type) {
   new_list <- list()
   set_class(new_list, paste0("rcbms_", .type, "_list"))
 }
+
+
+#' Title
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hex_to_raw <- function(x) {
+  digits <- strtoi(strsplit(x, "")[[1]], base = 16L)
+  as.raw(bitwShiftL(digits[c(TRUE, FALSE)], 4) + digits[c(FALSE, TRUE)])
+}
+
+
+#' Title
+#'
+#' @param .str
+#' @param .config
+#' @param .key
+#' @param .iv
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+encrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
+
+  use_encryption <- .config$use_encryption
+  if(is.null(use_encryption)) {
+    use_encryption <- FALSE
+  }
+
+  if(use_encryption | (!is.null(.key) & !is.null(.iv))) {
+
+    if(is.null(.key) | is.null(.iv)) {
+      .key <- .config$env$AES_KEY
+      .iv <- .config$env$AES_IV
+    }
+
+    .str <- .str |>
+      serialize(connection = NULL) |>
+      openssl::aes_cbc_encrypt(
+        key = openssl::sha256(charToRaw(.key)),
+        iv = hex_to_raw(.iv)
+      ) |>
+      openssl::base64_encode()
+  }
+
+  .str
+}
+
+
+#' Title
+#'
+#' @param .str
+#' @param .config
+#' @param .key
+#' @param .iv
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
+decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
+
+  use_encryption <- .config$use_encryption
+  if(is.null(use_encryption)) {
+    use_encryption <- FALSE
+  }
+
+  if(use_encryption | (!is.null(.key) & !is.null(.iv))) {
+
+    if(is.null(.key) | is.null(.iv)) {
+      .key <- .config$env$AES_KEY
+      .iv <- .config$env$AES_IV
+    }
+
+    .str <- .str |>
+      openssl::base64_decode() |>
+      openssl::aes_cbc_decrypt(
+        key = openssl::sha256(charToRaw(.key)),
+        iv = hex_to_raw(.iv)
+      ) |>
+      unserialize()
+  }
+
+  .str
+}
