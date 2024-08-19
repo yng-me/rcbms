@@ -174,9 +174,7 @@ save_cbms_data <- function(
 
   attr(df_temp, "date_extracted") <- Sys.time()
 
-  use_encryption <- .config$parquet$encrypt &
-    !is.null(.config$env$AES_KEY) &
-    !is.null(.config$env$AES_IV)
+  use_encryption <- .config$use_encryption
 
   if(use_encryption) {
 

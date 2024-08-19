@@ -309,8 +309,8 @@ load_validation_refs <- function(.gid) {
 
   df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccic') |>
     dplyr::filter(status == 1) |>
-    dplyr::select(-status) |>
-    dplyr::mutate(type = 1)
+    dplyr::mutate(type = 1) |>
+    dplyr::rename(in_use = status)
 
   transform_refs(df)
 

@@ -24,9 +24,7 @@ read_cbms_data <- function(.references, .config) {
   partition <- .config$parquet$partition
 
   duckdb_conn <- NULL
-  use_encryption <- .config$parquet$encrypt &
-    !is.null(.config$env$AES_KEY) &
-    !is.null(.config$env$AES_IV)
+  use_encryption <- .config$use_encryption
 
   if(use_encryption) {
 

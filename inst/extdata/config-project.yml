@@ -17,6 +17,12 @@
     aggregation:
       level: 4
       areas: all
+    variable:
+      contact:
+        - barangay_chairperson
+        - contact_address
+        - barangay_email_address
+        - barangay_mobile_number
   hp:
     id: case_id
     directory: ~
@@ -32,7 +38,7 @@
       index: 1
     result_of_visit_value: 1
     aggregation:
-      level: 2
+      level: 1
       areas: all
     unfiltered_records:
     - cover_page
@@ -42,13 +48,21 @@
       relation_to_hh_head: a02_relation_to_hh_head
       sex: a03_sex
       age: a05_age
+      age_computed: age
+      contact:
+        - contact_hh_head
+        - contact_address
+        - contact_respondent
+        - contact_number
+        - email_address
+        - enumerator
   ilq:
     id: case_id
     directory: ~
     sub_directory: ~
-    file_format: csv
-    summary_record: ilq_rt1_data
-    roster_record: ilq_rt2_data
+    file_format: txt
+    summary_record: cover_page
+    roster_record: pop_qtn
     final_status:
       variable:
         result_of_final_visit
@@ -62,6 +76,12 @@
       line_number: line_number
       sex: p03_sex
       age: p05_age
+      contact:
+        - ilq_name
+        - contact_respondent
+        - contact_address
+        - contact_number
+        - email_address
   shp:
     id: cbms_geoid
     file_format: gpkg

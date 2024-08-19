@@ -24,7 +24,6 @@ read_bp_data <- function(.dictionary, .config) {
 
   bpq_data <- list()
   bpq_data_list <- list()
-  bpq_data_mode_of_transport <- list()
 
   add_geo_info <- function(.data, .code) {
     .data |>

@@ -4,19 +4,10 @@
 \alias{generate_validation}
 \title{Generate validation output}
 \usage{
-generate_validation(
-  .cv,
-  .cv_ref,
-  .config,
-  .detailed_output = FALSE,
-  .include_additional_info = FALSE,
-  .add_uuid = FALSE,
-  .save_as_excel = FALSE,
-  .save_as_json = TRUE
-)
+generate_validation(.cv, .cv_ref, .config)
 }
 \arguments{
-\item{.save_as_json}{}
+\item{.config}{}
 }
 \description{
 Generate validation output
