@@ -142,7 +142,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
       script_files_final <- script_files_all |>
         dplyr::filter(
           grepl(
-            "^(__initial|_preliminary|_duplicate)",
+            "^(__initial|_preliminary)",
             stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
           )
         ) |>
@@ -161,6 +161,27 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         dplyr::bind_rows(script_files_final)
 
     }
+  }
+
+  if(.config$mode$stage == 1 & .input_data == 'hp') {
+    script_files_final <- script_files_final |>
+      dplyr::filter(
+        !grepl(
+          "^_preliminary",
+          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+        )
+      )
+  }
+
+  if(.input_data == 'hp' & .config$validation$check_duplicate_members) {
+    script_files_final <- script_files_all |>
+      dplyr::filter(
+        grepl(
+          "^_duplicate",
+          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+        )
+      ) |>
+      dplyr::bind_rows(script_files_final)
   }
 
   script_files_final |>
