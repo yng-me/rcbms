@@ -30,7 +30,7 @@ save_current_logs <- function(
     stringr::str_remove(";$")
 
   db_data_to_store <- NULL
-  current_area_code <- .config$aggregation$areas[1]
+  mode <- .config$mode$type
   uid <- .config$project[[.input_data]]$id
   current_id <- 1
   log_status <- 2
@@ -41,8 +41,18 @@ save_current_logs <- function(
   total_priority_c <- 0
   total_priority_d <- 0
   partial <- 0
+  summary_info <- list()
 
-  mode <- .config$mode$type
+  # current_area_code <- .config$aggregation$areas[1]
+  current_area_code <- NULL
+  area_code_vars <- paste0(c('region', 'province', 'city_mun', 'barangay', 'ean'), "_geo")
+
+  add_length <- .config$project$add_length
+  agg_level <- .config$aggregation$level
+  if(.input_data == 'bp' & agg_level > 4) {
+    agg_level <- 4
+  }
+
 
   if(!is.null(.data)) {
     db_data_to_store <- .data |>
@@ -50,6 +60,38 @@ save_current_logs <- function(
   }
 
   if((mode == "validation" | mode == "cv") & !is.null(.data))  {
+
+    agg_data <- .data |>
+      dplyr::mutate(
+        area_code = !!as.name(uid),
+      ) |>
+      dplyr::mutate(
+        region_geo = stringr::str_sub(area_code, 1, 2),
+        province_geo = stringr::str_sub(area_code, 1, 4 + add_length),
+        city_mun_geo = stringr::str_sub(area_code, 1, 6 + add_length),
+        barangay_geo = stringr::str_sub(area_code, 1, 9 + add_length)
+      )
+
+    if(.input_data != 'bp') {
+      agg_data <- agg_data |>
+        dplyr::mutate(
+          ean_geo = stringr::str_sub(area_code, 1, 15 + add_length)
+        )
+
+      current_area_code <- agg_data |>
+        dplyr::distinct(ean_geo) |>
+        dplyr::pull()
+    }
+
+    rev_area <- rev(area_code_vars)[2:5]
+    for (i in seq_along(area_code_vars)) {
+      if(length(current_area_code) != 1) {
+        current_area_code <- agg_data |>
+          dplyr::transmute(code = !!as.name(rev_area[i])) |>
+          dplyr::distinct(code) |>
+          dplyr::pull()
+      }
+    }
 
     db_table_name <- paste0(.input_data, "_cv")
     cv_cols <- c("id", uid, "validation_id", "line_number", "info")
@@ -149,10 +191,6 @@ save_current_logs <- function(
   total <- summary_stat$total
   summary_info <- c(summary_info, summary_stat$summary_info)
 
-  verified_at <- NULL
-  if(log_status == 2) verified_at <- Sys.time()
-
-
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
     name = "logs",
@@ -177,7 +215,6 @@ save_current_logs <- function(
       version_app = .config$version$app,
       version_package = .config$version$package,
       version_script = .config$version$script,
-      verified_at = verified_at,
       status = log_status,
       pc_os = tolower(pc[["sysname"]]),
       pc_user = pc[["user"]],
@@ -190,42 +227,57 @@ save_current_logs <- function(
     append = TRUE
   )
 
-  if (log_saved & !is.null(.data)) {
+  if (log_saved) {
 
     last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid();")
     current_id <- as.integer(last_row[[1]])
 
-    db_data_to_store <- db_data_to_store |>
-      dplyr::mutate(log_id = current_id, status = 0L)
-
-    if (db_table_name %in% .tables) {
-
-      cv_logs_with_remarks <- DBI::dbReadTable(.conn, db_table_name) |>
-        dplyr::tibble() |>
-        dplyr::filter(as.integer(status) != 0) |>
-        dplyr::mutate(status = as.integer(status)) |>
-        dplyr::mutate(old_uuid = id) |>
-        dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
-
-      if (nrow(cv_logs_with_remarks) > 0) {
-        db_data_to_store <- db_data_to_store |>
-          dplyr::select(-status) |>
-          dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
-          dplyr::mutate(
-            id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
-            status = dplyr::if_else(is.na(status), 0L, as.integer(status))
-          ) |>
-          dplyr::select(-dplyr::any_of("old_uuid"))
-      }
+    if(log_status == 2) {
+      DBI::dbExecute(
+        .conn,
+        paste0(
+          "UPDATE logs SET
+            verified_at = CURRENT_TIMESTAMP,
+            validated_at = CURRENT_TIMESTAMP
+          WHERE id = ", current_id, ";"
+        )
+      )
     }
 
-    DBI::dbWriteTable(
-      conn = .conn,
-      name = db_table_name,
-      value = db_data_to_store,
-      append = TRUE
-    )
+    if(!is.null(.data)) {
 
+      db_data_to_store <- db_data_to_store |>
+        dplyr::mutate(log_id = current_id, status = 0L)
+
+      if (db_table_name %in% .tables) {
+
+        cv_logs_with_remarks <- DBI::dbReadTable(.conn, db_table_name) |>
+          dplyr::tibble() |>
+          dplyr::filter(as.integer(status) != 0) |>
+          dplyr::mutate(status = as.integer(status)) |>
+          dplyr::mutate(old_uuid = id) |>
+          dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
+
+        if (nrow(cv_logs_with_remarks) > 0) {
+          db_data_to_store <- db_data_to_store |>
+            dplyr::select(-status) |>
+            dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
+            dplyr::mutate(
+              id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
+              status = dplyr::if_else(is.na(status), 0L, as.integer(status))
+            ) |>
+            dplyr::select(-dplyr::any_of("old_uuid"))
+        }
+      }
+
+      DBI::dbWriteTable(
+        conn = .conn,
+        name = db_table_name,
+        value = db_data_to_store,
+        append = TRUE
+      )
+
+    }
   }
 
   if (!exists("current_logs_id")) {
