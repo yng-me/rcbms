@@ -19,7 +19,8 @@ read_bp_data <- function(.dictionary, .config) {
   bpq_data_files <- list.files(bp_base_path, full.names = T, pattern = "\\.(xlsx|xlsm)$") |>
     dplyr::as_tibble() |>
     dplyr::filter(!grepl('[$]', value)) |>
-    dplyr::filter(grepl('^\\d{10}', basename(value))) |>
+    dplyr::filter(!grepl('Form6', value)) |>
+    dplyr::filter(grepl('^\\d{10}_Form5_', basename(value))) |>
     dplyr::pull(value)
 
   bpq_data <- list()
@@ -38,10 +39,21 @@ read_bp_data <- function(.dictionary, .config) {
   }
 
   for (i in seq_along(bpq_data_files)) {
+
     path <- bpq_data_files[i]
 
     barangay_code <- basename(path) |>
       stringr::str_extract(pattern = "^\\d{10}")
+
+    if(.config$verbose) {
+      cli::cli_alert_info(
+        paste0("Importing ", cli::col_br_yellow(basename(path)), " record ", cli::col_br_cyan("✓"))
+      )
+    }
+
+    if(.config$progress) {
+      cli::cli_text(paste0('Importing ', basename(path)))
+    }
 
     bpq_data[[i]] <- openxlsx::read.xlsx(path, sheet = "bpq_data") |>
       janitor::clean_names() |>
