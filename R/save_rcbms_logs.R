@@ -53,7 +53,6 @@ save_current_logs <- function(
     agg_level <- 4
   }
 
-
   if(!is.null(.data)) {
     db_data_to_store <- .data |>
       add_uuid(.id_name = "id")
@@ -94,6 +93,12 @@ save_current_logs <- function(
           dplyr::pull()
       }
     }
+
+    if(length(current_area_code) > 1) {
+      current_area_code <- 'all'
+    }
+
+    print(paste0('xxxxxx: ', current_area_code))
 
     db_table_name <- paste0(.input_data, "_cv")
     cv_cols <- c("id", uid, "validation_id", "line_number", "info")
