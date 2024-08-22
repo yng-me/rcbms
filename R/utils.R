@@ -199,9 +199,14 @@ encrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL,
         iv = hex_to_raw(.iv)
       ) |>
       openssl::base64_encode()
+
+  } else {
+    .str <- .str |>
+      serialize(connection = NULL) |>
+      openssl::base64_encode()
   }
 
-  .str
+  return(.str)
 }
 
 
@@ -238,7 +243,12 @@ decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL,
         iv = hex_to_raw(.iv)
       ) |>
       unserialize()
+
+  } else {
+    .str <- .str |>
+      openssl::base64_decode() |>
+      unserialize()
   }
 
-  .str
+  return(.str)
 }

@@ -83,8 +83,10 @@ save_current_logs <- function(
         dplyr::pull()
     }
 
+
     rev_area <- rev(area_code_vars)[2:5]
-    for (i in seq_along(area_code_vars)) {
+
+    for (i in seq_along(rev_area)) {
       if(length(current_area_code) != 1) {
         current_area_code <- agg_data |>
           dplyr::transmute(code = !!as.name(rev_area[i])) |>
