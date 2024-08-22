@@ -32,6 +32,7 @@ import_txt <- function(.path, ...) {
     progress = FALSE,
     trim_ws = TRUE,
     show_col_types = FALSE,
+    locale = readr::locale(encoding = "UTF-8"),
     ...
   ) |>
     dplyr::select(-dplyr::starts_with("aux")) |>
