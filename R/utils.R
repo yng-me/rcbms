@@ -168,87 +168,87 @@ hex_to_raw <- function(x) {
 
 #' Title
 #'
-#' @param .str
-#' @param .config
-#' @param .key
-#' @param .iv
+#' @param x
 #'
 #' @return
 #' @export
 #'
 #' @examples
+
+raw_to_hex <- function(x) {
+  if (!is.raw(x)) {
+    stop("Input must be a raw vector.")
+  }
+
+  hex_string <- paste0(sprintf("%02X", as.integer(x)), collapse = "")
+
+  return(hex_string)
+}
+
+
+
+#' Title
 #'
-encrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
+#' @param passphrase
+#'
+#' @return
+#' @export
+#'
+#' @examples
+generate_aes_key <- function(passphrase = '', app_key = NULL, pub_key = NULL) {
 
-  use_encryption <- .config$use_encryption
-  if(is.null(use_encryption)) {
-    use_encryption <- FALSE
+  key <- raw_to_hex(openssl::aes_keygen())
+  salt <- openssl::sha256(passphrase)
+
+  key_plain <- openssl::sha256(paste0(key, salt))
+  iv_plain <- raw_to_hex(openssl::rand_bytes(16))
+
+  out <- list(
+    key = key_plain,
+    iv = iv_plain
+  )
+
+  if(!is.null(app_key)) {
+    out$key_app <- encrypt_info(key_plain, .key = openssl::sha256(app_key))
+    out$iv_app <- encrypt_info(iv_plain, .key = openssl::sha256(app_key))
   }
 
-  if(use_encryption | (!is.null(.key) & !is.null(.iv))) {
+  if(!is.null(pub_key)) {
 
-    if(is.null(.key) | is.null(.iv)) {
-      .key <- .config$env$AES_KEY
-      .iv <- .config$env$AES_IV
-    }
-
-    .str <- .str |>
+    out$key_admin <- key_plain |>
       serialize(connection = NULL) |>
-      openssl::aes_cbc_encrypt(
-        key = openssl::sha256(charToRaw(.key)),
-        iv = hex_to_raw(.iv)
-      ) |>
+      openssl::rsa_encrypt(pubkey = pub_key) |>
       openssl::base64_encode()
 
-  } else {
-    .str <- .str |>
+    out$iv_admin <- iv_plain |>
       serialize(connection = NULL) |>
+      openssl::rsa_encrypt(pubkey = pub_key) |>
       openssl::base64_encode()
+
   }
 
-  return(.str)
+  out$key <- as.character(out$key)
+
+  return(out)
+
 }
 
 
 #' Title
 #'
-#' @param .str
-#' @param .config
-#' @param .key
-#' @param .iv
+#' @param dir
+#' @param key
 #'
 #' @return
 #' @export
 #'
 #' @examples
-
-decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
-
-  use_encryption <- .config$use_encryption
-  if(is.null(use_encryption)) {
-    use_encryption <- FALSE
-  }
-
-  if(use_encryption | (!is.null(.key) & !is.null(.iv))) {
-
-    if(is.null(.key) | is.null(.iv)) {
-      .key <- .config$env$AES_KEY
-      .iv <- .config$env$AES_IV
-    }
-
-    .str <- .str |>
-      openssl::base64_decode() |>
-      openssl::aes_cbc_decrypt(
-        key = openssl::sha256(charToRaw(.key)),
-        iv = hex_to_raw(.iv)
-      ) |>
-      unserialize()
-
-  } else {
-    .str <- .str |>
-      openssl::base64_decode() |>
-      unserialize()
-  }
-
-  return(.str)
+#'
+write_aes_key <- function(dir, key = generate_aes_key()) {
+  text <- paste0(
+    'AES_KEY=', key$key,
+    '\n',
+    'AES_IV=', key$iv
+  )
+  writeLines(text, con = file(file.path(dir, '.env')))
 }
