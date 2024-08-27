@@ -209,8 +209,8 @@ generate_aes_key <- function(passphrase = '', app_key = NULL, pub_key = NULL) {
   )
 
   if(!is.null(app_key)) {
-    out$key_app <- encrypt_info(key_plain, .key = openssl::sha256(app_key))
-    out$iv_app <- encrypt_info(iv_plain, .key = openssl::sha256(app_key))
+    out$key_app <- encrypt_info(key_plain, .key = app_key)
+    out$iv_app <- encrypt_info(iv_plain, .key = app_key)
   }
 
   if(!is.null(pub_key)) {

@@ -193,34 +193,32 @@ encrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL,
     use_encryption <- FALSE
   }
 
+   .str <- serialize(.str, connection = NULL)
+
   if(use_encryption | !is.null(.key)) {
 
     if(is.null(.key)) {
       .key <- .config$env$AES_KEY
-      iv <- hex_to_raw(.config$env$AES_IV)
+      .iv <- .config$env$AES_IV
     }
 
     if(!is.null(.iv)) {
-      iv <- hex_to_raw(.iv)
+      .str <- .str |>
+        openssl::aes_cbc_encrypt(
+          key = openssl::sha256(charToRaw(.key)),
+          iv = hex_to_raw(.iv)
+        )
     } else {
-      iv <- openssl::rand_bytes(16)
+      .str <- openssl::aes_cbc_encrypt(
+        data = .str,
+        key = openssl::sha256(charToRaw(.key)),
+        iv = NULL
+      )
     }
 
-    .str <- .str |>
-      serialize(connection = NULL) |>
-      openssl::aes_cbc_encrypt(
-        key = openssl::sha256(charToRaw(.key)),
-        iv = iv
-      ) |>
-      openssl::base64_encode()
-
-  } else {
-    .str <- .str |>
-      serialize(connection = NULL) |>
-      openssl::base64_encode()
   }
 
-  return(.str)
+  openssl::base64_encode(.str)
 }
 
 
@@ -243,32 +241,30 @@ decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL,
     use_encryption <- FALSE
   }
 
+  .str <- openssl::base64_decode(.str)
+
   if(use_encryption | !is.null(.key)) {
 
     if(is.null(.key)) {
       .key <- .config$env$AES_KEY
-      iv <- hex_to_raw(.config$env$AES_IV)
+      .iv <- .config$env$AES_IV
     }
 
     if(!is.null(.iv)) {
-      iv <- hex_to_raw(.iv)
+      .str <- .str |>
+        openssl::aes_cbc_decrypt(
+          key = openssl::sha256(charToRaw(.key)),
+          iv = hex_to_raw(.iv)
+        )
     } else {
-      iv <- openssl::rand_bytes(16)
-    }
 
-    .str <- .str |>
-      openssl::base64_decode() |>
-      openssl::aes_cbc_decrypt(
+      .str <- openssl::aes_cbc_decrypt(
+        data = .str,
         key = openssl::sha256(charToRaw(.key)),
-        iv = iv
-      ) |>
-      unserialize()
-
-  } else {
-    .str <- .str |>
-      openssl::base64_decode() |>
-      unserialize()
+        iv = NULL
+      )
+    }
   }
 
-  return(.str)
+  unserialize(.str)
 }
