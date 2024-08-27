@@ -170,3 +170,105 @@ sort_variable_names <- function(.data, .input_data, .config = getOption('rcbms.c
     )
 }
 
+
+
+
+
+#' Title
+#'
+#' @param .str
+#' @param .config
+#' @param .key
+#' @param .iv
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+encrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
+
+  use_encryption <- .config$use_encryption
+  if(is.null(use_encryption)) {
+    use_encryption <- FALSE
+  }
+
+  if(use_encryption | !is.null(.key)) {
+
+    if(is.null(.key)) {
+      .key <- .config$env$AES_KEY
+      iv <- hex_to_raw(.config$env$AES_IV)
+    }
+
+    if(!is.null(.iv)) {
+      iv <- hex_to_raw(.iv)
+    } else {
+      iv <- openssl::rand_bytes(16)
+    }
+
+    .str <- .str |>
+      serialize(connection = NULL) |>
+      openssl::aes_cbc_encrypt(
+        key = openssl::sha256(charToRaw(.key)),
+        iv = iv
+      ) |>
+      openssl::base64_encode()
+
+  } else {
+    .str <- .str |>
+      serialize(connection = NULL) |>
+      openssl::base64_encode()
+  }
+
+  return(.str)
+}
+
+
+#' Title
+#'
+#' @param .str
+#' @param .config
+#' @param .key
+#' @param .iv
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
+decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL, .iv = NULL) {
+
+  use_encryption <- .config$use_encryption
+  if(is.null(use_encryption)) {
+    use_encryption <- FALSE
+  }
+
+  if(use_encryption | !is.null(.key)) {
+
+    if(is.null(.key)) {
+      .key <- .config$env$AES_KEY
+      iv <- hex_to_raw(.config$env$AES_IV)
+    }
+
+    if(!is.null(.iv)) {
+      iv <- hex_to_raw(.iv)
+    } else {
+      iv <- openssl::rand_bytes(16)
+    }
+
+    .str <- .str |>
+      openssl::base64_decode() |>
+      openssl::aes_cbc_decrypt(
+        key = openssl::sha256(charToRaw(.key)),
+        iv = iv
+      ) |>
+      unserialize()
+
+  } else {
+    .str <- .str |>
+      openssl::base64_decode() |>
+      unserialize()
+  }
+
+  return(.str)
+}
