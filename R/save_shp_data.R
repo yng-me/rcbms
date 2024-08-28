@@ -5,10 +5,6 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
     dcf <- dcf |> dplyr::mutate(variable_name = variable_name_new)
   }
 
-  # use_encryption <- .config$parquet$encrypt &
-  #   !is.null(.config$env$PQ_KEY_PUB) &
-  #   !is.null(.config$env$PQ_KEY_PRV)
-
   shp_base_path <- .config$project$shp$directory
   if(is.null(shp_base_path)) {
     shp_base_path <- file.path(.config$base, "data", "raw", "shp")
@@ -40,7 +36,8 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
 
     df_temp <- sf::st_read(shp_data_files[i], layer = shp_layer) |>
       dplyr::tibble() |>
-      janitor::clean_names()
+      janitor::clean_names() |>
+      suppressWarnings()
 
     df_list[[i]] <- df_temp |>
       harmonize_variable(
@@ -51,26 +48,64 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
       )
   }
 
-  arrow::write_parquet(
-    df_list |>
-      dplyr::bind_rows() |>
-      dplyr::mutate(
-        cbms_geoid = paste0(geocode, bsn),
-        province_code = stringr::str_sub(geocode, 1, 3),
-        city_mun_code = stringr::str_sub(geocode, 4, 5),
-        barangay_code = stringr::str_sub(geocode, 6, 8),
-        ean = stringr::str_sub(geocode, 9, 14),
-        .before = 1
-      ) |>
-      dplyr::left_join(
-        .references$area_name_new |>
-          dplyr::distinct(region_code, province_code),
-        by = 'province_code'
-      ) |>
-      add_metadata(dcf, .references$valueset),
-    file.path(.pq_folder, 'shp_data.parquet')
-  )
+  df_temp <- df_list |>
+    dplyr::bind_rows() |>
+    dplyr::mutate(
+      cbms_geoid = paste0(geocode, bsn),
+      province_code = stringr::str_sub(geocode, 1, 3),
+      city_mun_code = stringr::str_sub(geocode, 4, 5),
+      barangay_code = stringr::str_sub(geocode, 6, 8),
+      ean = stringr::str_sub(geocode, 9, 14),
+      .before = 1
+    ) |>
+    dplyr::left_join(
+      .references$area_name_new |>
+        dplyr::distinct(region_code, province_code),
+      by = 'province_code'
+    ) |>
+    sort_variable_names('shp', .config) |>
+    add_metadata(dcf, .references$valueset)
 
-  arrow::open_dataset(file.path(.pq_folder, 'shp_data.parquet'))
+  pq <- file.path(.pq_folder, 'shp_data.parquet')
+
+  if(.config$use_encryption) {
+
+    q_to_pq <- paste0(
+      "COPY df_temp TO '",
+      pq,
+      "' (ENCRYPTION_CONFIG { footer_key: '", .config$env$AES_KEY, "' });"
+    )
+
+    DBI::dbWriteTable(.conn, name = "df_temp", value = df_temp, overwrite = T)
+    DBI::dbExecute(.conn, q_to_pq)
+
+    q_pq <- paste0(
+      "SELECT * FROM read_parquet('",
+      pq,
+      "', encryption_config = { footer_key: '",
+      .config$env$AES_KEY,
+      "' });"
+    )
+
+    df <- DBI::dbGetQuery(.conn, q_pq) |>
+      add_metadata(dcf, .references$valueset) |>
+      arrow::arrow_table()
+
+  } else {
+
+    arrow::write_parquet(df_temp, pq)
+    df <- arrow::open_dataset(pq)
+  }
+
+
+  return(df)
+#
+#
+#   arrow::write_parquet(
+#     df_temp,
+#     file.path(.pq_folder, 'shp_data.parquet')
+#   )
+#
+#   arrow::open_dataset(file.path(.pq_folder, 'shp_data.parquet'))
 
 }

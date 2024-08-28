@@ -87,6 +87,7 @@
     file_format: gpkg
     directory: ~
     sub_directory: ~
+    out_directory: ~
     summary_record: shp_data
     aggregation:
       level: 3

@@ -1,6 +1,6 @@
 Package: rcbms
 Type: Package
-Version: 0.1.18
+Version: 0.1.19
 Title: RCBMS
 Description: R Package for the Philippine Statistics Authority-led Community-Based Monitoring System.
 Authors@R: c(
