@@ -5,3 +5,4 @@
 ^config\.yml$
 playground/*
 ^LICENSE\.md$
+^.*\.pem$
