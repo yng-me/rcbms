@@ -12,3 +12,6 @@ playground/src/*/data/*
 playground/src/docs/*
 
 .env
+\.pem
+rcbms\.pem
+rcbms-private\.pem

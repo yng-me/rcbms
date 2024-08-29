@@ -54,6 +54,17 @@ factor_cols <- function(.data, ..., .complete = TRUE, .keep_cols = TRUE) {
 }
 
 
+#' Title
+#'
+#' @param .data
+#' @param .col
+#' @param .keep_cols
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 factor_col <- function(.data, .col, .keep_cols = TRUE) {
   attr_i <- attributes(.data[[.col]])
 

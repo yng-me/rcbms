@@ -1,6 +1,6 @@
 Package: rcbms
 Type: Package
-Version: 0.1.19
+Version: 0.1.20
 Title: RCBMS
 Description: R Package for the Philippine Statistics Authority-led Community-Based Monitoring System.
 Authors@R: c(
@@ -39,6 +39,7 @@ Imports:
   rlang (>= 1.0.2),
   readr (>= 2.1.0),
   uuid (>= 0.1.2),
+  magick (>= 2.8.2)
 Suggests: 
   testthat (>= 3.0.0),
   cli,
