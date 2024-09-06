@@ -348,7 +348,17 @@ load_tabulation_refs <- function(.gid) {
     .gid,
     required_cols,
     col_types = "cccccciiciiici"
-  )
+  ) |>
+    dplyr::rename(
+      included = is_included
+    ) |>
+    dplyr::mutate(
+      included = dplyr::if_else(
+        included == 1,
+        TRUE,
+        FALSE
+      )
+    )
 
   transform_refs(df)
 }

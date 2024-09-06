@@ -41,6 +41,7 @@ save_current_logs <- function(
   total_priority_c <- 0
   total_priority_d <- 0
   partial <- 0
+  tab_category <- NULL
   summary_info <- list()
 
   # current_area_code <- .config$aggregation$areas[1]
@@ -97,8 +98,6 @@ save_current_logs <- function(
     if(length(current_area_code) > 1) {
       current_area_code <- 'all'
     }
-
-    print(paste0('xxxxxx: ', current_area_code))
 
     db_table_name <- paste0(.input_data, "_cv")
     cv_cols <- c("id", uid, "validation_id", "line_number", "info")
@@ -188,6 +187,8 @@ save_current_logs <- function(
     db_table_name <- "ts"
     by_cv_cols <- "tabulation_id"
 
+    tab_category <- .config$tabulation$category
+
     db_data_to_store <- db_data_to_store |>
       dplyr::select(dplyr::any_of(c("id", "tabulation_id", "info")))
 
@@ -209,6 +210,7 @@ save_current_logs <- function(
       station = toupper(.config$mode$station),
       level = .config$aggregation$level,
       input_data = .input_data,
+      category = tab_category,
       area_code = current_area_code,
       total = total,
       partial = partial,
