@@ -6,6 +6,11 @@
   add_length: 1
   bp:
     id: barangay_geo
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
     directory: ~
     sub_directory: ~
     file_format: xlsx
@@ -25,6 +30,11 @@
         - barangay_mobile_number
   hp:
     id: case_id
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
     directory: ~
     sub_directory: ~
     file_format: txt
@@ -58,6 +68,11 @@
         - enumerator
   ilq:
     id: case_id
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
     directory: ~
     sub_directory: ~
     file_format: txt
@@ -85,6 +100,11 @@
   shp:
     id: cbms_geoid
     file_format: gpkg
+    dir:
+     input_data: ~
+     input_data_sub: ~
+     csdbe_data: ~
+     output: ~
     directory: ~
     sub_directory: ~
     out_directory: ~
