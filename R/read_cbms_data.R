@@ -42,6 +42,10 @@ read_cbms_data <- function(.references, .config) {
 
     input_data <- .config$input_data[i]
 
+    envir <- as.environment(1)
+    CURRENT_AREA_TEMP__ <- .config$project[[input_data]]$sub_directory
+    assign("CURRENT_AREA_TEMP__", CURRENT_AREA_TEMP__, envir = envir)
+
     is_bp_data <- input_data == "bp" & as.character(.config$survey_round) == "2024"
     is_shp_data <- input_data == "shp" & as.character(.config$survey_round) == "2024"
 
