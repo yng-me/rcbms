@@ -174,9 +174,10 @@ get_data_path <- function(
     .input_data
   )
 
-  sub_directory <- .config$project[[.input_data]]$sub_directory
-  if (!is.null(sub_directory)) {
-    full_path <- file.path(full_path, sub_directory)
+  if(exists('CURRENT_AREA_TEMP__')) {
+    if (!is.null(CURRENT_AREA_TEMP__)) {
+      full_path <- file.path(full_path, CURRENT_AREA_TEMP__)
+    }
   }
 
   return(full_path)

@@ -146,6 +146,8 @@ utils::globalVariables(
         save_as_json = TRUE,
         stringify_info = TRUE,
         signature = list(
+          crop_threshold = 1000,
+          filename_length = 31,
           ink_threshold = 375,
           img_threshold = 100000,
           path = NULL,
