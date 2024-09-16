@@ -5,6 +5,7 @@
 #' @param .config
 #' @param .save_as_excel
 #' @param .save_as_json
+#' @param .section_ref
 #'
 #' @return
 #' @export
@@ -16,7 +17,8 @@ generate_tabulation <- function(
   .ts_ref,
   .config,
   .save_as_excel = FALSE,
-  .save_as_json = TRUE
+  .save_as_json = TRUE,
+  .section_ref = NULL
 ) {
 
   if(exists("CURRENT_INPUT_DATA")) {
@@ -60,7 +62,7 @@ generate_tabulation <- function(
     }
   }
 
-  save_rcbms_logs(output, input_data, .ts_ref, .config)
+  save_rcbms_logs(output, input_data, .ts_ref, .config, .section_ref)
 
   return(output)
 }

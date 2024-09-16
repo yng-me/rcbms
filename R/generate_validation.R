@@ -3,12 +3,13 @@
 #' @param .cv
 #' @param .cv_ref
 #' @param .config
+#' @param .section_ref
 #'
 #' @return
 #' @export
 #'
 #' @examples
-generate_validation <- function(.cv, .cv_ref, .config) {
+generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
 
   if(exists("CURRENT_INPUT_DATA")) {
     input_data <- CURRENT_INPUT_DATA
@@ -120,7 +121,7 @@ generate_validation <- function(.cv, .cv_ref, .config) {
       dplyr::rename(contact = contact__)
   }
 
-  save_rcbms_logs(output, input_data, .cv_ref, .config)
+  save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
 
   return(output)
 }
