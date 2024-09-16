@@ -36,7 +36,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
   }
 
 
-  # Prelim
+  # Prelim only
   if(.config$mode$edit == 0) {
 
     script_files_final <- script_files_all |>
@@ -47,7 +47,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         )
       )
 
-  # Signature
+  # Signature validation only
   } else if (.config$mode$edit == 3) {
 
     script_files_final <- script_files_all |>
@@ -58,7 +58,18 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         )
       )
 
-  # Others
+  # Duplicate checks only
+  } else if (.config$mode$edit == 4) {
+
+    script_files_final <- script_files_all |>
+      dplyr::filter(
+        grepl(
+          "^(__initial|_duplicate)",
+          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+        )
+      )
+
+  # Before- and after-edit checks
   }  else {
 
     section_ref <- .section[[.config$survey_round]][[.input_data]]
@@ -161,28 +172,29 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         dplyr::bind_rows(script_files_final)
 
     }
+
+    if(.config$mode$stage == 1 & .input_data == 'hp') {
+      script_files_final <- script_files_final |>
+        dplyr::filter(
+          !grepl(
+            "^_preliminary",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
+        )
+    }
+
+    if(.input_data == 'hp' & .config$validation$check_duplicate_members) {
+      script_files_final <- script_files_all |>
+        dplyr::filter(
+          grepl(
+            "^_duplicate",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
+        ) |>
+        dplyr::bind_rows(script_files_final)
+    }
   }
 
-  if(.config$mode$stage == 1 & .input_data == 'hp') {
-    script_files_final <- script_files_final |>
-      dplyr::filter(
-        !grepl(
-          "^_preliminary",
-          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
-        )
-      )
-  }
-
-  if(.input_data == 'hp' & .config$validation$check_duplicate_members) {
-    script_files_final <- script_files_all |>
-      dplyr::filter(
-        grepl(
-          "^_duplicate",
-          stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
-        )
-      ) |>
-      dplyr::bind_rows(script_files_final)
-  }
 
   script_files_final |>
     dplyr::distinct(.keep_all = T) |>

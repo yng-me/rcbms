@@ -24,7 +24,7 @@ read_signature_files <- function(
 ) {
 
   match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
-  file_formats <- paste0('\\.', paste0(.formats, collapse = '|'), '$')
+  file_formats <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
 
   signature_folder <- file.info(
       list.files(

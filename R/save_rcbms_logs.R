@@ -43,15 +43,11 @@ save_current_logs <- function(
   partial <- 0
   tab_category <- NULL
   summary_info <- list()
+  current_area_code <- NULL
 
   # current_area_code <- .config$aggregation$areas[1]
-  current_area_code <- NULL
-  area_code_vars <- paste0(c('region', 'province', 'city_mun', 'barangay', 'ean'), "_geo")
-
-  add_length <- .config$project$add_length
-  agg_level <- .config$aggregation$level
-  if(.input_data == 'bp' & agg_level > 4) {
-    agg_level <- 4
+  if(exists('CURRENT_AREA_CODE')) {
+    current_area_code <- CURRENT_AREA_CODE
   }
 
   if(!is.null(.data)) {
@@ -61,42 +57,8 @@ save_current_logs <- function(
 
   if((mode == "validation" | mode == "cv") & !is.null(.data))  {
 
-    agg_data <- .data |>
-      dplyr::mutate(
-        area_code = !!as.name(uid),
-      ) |>
-      dplyr::mutate(
-        region_geo = stringr::str_sub(area_code, 1, 2),
-        province_geo = stringr::str_sub(area_code, 1, 4 + add_length),
-        city_mun_geo = stringr::str_sub(area_code, 1, 6 + add_length),
-        barangay_geo = stringr::str_sub(area_code, 1, 9 + add_length)
-      )
-
-    if(.input_data != 'bp') {
-      agg_data <- agg_data |>
-        dplyr::mutate(
-          ean_geo = stringr::str_sub(area_code, 1, 15 + add_length)
-        )
-
-      current_area_code <- agg_data |>
-        dplyr::distinct(ean_geo) |>
-        dplyr::pull()
-    }
-
-
-    rev_area <- rev(area_code_vars)[2:5]
-
-    for (i in seq_along(rev_area)) {
-      if(length(current_area_code) != 1) {
-        current_area_code <- agg_data |>
-          dplyr::transmute(code = !!as.name(rev_area[i])) |>
-          dplyr::distinct(code) |>
-          dplyr::pull()
-      }
-    }
-
-    if(length(current_area_code) > 1) {
-      current_area_code <- 'all'
+    if(is.null(current_area_code)) {
+      current_area_code <- get_current_area_code(.data)
     }
 
     db_table_name <- paste0(.input_data, "_cv")

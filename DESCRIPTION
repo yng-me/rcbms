@@ -40,6 +40,7 @@ Imports:
   readr (>= 2.1.0),
   uuid (>= 0.1.2),
   magick (>= 2.8.2),
+  zip,
   foreach,
   parallel,
   doParallel

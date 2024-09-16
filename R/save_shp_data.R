@@ -64,7 +64,9 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
       by = 'province_code'
     ) |>
     sort_variable_names('shp', .config) |>
-    add_metadata(dcf, .references$valueset)
+    add_metadata(dcf, .references$valueset) |>
+    tibble::tibble() |>
+    dplyr::mutate(row_id = dplyr::row_number(), .before = 1)
 
   pq <- file.path(.pq_folder, 'shp_data.parquet')
 

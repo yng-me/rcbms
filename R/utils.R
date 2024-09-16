@@ -252,3 +252,46 @@ write_aes_key <- function(dir, key = generate_aes_key()) {
   )
   writeLines(text, con = file(file.path(dir, '.env')))
 }
+
+
+
+
+#' Title
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+generate_env <- function(mode = 'test') {
+
+  if(!file.exists('.env')) {
+    writeLines(paste0('VITE_MODE=', mode,'\n'), file('.env'))
+  }
+
+  env <- rcbms::set_dot_env(".env")
+  keys <- c('VITE_APP_KEY', 'VITE_AES_KEY', 'VITE_AES_IV')
+
+  for(i in seq_along(keys)) {
+    key_i <- keys[i]
+    if(is.null(env[[key_i]])) {
+
+      if(key_i == 'VITE_APP_KEY') {
+        app_key <- openssl::rand_bytes(64) |>
+          openssl::sha256() |>
+          openssl::base64_encode()
+      } else if (key_i == 'VITE_AES_KEY') {
+        app_key  <- openssl::aes_keygen() |>
+          rcbms::raw_to_hex() |>
+          openssl::sha256()
+      } else if (key_i == 'VITE_AES_IV') {
+        app_key <- rcbms::raw_to_hex(openssl::rand_bytes(16))
+      }
+
+      env_data <- readr::read_file('.env')
+      env_app_key <- paste0(env_data, key_i, '="', app_key, '"')
+      writeLines(env_app_key, file('.env'))
+    }
+  }
+}
