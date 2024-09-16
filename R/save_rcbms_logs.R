@@ -31,6 +31,7 @@ save_current_logs <- function(
 
   db_data_to_store <- NULL
   mode <- .config$mode$type
+  edit <- .config$mode$edit
   uid <- .config$project[[.input_data]]$id
   current_id <- 1
   log_status <- 2
@@ -135,7 +136,7 @@ save_current_logs <- function(
         dplyr::filter(included, builtin_included) |>
         nrow()
 
-      if(selected_sec < nrow(.section_ref)) {
+      if(selected_sec < nrow(.section_ref) & edit %in% c(1, 2, 5)) {
         partial <- 1
       }
     }
@@ -167,7 +168,7 @@ save_current_logs <- function(
     value = dplyr::tibble(
       survey_round = as.character(.config$survey_round),
       mode = mode,
-      edit = .config$mode$edit,
+      edit = edit,
       stage = .config$mode$stage,
       station = toupper(.config$mode$station),
       level = .config$aggregation$level,
