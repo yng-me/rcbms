@@ -18,18 +18,25 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
       full.names = T
     ) |>
     dplyr::as_tibble() |>
-    dplyr::mutate(title = stringr::str_remove(basename(tolower(value)), '\\.(r|R)$')) |>
-    dplyr::mutate(order = seq(1:dplyr::n())) |>
-    dplyr::mutate(order = order + 2) |>
-    dplyr::arrange(order, value) |>
-    dplyr::mutate(order = dplyr::if_else(grepl('^__initial', value), 0L, order)) |>
-    dplyr::mutate(order = dplyr::if_else(grepl('^__*', value), 1L, order)) |>
-    dplyr::mutate(order = dplyr::if_else(grepl('^_.*', value), 2L, order)) |>
-    dplyr::transmute(
-      input_data = .input_data,
-      file = value,
-      order
-    )
+    dplyr::mutate(title = stringr::str_remove(basename(tolower(value)), '\\.(r|R)$'))
+
+  if(nrow(script_files_all) == 0) return(invisible(NULL))
+
+  if(nrow(script_files_all) > 0) {
+    script_files_all <- script_files_all |>
+      dplyr::mutate(order = seq(1:dplyr::n())) |>
+      dplyr::mutate(order = order + 2) |>
+      dplyr::arrange(order, value) |>
+      dplyr::mutate(order = dplyr::if_else(grepl('^__initial', value), 0L, order)) |>
+      dplyr::mutate(order = dplyr::if_else(grepl('^__*', value), 1L, order)) |>
+      dplyr::mutate(order = dplyr::if_else(grepl('^_.*', value), 2L, order)) |>
+      dplyr::transmute(
+        input_data = .input_data,
+        file = value,
+        order
+      )
+  }
+
 
   if (length(script_files_all) == 0) {
     return(NULL)
