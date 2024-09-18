@@ -59,7 +59,7 @@ save_current_logs <- function(
   if((mode == "validation" | mode == "cv") & !is.null(.data))  {
 
     if(is.null(current_area_code)) {
-      current_area_code <- get_current_area_code(.data)
+      current_area_code <- get_current_area_code(.data, .input_data, .config)
     }
 
     db_table_name <- paste0(.input_data, "_cv")
