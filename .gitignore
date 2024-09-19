@@ -15,3 +15,5 @@ playground/src/docs/*
 \.pem
 rcbms\.pem
 rcbms-private\.pem
+
+*.pem
