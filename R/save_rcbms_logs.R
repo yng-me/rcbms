@@ -33,7 +33,7 @@ save_current_logs <- function(
   mode <- .config$mode$type
   edit <- .config$mode$edit
   uid <- .config$project[[.input_data]]$id
-  current_id <- 1
+  log_id <- uuid::UUIDgenerate()
   log_status <- 2
   total_cases <- 0
   total_cases_unique <- 0
@@ -166,6 +166,7 @@ save_current_logs <- function(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
+      id = log_id,
       survey_round = as.character(.config$survey_round),
       mode = mode,
       edit = edit,
@@ -201,9 +202,6 @@ save_current_logs <- function(
 
   if (log_saved) {
 
-    last_row <- DBI::dbGetQuery(.conn, "SELECT last_insert_rowid();")
-    current_id <- as.integer(last_row[[1]])
-
     if(log_status == 2) {
       DBI::dbExecute(
         .conn,
@@ -211,7 +209,7 @@ save_current_logs <- function(
           "UPDATE logs SET
             verified_at = CURRENT_TIMESTAMP,
             validated_at = CURRENT_TIMESTAMP
-          WHERE id = ", current_id, ";"
+          WHERE id = ", log_id, ";"
         )
       )
     }
@@ -219,7 +217,7 @@ save_current_logs <- function(
     if(!is.null(.data)) {
 
       db_data_to_store <- db_data_to_store |>
-        dplyr::mutate(log_id = current_id, status = 0L)
+        dplyr::mutate(log_id = log_id, status = 0L)
 
       if (db_table_name %in% .tables) {
 
@@ -255,7 +253,7 @@ save_current_logs <- function(
   if (!exists("current_logs_id")) {
     current_logs_id <- NULL
   }
-  current_logs_id <- c(current_logs_id, current_id)
+  current_logs_id <- c(current_logs_id, log_id)
 
   envir <- as.environment(1)
   assign("current_logs_id", current_logs_id, envir = envir)

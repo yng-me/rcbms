@@ -7,13 +7,13 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
     contact <- 'contact text,'
   }
 
-  if (!("logs" %in% .tables)) {
+  if (!(paste0(.input_data, '_cv') %in% .tables)) {
     DBI::dbExecute(
       .conn,
       paste0(
         "CREATE TABLE ", .input_data, "_cv (
-          log_id int,
-          id varchar(36),",
+          id varchar(36) PRIMARY KEY,
+          log_id varchar(36),",
           .uid, " varchar(36),
           validation_id text, ",
           line_number,
@@ -31,7 +31,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
     DBI::dbExecute(
       .conn,
       "CREATE TABLE logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id varchar(36) PRIMARY KEY,
         survey_round varchar(4),
         mode varchar(16),
         edit tinyint CHECK (edit IN (0, 1, 2, 3, 4)),
