@@ -63,10 +63,10 @@ create_remarks_table <- function(.conn, .tables) {
         last_name varchar(36),
         role varchar(36),
         status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
-        tag_status tinyint CHECK (tag_status IN (0, 1)),
         remarks text,
         uploaded tinyint CHECK (uploaded IN (0, 1)),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        tag_status DATETIME DEFAULT NULL,
         updated_at DATETIME DEFAULT NULL
       );"
     )
