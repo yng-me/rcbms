@@ -1,4 +1,31 @@
-create_logs_table <- function(.conn, .tables) {
+create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_id') {
+
+  line_number <- ''
+  contact <- ''
+  if(.input_data == 'hp' | .input_data == 'ilq') {
+    line_number <- 'line_number varchar(4),'
+    contact <- 'contact text,'
+  }
+
+  if (!("logs" %in% .tables)) {
+    DBI::dbExecute(
+      .conn,
+      paste0(
+        "CREATE TABLE ", .input_data, "_cv (
+          log_id int,
+          id varchar(36),",
+          .uid, " varchar(36),
+          validation_id text, ",
+          line_number,
+          "status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
+          info text,",
+          contact,
+          "tag_status DATETIME DEFAULT NULL,
+          updated_at DATETIME DEFAULT NULL
+        );"
+      )
+    )
+  }
 
   if (!("logs" %in% .tables)) {
     DBI::dbExecute(
