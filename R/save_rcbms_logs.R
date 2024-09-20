@@ -162,11 +162,15 @@ save_current_logs <- function(
   total <- summary_stat$total
   summary_info <- c(summary_info, summary_stat$summary_info)
 
+  id_int <- DBI::dbReadTable(.conn, 'logs') |>
+    nrow()
+
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
       id = log_id,
+      id_int = as.integer(id_int + 1),
       survey_round = as.character(.config$survey_round),
       mode = mode,
       edit = edit,

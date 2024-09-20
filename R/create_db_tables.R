@@ -31,7 +31,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
     DBI::dbExecute(
       .conn,
       "CREATE TABLE logs (
-        id_int INTEGER AUTOINCREMENT,
+        id_int INTEGER,
         id varchar(36) PRIMARY KEY,
         survey_round varchar(4),
         mode varchar(16),
