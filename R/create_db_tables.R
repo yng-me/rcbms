@@ -12,7 +12,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
       .conn,
       paste0(
         "CREATE TABLE ", .input_data, "_cv (
-          id varchar(36) PRIMARY KEY,
+          id varchar(36),
           log_id varchar(36),",
           .uid, " varchar(36),
           validation_id text, ",
