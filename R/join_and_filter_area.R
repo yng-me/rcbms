@@ -111,7 +111,7 @@ filter_by_area <- function(.data, .config = getOption('rcbms.config')) {
 
   if(!exists("AGG_CODE_GLOBAL")) return(.data)
   if(is.null(AGG_CODE_GLOBAL)) return(.data)
-  if(.config$aggregation$level == 0) return(.data)
+  if(.config$aggregation$level == 0 || tolower(.config$aggregation$areas) == 'all') return(.data)
 
   var <- paste0(aggregation$levels[.config$aggregation$level], "_code")
   if(.config$aggregation$level == 5) var <- 'ean'
