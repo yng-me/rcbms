@@ -199,7 +199,8 @@ save_current_logs <- function(
       pc_os_release_date = os_release_date,
       pc_os_version = pc[["release"]],
       pc_hardware = pc[["machine"]],
-      pc_pid = Sys.getpid()
+      pc_pid = Sys.getpid(),
+      duration = 0
     ),
     append = TRUE
   )

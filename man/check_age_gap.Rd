@@ -9,6 +9,7 @@ check_age_gap(
   .primary_member,
   .relation_to_primary_member,
   .threshold = 10,
+  .ref_code = "relation_to_hh_head",
   .config = getOption("rcbms.config")
 )
 }

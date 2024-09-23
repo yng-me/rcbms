@@ -60,9 +60,12 @@ load_area_name_new_refs <- function(.gid) {
     'barangay_code',
     'ean',
     'barangay',
+    'average_hh_size',
     'total_population',
     'total_hh',
-    'average_hh_size'
+    'total_workload',
+    'survey_indicator',
+    'implementation'
   )
 
   required_cols_reg <- c(
@@ -82,7 +85,7 @@ load_area_name_new_refs <- function(.gid) {
     'city_mun'
   )
 
-  load_refs_from_gsheet(.gid, required_cols, col_types = 'cccccciid', .sheet_name = 'area_name') |>
+  load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccdiiiii', .sheet_name = 'area_name') |>
     dplyr::left_join(
       load_refs_from_gsheet(.gid, required_cols_reg, col_types = 'ccc', .sheet_name = 'region_name'),
       by = 'region_code'
@@ -106,8 +109,11 @@ load_area_name_new_refs <- function(.gid) {
       province,
       city_mun,
       barangay,
+      average_hh_size,
       total_population,
       total_hh,
-      average_hh_size
+      total_workload,
+      survey_indicator,
+      implementation
     )
 }

@@ -148,9 +148,9 @@ create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
           stringr::str_pad(barangay_code, pad = '0', width = 3)
         )
       )
+    attr(.data$barangay_geo, "label") <- "Barangay geo ID"
   }
 
-  attr(.data$barangay_geo, "label") <- "Barangay geo ID"
   return(.data)
 }
 

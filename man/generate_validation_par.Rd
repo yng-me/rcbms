@@ -4,10 +4,10 @@
 \alias{generate_validation_par}
 \title{Generate validation output in parallel mode}
 \usage{
-generate_validation_par(.cv, .cv_ref, .config)
+generate_validation_par(.cv, .cv_ref, .config, .section_ref = NULL)
 }
 \arguments{
-\item{.config}{}
+\item{.section_ref}{}
 }
 \description{
 Generate validation output in parallel mode

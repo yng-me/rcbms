@@ -52,6 +52,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
         total int,
         summary text,
         user text,
+        duration int,
         user_id varchar(36),
         status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         version_app varchar(10),

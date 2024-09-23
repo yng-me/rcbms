@@ -268,3 +268,47 @@ decrypt_info <- function(.str, .config = getOption('rcbms.config'), .key = NULL,
 
   unserialize(.str)
 }
+
+
+
+
+#' Title
+#'
+#' @param .value
+#' @param get_label
+#' @param transform
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+get_ref_code <- function(.value, get_label = F, transform = TRUE) {
+
+  if(!exists('references') | !inherits(references, 'rcbms_refs')) {
+    stop('Valueset reference not found.')
+  }
+
+  if(get_label) {
+    v <- references$valueset |>
+      filter(name == .value) |>
+      dplyr::pull(label) |>
+      str_squish() |>
+      str_trim()
+
+    if(transform) {
+      v <- toupper(v)
+    }
+
+    v
+
+  } else {
+    suppressWarnings(
+      references$valueset |>
+        filter(name == .value) |>
+        dplyr::pull(value) |>
+        as.integer()
+    )
+  }
+}
