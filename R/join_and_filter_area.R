@@ -110,11 +110,11 @@ filter_area <- function(
 filter_by_area <- function(.data, .config = getOption('rcbms.config')) {
 
   if(!exists("AGG_CODE_GLOBAL")) return(.data)
+  if(is.null(AGG_CODE_GLOBAL)) return(.data)
+  if(.config$aggregation$level == 0) return(.data)
 
-  if(is.null(AGG_CODE_GLOBAL)) {
-    return(.data)
-  } else {
-    var <- paste0(aggregation$levels[.config$aggregation$level], "_code")
-    .data |> dplyr::filter(!!as.name(var) == AGG_CODE_GLOBAL)
-  }
+  var <- paste0(aggregation$levels[.config$aggregation$level], "_code")
+  if(.config$aggregation$level == 5) var <- 'ean'
+
+  dplyr::filter(.data, !!as.name(var) == AGG_CODE_GLOBAL)
 }
