@@ -143,6 +143,7 @@ save_current_logs <- function(
 
   }
 
+
   if((mode == "tabulation" | mode == "ts") & !is.null(.data)) {
 
     log_status <- 0
@@ -165,6 +166,17 @@ save_current_logs <- function(
   id_int <- DBI::dbReadTable(.conn, 'logs') |>
     nrow()
 
+  area_codes <- .config$aggregation$areas  |>
+    jsonlite::toJSON() |>
+    as.character()
+
+  number_of_ea_processed <- length(.config$aggregation$areas)
+
+  if(tolower(.config$aggregation$areas) == 'all') {
+    area_codes <- "[]"
+    number_of_ea_processed <- NULL
+  }
+
   log_saved <- DBI::dbWriteTable(
     conn = .conn,
     name = "logs",
@@ -180,6 +192,8 @@ save_current_logs <- function(
       input_data = .input_data,
       category = tab_category,
       area_code = current_area_code,
+      area_codes = area_codes,
+      number_of_ea_processed = number_of_ea_processed,
       total = total,
       partial = partial,
       summary = as.character(jsonlite::toJSON(summary_info)),

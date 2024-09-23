@@ -1,4 +1,4 @@
-join_contact_info <- function(.data, .input_data, .uid, .config) {
+join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
 
   summary_record <- .config$project[[.input_data]][['summary_record']]
   contact_info_vars <- .config$project[[.input_data]]$variable$contact
@@ -38,26 +38,29 @@ join_contact_info <- function(.data, .input_data, .uid, .config) {
     }
   }
 
-  if(.config$validation$stringify_info) {
+  if(.encrypt) {
 
-    contact_info <- contact_info |>
-      dplyr::group_by(!!as.name(.uid)) |>
-      dplyr::collect() |>
-      tidyr::nest(.key = 'contact') |>
-      dplyr::mutate(
-        contact = purrr::map_chr(contact, \(x) {
-          x |>
-            dplyr::mutate_all(as.character) |>
-            jsonlite::toJSON() |>
-            as.character() |>
-            encrypt_info()
-        })
-      )
-  }  else {
-    contact_info <- contact_info |>
-      dplyr::group_by(!!as.name(.uid)) |>
-      dplyr::collect() |>
-      tidyr::nest(.key = 'contact')
+    if(.config$validation$stringify_info) {
+
+      contact_info <- contact_info |>
+        dplyr::group_by(!!as.name(.uid)) |>
+        dplyr::collect() |>
+        tidyr::nest(.key = 'contact') |>
+        dplyr::mutate(
+          contact = purrr::map_chr(contact, \(x) {
+            x |>
+              dplyr::mutate_all(as.character) |>
+              jsonlite::toJSON() |>
+              as.character() |>
+              encrypt_info()
+          })
+        )
+    }  else {
+      contact_info <- contact_info |>
+        dplyr::group_by(!!as.name(.uid)) |>
+        dplyr::collect() |>
+        tidyr::nest(.key = 'contact')
+    }
   }
 
   .data |>

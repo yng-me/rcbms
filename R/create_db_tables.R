@@ -43,6 +43,8 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
         partial tinyint CHECK (partial IN (0, 1)),
         input_data char(3) CHECK (input_data IN ('hp', 'bp', 'ilq', 'shp')),
         area_code varchar(16),
+        area_codes text,
+        number_of_ea_processed int,
         total_cases int,
         total_cases_unique int,
         total_priority_a int,
