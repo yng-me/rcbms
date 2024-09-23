@@ -4,10 +4,10 @@
 \alias{generate_validation}
 \title{Generate validation output}
 \usage{
-generate_validation(.cv, .cv_ref, .config)
+generate_validation(.cv, .cv_ref, .config, .section_ref = NULL)
 }
 \arguments{
-\item{.config}{}
+\item{.section_ref}{}
 }
 \description{
 Generate validation output

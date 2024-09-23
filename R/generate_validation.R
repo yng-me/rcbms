@@ -27,6 +27,7 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
 
   with_incon <- NULL
   is_not_rcbms_cv_tbl <- NULL
+
   for (i in seq_along(result_names)) {
     result_name <- result_names[i]
     is_rcbms_cv_tbl <- inherits(.cv[[result_name]], "rcbms_cv_tbl")
@@ -64,8 +65,10 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   output <- NULL
 
   add_info <- .config$validation$include_additional_info
-  uid <- .config$project[[CURRENT_INPUT_DATA]]$id
+  uid <- .config$project[[input_data]]$id
   if (is.null(uid)) uid <- "case_id"
+
+  output_list <- list()
 
   for (i in seq_along(result_names)) {
 
@@ -73,6 +76,14 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
 
     if(.config$verbose) {
       cat(paste0(str_pad(formatC(nrow(.cv[[result_name]]), big.mark = ','), width = 7), ': ', result_name, '\n'))
+    }
+
+    if(!.config$verbose & .config$progress) {
+      cat(paste0(
+        i, ' of ', length(result_names),
+        ': ', result_name,
+        ' (', formatC(nrow(.cv[[result_name]]), big.mark = ','), ')\n')
+      )
     }
 
     output_temp <- .cv[[result_name]] |>
@@ -89,36 +100,28 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
       group_cols <- c(group_cols, 'line_number')
     }
 
-    if(add_info & 'contact__' %in% names(output_temp)) {
-      group_cols <- c(group_cols, 'contact__')
-    }
-
-    output_temp <- output_temp |>
+    output_list[[result_name]] <- output_temp |>
       dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
       dplyr::group_by(dplyr::pick(dplyr::any_of(group_cols))) |>
       tidyr::nest(.key = "info") |>
-      dplyr::mutate(info = purrr::map_chr(info, \(x) {
-        x |>
-          dplyr::mutate_all(as.character) |>
-          dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
-          jsonlite::toJSON() |>
-          as.character() |>
-          encrypt_info()
-      })) |>
-      dplyr::ungroup()
-
-    if (i == 1) {
-      output <- output_temp |> dplyr::tibble()
-    } else {
-      output <- output |>
-        dplyr::bind_rows(output_temp) |>
-        dplyr::tibble()
-    }
+      dplyr::ungroup() |>
+      dplyr::tibble()
   }
 
-  if(add_info & 'contact__' %in% names(output)) {
+  output <- output_list |>
+    dplyr::bind_rows() |>
+    dplyr::mutate(info = purrr::map_chr(info, \(x) {
+      x |>
+        dplyr::mutate_all(as.character) |>
+        dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
+        jsonlite::toJSON() |>
+        as.character() |>
+        encrypt_info()
+    }))
+
+  if(add_info) {
     output <- output |>
-      dplyr::rename(contact = contact__)
+      join_contact_info(input_data, uid, .config)
   }
 
   save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)

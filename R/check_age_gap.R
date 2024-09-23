@@ -16,6 +16,7 @@ check_age_gap <- function(
   .primary_member,
   .relation_to_primary_member,
   .threshold = 10,
+  .ref_code = 'relation_to_hh_head',
   .config = getOption('rcbms.config')
 ) {
 
@@ -24,28 +25,23 @@ check_age_gap <- function(
   age_var <- var$age_computed
   sex_var <- var$sex
 
+  primary_member <- paste0('_', tolower(get_ref_code(.ref_code, get_label = T))[.primary_member])
+  primary_member_var <- paste0(age_var, primary_member)
+
+  relation_to_primary_member <- paste0('_', tolower(get_ref_code(.ref_code, get_label = T))[.relation_to_primary_member])
+  relation_to_primary_member_var <- paste0(age_var, relation_to_primary_member)
+
   .data |>
-    dplyr::filter(!!as.name(rel_var) %in% c(.primary_member, .relation_to_primary_member)) |>
-    dplyr::add_count(case_id) |>
-    dplyr::filter(n > 1) |>
-    dplyr::select(case_id, line_number, dplyr::all_of(c(rel_var, age_var, sex_var))) |>
-    dplyr::group_by(case_id) |>
-    tidyr::nest() |>
-    dplyr::mutate(
-      data = purrr::map_chr(data, \(x) {
-        age_rel <- x |>
-          dplyr::filter(!!as.name(rel_var) == .primary_member) |>
-          pull(age_var)
-        x |>
-          dplyr::mutate(age_of_primary_member = age_rel[1]) |>
-          dplyr::filter(
-            !!as.name(rel_var) == .relation_to_primary_member,
-            abs(age_of_primary_member - !!as.name(age_var)) < .threshold
-          ) |>
-          jsonlite::toJSON() |>
-          as.character()
-      })
+    dplyr::filter(!!as.name(rel_var) == .primary_member) |>
+    dplyr::select(case_id, line_number, dplyr::any_of(c(rel_var, age_var, sex_var))) |>
+    dplyr::left_join(
+      .data |>
+        dplyr::filter(!!as.name(rel_var) == .relation_to_primary_member) |>
+        dplyr::select(case_id, dplyr::any_of(c(rel_var, age_var, sex_var))),
+      by = 'case_id',
+      suffix = c(primary_member, relation_to_primary_member)
     ) |>
-    dplyr::filter(data != "[]") |>
-    select_cv(data)
+    dplyr::filter(abs(!!as.name(relation_to_primary_member_var) - !!as.name(primary_member_var)) < .threshold) |>
+    select_cv(dplyr::matches(c(rel_var, age_var, sex_var)))
 }
+

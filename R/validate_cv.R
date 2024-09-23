@@ -20,31 +20,77 @@
 
 select_cv <- function(.data, ...) {
 
-  .data <- .data |>
-    dplyr::collect() |>
-    validate_select(...)
-
-  set_class(.data, "rcbms_cv_tbl")
-}
-
-
-validate_select <- function(.data, ...) {
-
   if(!exists("config")) {
     config <- getOption('rcbms.config')
   } else if(exists("config") & !inherits(config, "rcbms_config")) {
     config <- getOption('rcbms.config')
   }
 
-  uid <- config$project[[CURRENT_INPUT_DATA]]$id
-
-  if (is.null(uid)) uid <- "case_id"
-
   if (!exists("CURRENT_INPUT_DATA")) {
-    CURRENT_INPUT_DATA <- config$input_data[1]
+    CURRENT_INPUT_DATA <- .config$input_data[1]
   }
 
+  uid <- config$project[[CURRENT_INPUT_DATA]]$id
+  if (is.null(uid)) uid <- "case_id"
+
+  geo_cols_name <- c('region', 'province', 'city_mun', 'barangay')
+  geo_cols <- paste0(geo_cols_name, '_code')
+
+  .data <- .data |>
+    dplyr::select(
+      dplyr::any_of(
+        c(
+          uid,
+          geo_cols,
+          geo_cols_name,
+          'ean',
+          'line_number'
+        )
+      ),
+      ...
+    ) |>
+    dplyr::collect()
+
   add_length <- config$project$add_length
+  if (length(which(geo_cols %in% names(.data))) == 4) {
+    .data <- .data |> create_barangay_geo()
+  }
+
+  if (!("barangay_geo" %in% names(.data)) & CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
+    .data <- .data |>
+      dplyr::mutate(barangay_geo = stringr::str_sub(case_id, 1, 9 + add_length))
+  }
+
+  if (CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
+    .data <- .data |>
+      dplyr::mutate(
+        ean = stringr::str_sub(case_id, 10 + add_length, 15 + add_length)
+      )
+  }
+
+  if (!("line_number" %in% names(.data)) & CURRENT_INPUT_DATA %in% c("hp", "ilq")) {
+    .data <- .data |>
+      dplyr::mutate(line_number = NA_character_)
+  }
+
+  if ("barangay_geo" %in% names(.data)) {
+    .data <- .data |>
+      dplyr::select(
+        dplyr::any_of(c(uid, geo_cols_name, "ean", "line_number")),
+        ...
+      )
+  }
+
+  set_class(.data, "rcbms_cv_tbl")
+}
+
+
+validate_select <- function(.data, .config) {
+
+  uid <- .config$project[[CURRENT_INPUT_DATA]]$id
+  if (is.null(uid)) uid <- "case_id"
+
+  add_length <- .config$project$add_length
 
   geo_cols_name <- c('region', 'province', 'city_mun', 'barangay')
   geo_cols <- paste0(geo_cols_name, '_code')
@@ -79,9 +125,9 @@ validate_select <- function(.data, ...) {
       )
   }
 
-  include_additional_info <- config$validation$include_additional_info
-  summary_record <- config$project[[CURRENT_INPUT_DATA]][['summary_record']]
-  contact_info_vars <- config$project[[CURRENT_INPUT_DATA]]$variable$contact
+  include_additional_info <- .config$validation$include_additional_info
+  summary_record <- .config$project[[CURRENT_INPUT_DATA]][['summary_record']]
+  contact_info_vars <- .config$project[[CURRENT_INPUT_DATA]]$variable$contact
 
   if (
     include_additional_info &
@@ -141,11 +187,10 @@ validate_select <- function(.data, ...) {
     }
   }
 
-  .data |> dplyr::select(
-    dplyr::any_of(uid),
-    dplyr::matches(paste0("^", geo_cols_name)),
-    dplyr::any_of(c("ean", "line_number")),
-    ...,
-    dplyr::any_of('contact__')
-  )
+  .data |>
+    dplyr::select(-dplyr::any_of(contact_info_vars))
+    dplyr::select(
+      dplyr::everything(),
+      dplyr::any_of('contact__')
+    )
 }

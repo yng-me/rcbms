@@ -9,11 +9,12 @@ generate_tabulation(
   .ts_ref,
   .config,
   .save_as_excel = FALSE,
-  .save_as_json = TRUE
+  .save_as_json = TRUE,
+  .section_ref = NULL
 )
 }
 \arguments{
-\item{.save_as_json}{}
+\item{.section_ref}{}
 }
 \description{
 Title
