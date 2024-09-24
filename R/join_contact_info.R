@@ -46,16 +46,20 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
         dplyr::group_by(!!as.name(.uid)) |>
         dplyr::collect() |>
         tidyr::nest(.key = 'contact') |>
+        dplyr::ungroup() |>
+        dplyr::tibble() |>
         dplyr::mutate(
           contact = purrr::map_chr(contact, \(x) {
             x |>
               dplyr::mutate_all(as.character) |>
               jsonlite::toJSON() |>
               as.character() |>
-              encrypt_info()
+              encrypt_info(.config)
           })
         )
+
     }  else {
+
       contact_info <- contact_info |>
         dplyr::group_by(!!as.name(.uid)) |>
         dplyr::collect() |>

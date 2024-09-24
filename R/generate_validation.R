@@ -116,7 +116,7 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
         dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
         jsonlite::toJSON() |>
         as.character() |>
-        encrypt_info()
+        encrypt_info(.config)
     }))
 
   if(add_info) {
