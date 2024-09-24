@@ -46,9 +46,10 @@ save_current_logs <- function(
   summary_info <- list()
   current_area_code <- NULL
 
-  # current_area_code <- .config$aggregation$areas[1]
   if(exists('CURRENT_AREA_CODE')) {
     current_area_code <- CURRENT_AREA_CODE
+  } else {
+    current_area_code <- .config$aggregation$area
   }
 
   if(!is.null(.data)) {
@@ -174,7 +175,7 @@ save_current_logs <- function(
 
   if(tolower(.config$aggregation$areas) == 'all') {
     area_codes <- "[]"
-    number_of_ea_processed <- NULL
+    number_of_ea_processed <- 1
   }
 
   log_saved <- DBI::dbWriteTable(

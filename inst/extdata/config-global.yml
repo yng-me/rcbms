@@ -58,7 +58,7 @@ harmonize_variable: true
 
 input_data: hp
 
-execute_mode: false # deprecated
+execute_script: true #
 
 # execution mode
 mode:
