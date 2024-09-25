@@ -42,6 +42,14 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     return(NULL)
   }
 
+  if(.input_data == 'shp' | .input_data == 'ilq') {
+
+    script_files_all <- dplyr::distinct(.keep_all = T) |>
+      dplyr::arrange(order, file)
+
+    return(script_files_final)
+  }
+
 
   # Prelim only
   if(.config$mode$edit == 0) {
@@ -201,7 +209,6 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         dplyr::bind_rows(script_files_final)
     }
   }
-
 
   script_files_final |>
     dplyr::distinct(.keep_all = T) |>
