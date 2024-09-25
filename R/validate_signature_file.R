@@ -1,7 +1,8 @@
 #' Title
 #'
-#' @param .sig_folder
+#' @param .dir
 #' @param .area_code
+#' @param .sig_folder
 #' @param .formats
 #' @param .options
 #'
@@ -12,8 +13,9 @@
 #'
 
 read_signature_files <- function(
-  .sig_folder,
-  .area_code,
+  .dir,
+  .area_code = NULL,
+  .sig_folder = NULL,
   .formats = c('png', 'jpg', 'jpeg'),
   .options = list(
     ink_threshold = 375,
@@ -26,9 +28,21 @@ read_signature_files <- function(
   match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
   file_formats <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
 
+  path <- .dir
+
+  if(!is.null(.area_code)) {
+
+    path <- file.path(.dir, .area_code)
+
+    if(!is.null(.sig_folder)) {
+      path <- file.path(.dir, .area_code, .sig_folder)
+    }
+
+  }
+
   signature_folder <- file.info(
       list.files(
-        file.path(.sig_folder, .area_code),
+        path,
         full.names = T,
         pattern = file_formats,
         ignore.case = T,
@@ -39,7 +53,7 @@ read_signature_files <- function(
     dplyr::mutate(
       case_id = stringr::str_remove_all(basename(file), file_formats)
     ) |>
-    dplyr::filter(!grepl('/backup/', file, ignore.case = T)) |>
+    # dplyr::filter(!grepl('/backup/', file, ignore.case = T)) |>
     dplyr::select(file, case_id, size) |>
     filter_by_area() |>
     dplyr::mutate(
