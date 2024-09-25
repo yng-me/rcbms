@@ -173,7 +173,7 @@ save_current_logs <- function(
 
   number_of_ea_processed <- length(.config$aggregation$areas)
 
-  if(tolower(.config$aggregation$areas) == 'all') {
+  if(tolower(.config$aggregation$areas[1]) == 'all') {
     area_codes <- "[]"
     number_of_ea_processed <- 1
   }
