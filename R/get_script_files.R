@@ -44,7 +44,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
 
   if(.input_data == 'shp' | .input_data == 'ilq') {
 
-    script_files_all <- script_files_all |>
+    script_files_final <- script_files_all |>
       dplyr::distinct(.keep_all = T) |>
       dplyr::arrange(order, file)
 
