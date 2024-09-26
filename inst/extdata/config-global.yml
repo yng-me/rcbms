@@ -23,6 +23,9 @@ parquet:
   # whether to delete source data (raw) after conversion
   delete_source: false
 
+  create_lineage: true
+  lineage_frequency: 'daily'
+
   # partitioning option
   partition_by:
     - region_code

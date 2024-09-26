@@ -41,16 +41,28 @@ read_cbms_data <- function(.references, .config) {
   for(i in seq_along(.config$input_data)) {
 
     input_data <- .config$input_data[i]
+    rm_pq <- .config$parquet$overwrite & convert_to_parquet
 
     envir <- as.environment(1)
     CURRENT_AREA_TEMP__ <- .config$project[[input_data]]$sub_directory
+
+    if(!is.null(.config$aggregation$area)) {
+      CURRENT_AREA_TEMP__ <- .config$aggregation$area
+    }
+
+    if(!is.null(CURRENT_AREA_TEMP__)) rm_pq <- FALSE
+
     assign("CURRENT_AREA_TEMP__", CURRENT_AREA_TEMP__, envir = envir)
 
     is_bp_data <- input_data == "bp" & as.character(.config$survey_round) == "2024"
     is_shp_data <- input_data == "shp" & as.character(.config$survey_round) == "2024"
 
+    pq_folder <- create_new_folder(
+      get_data_path("parquet", input_data, .config),
+      .rm = rm_pq
+    )
+
     df_files <- list_data_files(input_data, .references, .config)
-    pq_folder <- create_new_folder(get_data_path("parquet", input_data, .config))
 
     if(convert_to_parquet) {
 

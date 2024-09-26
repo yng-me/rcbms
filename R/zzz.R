@@ -95,7 +95,8 @@ utils::globalVariables(
         overwrite = TRUE,
         partition = FALSE,
         delete_source = FALSE,
-        create_lineage = FALSE,
+        create_lineage = TRUE,
+        lineage_frequency = 'daily',
         partition_by = c("region_code", "province_code", "city_mun_code")
       ),
       reload_references = list(

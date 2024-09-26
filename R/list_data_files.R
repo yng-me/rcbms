@@ -137,6 +137,35 @@ list_data_files <- function(.input_data, .references, .config) {
       dplyr::filter(tolower(name) %in% records_filter)
   }
 
+  mode <- .config$mode$type
+  edit <- .config$mode$edit
+  hp_cv <- .input_data == 'hp' & mode == 'validation'
+
+  if(hp_cv & edit == 0) {
+    all_data_files <- all_data_files |>
+      dplyr::filter(
+        grepl('section_a_e|cover_page|section_o', name)
+      )
+
+    data_files <- data_files |>
+      dplyr::filter(
+        grepl('section_a_e|cover_page|section_o', name)
+      )
+  }
+
+  if(hp_cv & edit == 3) {
+    all_data_files <- all_data_files |>
+      dplyr::filter(
+        grepl('section_a_e|cover_page', name)
+      )
+
+    data_files <- data_files |>
+      dplyr::filter(
+        grepl('section_a_e|cover_page', name)
+      )
+  }
+
+
   return(
     list(
       all = all_data_files,
