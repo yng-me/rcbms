@@ -78,13 +78,14 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
       cat(paste0(str_pad(formatC(nrow(.cv[[result_name]]), big.mark = ','), width = 7), ': ', result_name, '\n'))
     }
 
-    if(!.config$verbose & .config$progress) {
-      cat(paste0(
+    # if(.config$progress) {
+      cli::cli_text(
+        paste0(
         i, ' of ', length(result_names),
         ': ', result_name,
         ' (', formatC(nrow(.cv[[result_name]]), big.mark = ','), ')\n')
       )
-    }
+    # }
 
     output_temp <- .cv[[result_name]] |>
       dplyr::mutate(validation_id = result_name)
