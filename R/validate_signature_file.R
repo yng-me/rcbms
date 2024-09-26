@@ -26,7 +26,7 @@ read_signature_files <- function(
 ) {
 
   match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
-  file_formats <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
+  file_formats <- paste0(.area_code, '.*\\.(', paste0(.formats, collapse = '|'), ')$')
 
   path <- .dir
 
@@ -53,7 +53,6 @@ read_signature_files <- function(
     dplyr::mutate(
       case_id = stringr::str_remove_all(basename(file), file_formats)
     ) |>
-    # dplyr::filter(!grepl('/backup/', file, ignore.case = T)) |>
     dplyr::select(file, case_id, size) |>
     filter_by_area() |>
     dplyr::mutate(
@@ -70,6 +69,8 @@ read_signature_files <- function(
 }
 
 check_cropped_image <- function(file) {
+
+  if(check_corrupted_image(file)) return(0)
 
   img <- magick::image_read(file)
   l <- magick::image_resize(img, '300x300')
@@ -124,7 +125,7 @@ check_corrupted_image <- function(file) {
        identical(header[8], as.raw(10))
      )
   ) {
-    is_corrupted <- TRUE
+    return(TRUE)
   }
 
   img <- magick::image_read(file)
@@ -139,14 +140,10 @@ check_corrupted_image <- function(file) {
 
 get_image_value <- function(file) {
 
-  tryCatch({
-    img <- magick::image_read(file)
-    l <- as.numeric(magick::image_resize(img, '300x300')[[1]][1, , ])
-    length(l[l < 225])
-  },
+  if(check_corrupted_image(file)) return(99999)
 
-  error = function(e) {
-    stop('Invalid image file')
-  })
+  img <- magick::image_read(file)
+  l <- as.numeric(magick::image_resize(img, '300x300')[[1]][1, , ])
+  length(l[l < 225])
 }
 

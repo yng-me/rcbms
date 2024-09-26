@@ -229,7 +229,7 @@ save_current_logs <- function(
           "UPDATE logs SET
             verified_at = CURRENT_TIMESTAMP,
             validated_at = CURRENT_TIMESTAMP
-          WHERE id = ", log_id, ";"
+          WHERE id = '", log_id, "';"
         )
       )
     }

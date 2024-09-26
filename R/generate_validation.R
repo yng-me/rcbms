@@ -109,21 +109,25 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
       dplyr::tibble()
   }
 
-  output <- output_list |>
-    dplyr::bind_rows() |>
-    dplyr::mutate(info = purrr::map_chr(info, \(x) {
-      x |>
-        dplyr::mutate_all(as.character) |>
-        dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
-        jsonlite::toJSON() |>
-        as.character() |>
-        encrypt_info(.config)
-    }))
+  if(length(output_list)) {
 
-  if(add_info) {
-    output <- output |>
-      join_contact_info(input_data, uid, .config)
+    output <- output_list |>
+      dplyr::bind_rows() |>
+      dplyr::mutate(info = purrr::map_chr(info, \(x) {
+        x |>
+          dplyr::mutate_all(as.character) |>
+          dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
+          jsonlite::toJSON() |>
+          as.character() |>
+          encrypt_info(.config)
+      }))
+
+    if(add_info) {
+      output <- output |>
+        join_contact_info(input_data, uid, .config)
+    }
   }
+
 
   save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
 
