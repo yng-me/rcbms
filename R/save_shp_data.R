@@ -51,17 +51,17 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
   df_temp <- df_list |>
     dplyr::bind_rows() |>
     dplyr::mutate(
-      cbms_geoid = paste0(geocode, bsn),
-      province_code = stringr::str_sub(geocode, 1, 3),
-      city_mun_code = stringr::str_sub(geocode, 4, 5),
-      barangay_code = stringr::str_sub(geocode, 6, 8),
-      ean = stringr::str_sub(geocode, 9, 14),
-      .before = 1
+      province_code = stringr::str_sub(cbms_geoid, 1, 3),
+      city_mun_code = stringr::str_sub(cbms_geoid, 4, 5),
+      barangay_code = stringr::str_sub(cbms_geoid, 6, 8),
+      ean = stringr::str_sub(cbms_geoid, 9, 14),
+      .before = 2
     ) |>
     dplyr::left_join(
       .references$area_name_new |>
         dplyr::distinct(region_code, province_code),
-      by = 'province_code'
+      by = 'province_code',
+      multiple = 'first'
     ) |>
     sort_variable_names('shp', .config) |>
     add_metadata(dcf, .references$valueset) |>
