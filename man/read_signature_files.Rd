@@ -5,8 +5,9 @@
 \title{Title}
 \usage{
 read_signature_files(
-  .sig_folder,
-  .area_code,
+  .dir,
+  .area_code = NULL,
+  .sig_folder = NULL,
   .formats = c("png", "jpg", "jpeg"),
   .options = list(ink_threshold = 375, img_threshold = 1e+05, crop_threshold = 1000,
     filename_length = 31)

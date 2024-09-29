@@ -1,3 +1,15 @@
+#' Title
+#'
+#' @param .conn
+#' @param .tables
+#' @param .input_data
+#' @param .uid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+
 create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_id') {
 
   line_number <- ''
@@ -21,6 +33,24 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
           info text,",
           contact,
           "tag_status DATETIME DEFAULT NULL,
+          updated_at DATETIME DEFAULT NULL
+        );"
+      )
+    )
+  }
+
+  if(!('ts' %in% .tables)) {
+    DBI::dbExecute(
+      .conn,
+      paste0(
+        "CREATE TABLE ts (
+          id varchar(36),
+          log_id varchar(36),
+          tabulation_id text,
+          summary text,
+          info text,
+          status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
+          tag_status DATETIME DEFAULT NULL,
           updated_at DATETIME DEFAULT NULL
         );"
       )
@@ -55,6 +85,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
         summary text,
         user text,
         duration int,
+        source tinyint,
         user_id varchar(36),
         status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),
         version_app varchar(10),

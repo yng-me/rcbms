@@ -1,6 +1,6 @@
 save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL) {
 
-  conn <- connect_to_rcbms_logs_db(.config, .input_data)
+  conn <- connect_to_db_log(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
   create_logs_table(conn, log_tables)
@@ -194,6 +194,7 @@ save_current_logs <- function(
       category = tab_category,
       area_code = current_area_code,
       area_codes = area_codes,
+      source = 1, # primary
       number_of_ea_processed = number_of_ea_processed,
       total = total,
       partial = partial,
