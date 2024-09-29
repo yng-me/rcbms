@@ -170,7 +170,7 @@ version:
   app: 3.0.0
   script: 0.0.1
   package: 0.1.4
-  db: 0.0.1
+  db: 1
 
 # simple object/memory management
 clear_objects: true
@@ -180,3 +180,5 @@ verbose: true
 
 # whether to show progres
 progress: false
+
+user_id: ~

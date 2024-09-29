@@ -184,7 +184,8 @@ utils::globalVariables(
       clear_objects = TRUE,
       warning = FALSE,
       verbose = TRUE,
-      progress = FALSE
+      progress = FALSE,
+      user_id = NULL
     )
   )
 
