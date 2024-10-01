@@ -10,11 +10,12 @@ generate_tabulation(
   .config,
   .save_as_excel = FALSE,
   .save_as_json = TRUE,
-  .section_ref = NULL
+  .section_ref = NULL,
+  .summary_df = NULL
 )
 }
 \arguments{
-\item{.section_ref}{}
+\item{.summary_df}{}
 }
 \description{
 Title

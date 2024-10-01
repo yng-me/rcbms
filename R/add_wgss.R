@@ -8,7 +8,12 @@
 #'
 #' @examples
 add_wgss <- function(.data, .prefix) {
-  .data |>
+
+  sssco_var <- paste0(.prefix, "_sssco")
+  sssc_var <- paste0(.prefix, "_sssc")
+  ssdi_var <- paste0(.prefix, "_ssdi")
+
+  .data <- .data |>
     dplyr::mutate_at(
       dplyr::vars(dplyr::matches(paste0("^", .prefix))),
       as.integer
@@ -22,7 +27,7 @@ add_wgss <- function(.data, .prefix) {
       wgss_f = !!as.name(paste0(.prefix, "_f_communicating"))
     ) |>
     dplyr::mutate(
-      !!as.name(paste0(.prefix, "_ssdi")) := dplyr::if_else(
+      !!as.name(ssdi_var) := dplyr::if_else(
         wgss_a > 2 |
           wgss_b > 2 |
           wgss_c > 2 |
@@ -57,7 +62,30 @@ add_wgss <- function(.data, .prefix) {
       -dplyr::matches("^wgss_[a-f]$")
     ) |>
     dplyr::rename(
-      !!as.name(paste0(.prefix, "_sssco")) := sssco,
-      !!as.name(paste0(.prefix, "_sssc")) := sssc
+      !!as.name(sssco_var) := sssco,
+      !!as.name(sssc_var) := sssc
     )
+
+
+  attr(.data[[sssco_var]], "type") <- "i"
+  attr(.data[[sssco_var]], "item") <- toupper(.prefix)
+  attr(.data[[sssco_var]], "label") <- "Severity of disability at a continuum"
+
+  attr(.data[[sssc_var]], "type") <- "i"
+  attr(.data[[sssc_var]], "item") <- toupper(.prefix)
+  attr(.data[[sssc_var]], "label") <- "Severity of disability"
+  attr(.data[[sssc_var]], "valueset") <- data.frame(
+    value = 1L:4L,
+    label = c("None", "Mild", "Moderate", "Severe")
+  )
+
+  attr(.data[[ssdi_var]], "type") <- "i"
+  attr(.data[[ssdi_var]], "item") <- toupper(.prefix)
+  attr(.data[[ssdi_var]], "label") <- "Disability status"
+  attr(.data[[ssdi_var]], "valueset") <- data.frame(
+    value = c(1L, 2L),
+    label = c( "With disability", "Without disability")
+  )
+
+  return(.data)
 }

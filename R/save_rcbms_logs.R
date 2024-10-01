@@ -1,10 +1,20 @@
-save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL) {
+save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL, .summary_df = NULL) {
 
   conn <- connect_to_db_log(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
   create_logs_table(conn, log_tables)
-  save_current_logs(conn, .data, .input_data, log_tables, .references, .config, .section_ref)
+
+  save_current_logs(
+    conn,
+    .data,
+    .input_data,
+    log_tables,
+    .references,
+    .config,
+    .section_ref,
+    .summary_df
+  )
 
   create_remarks_table(conn, log_tables)
 
@@ -19,7 +29,8 @@ save_current_logs <- function(
   .tables,
   .references,
   .config,
-  .section_ref = NULL
+  .section_ref = NULL,
+  .summary_df = NULL
 ) {
 
 
@@ -144,6 +155,10 @@ save_current_logs <- function(
 
   }
 
+  summary_stat <- create_summary_stat(.input_data, .config)
+
+  total <- summary_stat$total
+  summary_info <- c(summary_info, summary_stat$summary_info)
 
   if((mode == "tabulation" | mode == "ts") & !is.null(.data)) {
 
@@ -154,15 +169,15 @@ save_current_logs <- function(
 
     tab_category <- .config$tabulation$category
 
+    print(.summary_df)
+    if(!is.null(.summary_df)) {
+      summary_info <- .summary_df
+    }
     db_data_to_store <- db_data_to_store |>
       dplyr::select(dplyr::any_of(c("id", "tabulation_id", "info")))
 
   }
 
-  summary_stat <- create_summary_stat(.input_data, .config)
-
-  total <- summary_stat$total
-  summary_info <- c(summary_info, summary_stat$summary_info)
 
   id_int <- DBI::dbReadTable(.conn, 'logs') |>
     nrow()
