@@ -169,7 +169,6 @@ save_current_logs <- function(
 
     tab_category <- .config$tabulation$category
 
-    print(.summary_df)
     if(!is.null(.summary_df)) {
       summary_info <- .summary_df
     }
