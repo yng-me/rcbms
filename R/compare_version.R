@@ -6,17 +6,21 @@
 #' @examples
 #'
 
-compare_version <- function() {
+compare_version <- function(error_log_path = NULL) {
   current_version <- NULL
 
-  if(file.exists('version.json')) {
-    v <- jsonlite::read_json("version.json", simplifyVector = T)
+  if(file.exists('rcbms-one/version.json')) {
+    v <- jsonlite::read_json("rcbms-one/version.json", simplifyVector = T)
     current_version <- v$version
+  } else if (!is.null(error_log_path)) {
+    if(file.exists(error_log_path)) {
+      unlink(error_log_path, force = T, recursive = T)
+    }
   }
 
   previous_version <- NULL
-  if(file.exists('configs/global.yml')) {
-    w <- yaml::read_yaml('configs/global.yml')
+  if(file.exists('rcbms-one/configs/global.yml')) {
+    w <- yaml::read_yaml('rcbms-one/configs/global.yml')
     previous_version <- w$version$app
   }
 
