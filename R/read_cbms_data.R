@@ -161,12 +161,6 @@ read_cbms_data <- function(.references, .config) {
           }
         }
       }
-
-      if(convert_to_parquet & input_data == "hp" & .config$parquet$delete_source) {
-        raw_data_path <- get_data_path("raw", input_data, .config)
-        unlink(raw_data_path, recursive = T, force = T)
-        create_new_folder(raw_data_path)
-      }
     }
   }
 
