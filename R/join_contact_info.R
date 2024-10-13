@@ -1,3 +1,16 @@
+#' Title
+#'
+#' @param .data
+#' @param .input_data
+#' @param .uid
+#' @param .config
+#' @param .encrypt
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
 
   summary_record <- .config$project[[.input_data]][['summary_record']]

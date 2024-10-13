@@ -26,6 +26,7 @@ read_signature_files <- function(
 ) {
 
   match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
+  format <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
   file_formats <- paste0(.area_code, '.*\\.(', paste0(.formats, collapse = '|'), ')$')
 
   path <- .dir
@@ -51,7 +52,7 @@ read_signature_files <- function(
     ) |>
     dplyr::as_tibble(rownames = 'file') |>
     dplyr::mutate(
-      case_id = stringr::str_remove_all(basename(file), file_formats)
+      case_id = stringr::str_remove_all(basename(file), format)
     ) |>
     dplyr::select(file, case_id, size) |>
     filter_by_area() |>
@@ -61,13 +62,21 @@ read_signature_files <- function(
       is_blank_canvas = purrr::map_int(file, get_image_value) == 0,
       is_insufficient_ink = .options$ink_threshold > purrr::map_int(file, get_image_value),
       is_corrupted = purrr::map_lgl(file, check_corrupted_image),
-      is_cropped = purrr::map_int(file, check_cropped_image) > .options$crop_threshold
+      is_cropped = purrr::map_int(file, check_cropped_image) > .options$crop_threshold & !is_above_threshold
     )
 
   signature_folder
 
 }
 
+#' Title
+#'
+#' @param file
+#'
+#' @return
+#' @export
+#'
+#' @examples
 check_cropped_image <- function(file) {
 
   if(check_corrupted_image(file)) return(0)
@@ -109,6 +118,15 @@ check_cropped_image <- function(file) {
 
 }
 
+#' Title
+#'
+#' @param file
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 check_corrupted_image <- function(file) {
 
   header <- readBin(file, what = "raw", n = 10)
@@ -138,6 +156,14 @@ check_corrupted_image <- function(file) {
 }
 
 
+#' Title
+#'
+#' @param file
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_image_value <- function(file) {
 
   if(check_corrupted_image(file)) return(99999)
