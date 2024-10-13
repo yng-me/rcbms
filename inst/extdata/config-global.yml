@@ -128,6 +128,9 @@ validation:
   check_duplicate_members: false
 
   # whether to include addition info of household head and/or respondent
+  include_contact_info: false
+
+  # whether to include addition info of household head and/or respondent
   include_additional_info: false
 
   # whether to generate UUID
@@ -135,6 +138,8 @@ validation:
 
   # whether to save the output as Excel
   save_as_excel: false
+
+  save_to_db: true
 
   # deprecated
   save_as_json: true

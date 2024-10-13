@@ -65,6 +65,10 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   output <- NULL
 
   add_info <- .config$validation$include_additional_info
+  add_contact_info <- .config$validation$include_contact_info
+  if(is.null(add_contact_info)) {
+    add_contact_info <- TRUE
+  }
   uid <- .config$project[[input_data]]$id
   if (is.null(uid)) uid <- "case_id"
 
@@ -101,35 +105,52 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
       group_cols <- c(group_cols, 'line_number')
     }
 
-    output_list[[result_name]] <- output_temp |>
-      dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
-      dplyr::group_by(dplyr::pick(dplyr::any_of(group_cols))) |>
-      tidyr::nest(.key = "info") |>
-      dplyr::ungroup() |>
-      dplyr::tibble()
+    if(add_info) {
+      output_list[[result_name]] <- output_temp |>
+        dplyr::select(-dplyr::any_of(c("region", "province", "city_mun", "barangay", "ean"))) |>
+        dplyr::group_by(dplyr::pick(dplyr::any_of(group_cols))) |>
+        tidyr::nest(.key = "info") |>
+        dplyr::ungroup() |>
+        dplyr::tibble()
+
+    } else {
+      output_list[[result_name]] <- output_temp |>
+        dplyr::select(dplyr::any_of(group_cols)) |>
+        dplyr::tibble()
+    }
   }
 
   if(length(output_list)) {
 
-    output <- output_list |>
-      dplyr::bind_rows() |>
-      dplyr::mutate(info = purrr::map_chr(info, \(x) {
-        x |>
-          dplyr::mutate_all(as.character) |>
-          dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
-          jsonlite::toJSON() |>
-          as.character() |>
-          encrypt_info(.config)
-      }))
-
     if(add_info) {
+      output <- output_list |>
+        dplyr::bind_rows() |>
+        dplyr::mutate(info = purrr::map_chr(info, \(x) {
+          x |>
+            dplyr::mutate_all(as.character) |>
+            dplyr::mutate_all(~ dplyr::if_else(is.na(.), "Missing/NA", .)) |>
+            jsonlite::toJSON() |>
+            as.character() |>
+            encrypt_info(.config)
+        }))
+    } else {
+      output <- output_list |>
+        dplyr::bind_rows()
+
+    }
+
+    if(add_contact_info) {
       output <- output |>
-        join_contact_info(input_data, uid, .config)
+        join_contact_info(input_data, uid, .config, .config$parquet$encrypt)
     }
   }
 
+  save_to_db <- .config$validation$save_to_db
+  if(is.null(save_to_db)) save_to_db <- TRUE
 
-  save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
+  if(save_to_db) {
+    save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
+  }
 
   return(output)
 }

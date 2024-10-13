@@ -140,10 +140,12 @@ utils::globalVariables(
         generate_output = FALSE,
         detailed_output = FALSE,
         check_duplicate_members = FALSE,
+        include_contact_info = FALSE,
         include_additional_info = FALSE,
         validate_signatures = FALSE,
         add_uuid = TRUE,
         save_as_excel = FALSE,
+        save_to_db = TRUE,
         save_as_json = TRUE,
         stringify_info = TRUE,
         signature = list(
@@ -179,7 +181,7 @@ utils::globalVariables(
         app = "3.0.1",
         script = "0.0.1",
         package = "0.1.9",
-        db = "0.0.2"
+        db = "3"
       ),
       clear_objects = TRUE,
       warning = FALSE,

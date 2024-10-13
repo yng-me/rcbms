@@ -51,36 +51,33 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
     }
   }
 
-  if(.encrypt) {
+  if(.encrypt & .config$validation$stringify_info) {
 
-    if(.config$validation$stringify_info) {
+    contact_info <- contact_info |>
+      dplyr::group_by(!!as.name(.uid)) |>
+      dplyr::collect() |>
+      tidyr::nest(.key = 'contact') |>
+      dplyr::ungroup() |>
+      dplyr::tibble() |>
+      dplyr::mutate(
+        contact = purrr::map_chr(contact, \(x) {
+          x |>
+            dplyr::mutate_all(as.character) |>
+            jsonlite::toJSON() |>
+            as.character() |>
+            encrypt_info(.config)
+        })
+      )
 
-      contact_info <- contact_info |>
-        dplyr::group_by(!!as.name(.uid)) |>
-        dplyr::collect() |>
-        tidyr::nest(.key = 'contact') |>
-        dplyr::ungroup() |>
-        dplyr::tibble() |>
-        dplyr::mutate(
-          contact = purrr::map_chr(contact, \(x) {
-            x |>
-              dplyr::mutate_all(as.character) |>
-              jsonlite::toJSON() |>
-              as.character() |>
-              encrypt_info(.config)
-          })
-        )
-
-    }  else {
-
-      contact_info <- contact_info |>
-        dplyr::group_by(!!as.name(.uid)) |>
-        dplyr::collect() |>
-        tidyr::nest(.key = 'contact')
-    }
   }
+  # else {
+  #   contact_info <- contact_info |>
+  #     dplyr::group_by(!!as.name(.uid)) |>
+  #     dplyr::collect() |>
+  #     tidyr::nest(.key = 'contact')
+  # }
 
   .data |>
-    dplyr::left_join(contact_info, by = .uid)
+    dplyr::left_join(contact_info |> dplyr::collect(), by = .uid)
 
 }
