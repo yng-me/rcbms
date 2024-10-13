@@ -258,23 +258,27 @@ load_valueset_refs <- function(.gid) {
     'f0mUpW9KsbyouFJ3AN4k63rMjOguJmvGQCZ0kvy5Ids',
     cols,
     col_types = 'ccc'
-  )
+  ) |> dplyr::filter(!is.na(name), !is.na(value), !is.na(label))
+
+  psced_vs <- psced |>
+    dplyr::mutate(name = 'psced')
 
   psic <-  load_refs_from_gsheet(
     '8BpYMDCxbydBWD2hkNSRVNMM_2wnsfkPYsT090AjSfg',
     cols,
     col_types = 'ccc'
-  )
+  ) |> dplyr::filter(!is.na(name), !is.na(value), !is.na(label))
 
   psoc <- load_refs_from_gsheet(
     'VFFG49u82doxgKLWR_GN_fpiEyl70Si_ikV3qR3pZjQ',
     cols,
     col_types = 'ccc'
-  )
+  ) |> dplyr::filter(!is.na(name), !is.na(value), !is.na(label))
 
   load_refs_from_gsheet(.gid, cols, col_types = 'ccc') |>
     dplyr::filter(value != '---') |>
     dplyr::bind_rows(psced) |>
+    dplyr::bind_rows(psced_vs) |>
     dplyr::bind_rows(psic) |>
     dplyr::bind_rows(psoc) |>
     dplyr::filter(!is.na(name), !is.na(value), !is.na(label)) |>

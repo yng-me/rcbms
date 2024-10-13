@@ -4,7 +4,7 @@
 \alias{compare_version}
 \title{Title}
 \usage{
-compare_version()
+compare_version(error_log_path = NULL)
 }
 \description{
 Title
