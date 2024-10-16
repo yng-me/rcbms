@@ -140,7 +140,7 @@ utils::globalVariables(
         generate_output = FALSE,
         detailed_output = FALSE,
         check_duplicate_members = FALSE,
-        include_contact_info = FALSE,
+        include_contact_info = TRUE,
         include_additional_info = FALSE,
         validate_signatures = FALSE,
         add_uuid = TRUE,
