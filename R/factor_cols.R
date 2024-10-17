@@ -19,8 +19,6 @@ factor_cols <- function(.data, ..., .complete = TRUE, .keep_cols = TRUE) {
           dplyr::everything()
         )
 
-      # print(.data)
-
     } else {
 
       .data <- .data |>
@@ -41,12 +39,8 @@ factor_cols <- function(.data, ..., .complete = TRUE, .keep_cols = TRUE) {
 
   for (i in seq_along(cols)) {
     .data <- .data |>
-      factor_col(
-        as.character(cols[[i]]),
-        .keep_cols = .keep_cols
-      )
+      factor_col(as.character(cols[[i]]), .keep_cols = .keep_cols)
   }
-
 
   .data |>
     dplyr::ungroup() |>

@@ -50,6 +50,21 @@ gtab <- function(.data, .x, .y) {
 }
 
 
+gtab_get_meta <- function(.data, ...) {
+  attr_df <- .data |>
+    head(1) |>
+    dplyr::select(..., dplyr::any_of(dplyr::group_vars(.data))) |>
+    dplyr::collect()
+
+  setNames(
+    lapply(names(attr_df), function(x) {
+      attributes(attr_df[[x]])
+    }),
+    names(attr_df)
+  )
+}
+
+
 add_factor_meta <- function(.data, .meta) {
 
   df_names <- names(.data)
