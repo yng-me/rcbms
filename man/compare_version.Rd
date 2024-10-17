@@ -4,7 +4,10 @@
 \alias{compare_version}
 \title{Title}
 \usage{
-compare_version(error_log_path = NULL)
+compare_version(current_version, error_log_path = NULL)
+}
+\arguments{
+\item{error_log_path}{}
 }
 \description{
 Title
