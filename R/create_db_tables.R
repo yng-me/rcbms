@@ -47,6 +47,7 @@ create_logs_table <- function(.conn, .tables, .input_data = 'hp', .uid = 'case_i
           id varchar(36),
           log_id varchar(36),
           tabulation_id text,
+          area_code varchar(36),
           summary text,
           info text,
           status tinyint CHECK (status IN (-1, 0, 1, 2, 3, 4, 5, 9)),

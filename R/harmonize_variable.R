@@ -49,6 +49,7 @@ join_data_with_dictionary <- function(.data, .dictionary) {
 }
 
 convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
+
   get_col_type <- function(.type) {
     as_type <- .dictionary$variable_name[.dictionary$type == .type]
     nc_names <- as_type[as_type %in% names(.data)]
@@ -62,6 +63,14 @@ convert_cols_from_dictionary <- function(.data, .dictionary, .config) {
       dplyr::mutate_at(
         dplyr::vars(dplyr::any_of(as_char)),
         ~ stringr::str_trim(stringr::str_squish(as.character(.)))
+      ) |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(as_char)),
+        ~ dplyr::if_else(
+          toupper(.) == 'FALSE' | toupper(.) == 'TRUE',
+          stringr::str_sub(., 1, 1),
+          .
+        )
       )
   }
 
