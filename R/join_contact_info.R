@@ -26,10 +26,12 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
 
   if(.input_data %in% c('hp', 'ilq')) {
     contact_info <- contact_info |>
-      dplyr::filter(case_id %in% cases)
+      dplyr::filter(case_id %in% cases) |>
+      dplyr::collect()
   } else if(.input_data == 'bp') {
     contact_info <- contact_info |>
-      dplyr::filter(barangay_geo %in% cases)
+      dplyr::filter(barangay_geo %in% cases) |>
+      dplyr::collect()
   }
 
   contact_info_names <- names(contact_info)
@@ -51,11 +53,10 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
     }
   }
 
-  if(.encrypt & .config$validation$stringify_info) {
+  # if(.encrypt & .config$validation$stringify_info) {
 
     contact_info <- contact_info |>
       dplyr::group_by(!!as.name(.uid)) |>
-      dplyr::collect() |>
       tidyr::nest(.key = 'contact') |>
       dplyr::ungroup() |>
       dplyr::tibble() |>
@@ -68,8 +69,8 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
             encrypt_info(.config)
         })
       )
-
-  }
+#
+  # }
   # else {
   #   contact_info <- contact_info |>
   #     dplyr::group_by(!!as.name(.uid)) |>
@@ -78,6 +79,6 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
   # }
 
   .data |>
-    dplyr::left_join(contact_info |> dplyr::collect(), by = .uid)
+    dplyr::left_join(contact_info, by = .uid)
 
 }

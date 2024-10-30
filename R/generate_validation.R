@@ -65,10 +65,12 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   output <- NULL
 
   add_info <- .config$validation$include_additional_info
-  add_contact_info <- .config$validation$include_contact_info
-  if(is.null(add_contact_info)) {
-    add_contact_info <- TRUE
+  include_contact_info <- .config$validation$include_contact_info
+
+  if(is.null(include_contact_info)) {
+    include_contact_info <- TRUE
   }
+
   uid <- .config$project[[input_data]]$id
   if (is.null(uid)) uid <- "case_id"
 
@@ -123,6 +125,7 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   if(length(output_list)) {
 
     if(add_info) {
+
       output <- output_list |>
         dplyr::bind_rows() |>
         dplyr::mutate(info = purrr::map_chr(info, \(x) {
@@ -133,13 +136,14 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
             as.character() |>
             encrypt_info(.config)
         }))
+
     } else {
       output <- output_list |>
         dplyr::bind_rows()
 
     }
 
-    if(add_contact_info) {
+    if(include_contact_info) {
       output <- output |>
         join_contact_info(input_data, uid, .config, .config$parquet$encrypt)
     }
