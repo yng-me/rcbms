@@ -108,11 +108,14 @@ generate_tabs <- function(
     }
   }
 
+  width_geo_pad <- 9
+  if(.config$survey_round == '2024') width_geo_pad <- 10
+
   tbl <- tbl_list |>
     dplyr::mutate(
       area_code = stringr::str_pad(
         area_code,
-        width = 9,
+        width = width_geo_pad,
         side = "right",
         pad = "0"
       ),
@@ -271,11 +274,14 @@ generate_tab_multiple <- function(
       dplyr::select(-c(value, name))
   }
 
+  width_geo_pad <- 9
+  if(.config$survey_round == '2024') width_geo_pad <- 10
+
   tbl <- tbl |>
     dplyr::mutate(
       area_code = stringr::str_pad(
         area_code,
-        width = 9,
+        width = width_geo_pad,
         side = "right",
         pad = "0"
       ),
@@ -362,10 +368,23 @@ generate_tabs_alt <- function(.data, .col, ..., .col_value = 1, .agg_levels = NU
       percent = 100 * (total_qualified / total)
     )
 
+  width_geo_pad <- 9
+  if(.config$survey_round == '2024') width_geo_pad <- 10
+
   dplyr::bind_rows(tbl_list) |>
     dplyr::mutate(
       survey_round = as.integer(config$survey_round),
-      area_code = stringr::str_pad(area_code, width = 9, pad = "0", side = "right")
+      area_code = stringr::str_pad(
+        area_code,
+        width = width_geo_pad,
+        pad = "0",
+        side = "right"
+      )
     ) |>
-    dplyr::select(area_code, survey_round, level, dplyr::everything())
+    dplyr::select(
+      area_code,
+      survey_round,
+      level,
+      dplyr::everything()
+    )
 }

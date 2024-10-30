@@ -133,17 +133,16 @@ create_line_number_id <- function(.data, .join_with = NULL, ...) {
 #'
 #' @examples
 
-create_barangay_geo <- function(.data, .config = getOption("rcbms.config")) {
+create_barangay_geo <- function(.data, .add_length = 1) {
 
   if(!("barangay_geo" %in% names(.data))) {
 
-    add_length <- .config$project$add_length
     .data <- .data |>
       collect_first() |>
       dplyr::mutate(
         barangay_geo = paste0(
           stringr::str_pad(region_code, pad = '0', width = 2),
-          stringr::str_pad(province_code, pad = '0', width = 2 + add_length),
+          stringr::str_pad(province_code, pad = '0', width = 2 + .add_length),
           stringr::str_pad(city_mun_code, pad = '0', width = 2),
           stringr::str_pad(barangay_code, pad = '0', width = 3)
         )

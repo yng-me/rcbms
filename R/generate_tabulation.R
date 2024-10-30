@@ -42,18 +42,10 @@ generate_tabulation <- function(
       cat(paste0(str_pad(formatC(nrow(.ts[[ts_name]]), big.mark = ','), width = 7), ': ', ts_name, '\n'))
     }
 
-    output_temp <- .ts[[ts_name]] |>
-      tidyr::nest(.key = "info") |>
-      dplyr::mutate(
-        tabulation_id = ts_name,
-        info = purrr::map_chr(info, \(x) {
-          x |>
-            dplyr::mutate_all(as.character) |>
-            jsonlite::toJSON() |>
-            as.character()
-        })
-      ) |>
-      dplyr::ungroup()
+    output_temp <- dplyr::tibble(
+      tabulation_id = ts_name,
+      info = as.character(jsonlite::toJSON(.ts[[ts_name]], auto_unbox = T))
+    )
 
     if (i == 1) {
       output <- output_temp |> dplyr::tibble()

@@ -5,7 +5,7 @@ save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_r
 
   create_logs_table(conn, log_tables)
 
-  save_current_logs(
+  log_id <- save_current_logs(
     conn,
     .data,
     .input_data,
@@ -19,6 +19,8 @@ save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_r
   create_remarks_table(conn, log_tables)
 
   DBI::dbDisconnect(conn)
+
+  return(log_id)
 
 }
 
@@ -293,5 +295,6 @@ save_current_logs <- function(
   envir <- as.environment(1)
   assign("current_logs_id", current_logs_id, envir = envir)
 
-  return(db_data_to_store)
+  # attr(db_data_to_store, 'log_id') <- log_id
+  return(log_id)
 }

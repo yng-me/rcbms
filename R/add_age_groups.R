@@ -74,5 +74,5 @@ add_age_groups <- function(.data, .age, .prefix = "a07") {
       dplyr::starts_with("add_age_group_")
     )
 
-  return(.data |> add_extra_meta(.age_prefix = .prefix))
+  return(.data)
 }
