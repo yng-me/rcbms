@@ -1,32 +1,39 @@
-save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL, .summary_df = NULL) {
+save_rcbms_logs <- function(
+  .data,
+  .log_id,
+  .input_data,
+  .references,
+  .config = getOption('rcbms.config'),
+  .section_ref = NULL,
+  .summary_df = NULL
+) {
 
   conn <- connect_to_db_log(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
   create_logs_table(conn, log_tables)
+  create_remarks_table(conn, log_tables)
 
-  log_id <- save_current_logs(
-    conn,
+  save_current_logs(
+    .conn = conn,
     .data,
+    .log_id,
     .input_data,
-    log_tables,
+    .tables = log_tables,
     .references,
     .config,
     .section_ref,
     .summary_df
   )
 
-  create_remarks_table(conn, log_tables)
-
-  DBI::dbDisconnect(conn)
-
-  return(log_id)
+  DBI::dbDisconnect(conn, force = T)
 
 }
 
 save_current_logs <- function(
   .conn,
   .data,
+  .log_id,
   .input_data,
   .tables,
   .references,
@@ -35,18 +42,15 @@ save_current_logs <- function(
   .summary_df = NULL
 ) {
 
-
   pc <- Sys.info()
   os_release_date <- pc[["version"]] |>
     stringr::str_extract(":\\s\\w*\\s\\w*\\s\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.*;") |>
     stringr::str_remove("^:\\s") |>
     stringr::str_remove(";$")
-
   db_data_to_store <- NULL
   mode <- .config$mode$type
   edit <- .config$mode$edit
   uid <- .config$project[[.input_data]]$id
-  log_id <- uuid::UUIDgenerate()
   log_status <- 2
   total_cases <- 0
   total_cases_unique <- 0
@@ -168,17 +172,17 @@ save_current_logs <- function(
 
     db_table_name <- "ts"
     by_cv_cols <- "tabulation_id"
-
-    tab_category <- .config$tabulation$category
+    tab_category <- NULL
 
     if(!is.null(.summary_df)) {
       summary_info <- .summary_df
+      tab_category <- .summary_df$category
     }
+
     db_data_to_store <- db_data_to_store |>
       dplyr::select(dplyr::any_of(c("id", "tabulation_id", "info")))
 
   }
-
 
   id_int <- DBI::dbReadTable(.conn, 'logs') |>
     nrow()
@@ -198,7 +202,7 @@ save_current_logs <- function(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
-      id = log_id,
+      id = .log_id,
       id_int = as.integer(id_int + 1),
       survey_round = as.character(.config$survey_round),
       mode = mode,
@@ -246,7 +250,7 @@ save_current_logs <- function(
           "UPDATE logs SET
             verified_at = CURRENT_TIMESTAMP,
             validated_at = CURRENT_TIMESTAMP
-          WHERE id = '", log_id, "';"
+          WHERE id = '", .log_id, "';"
         )
       )
     }
@@ -254,7 +258,7 @@ save_current_logs <- function(
     if(!is.null(.data)) {
 
       db_data_to_store <- db_data_to_store |>
-        dplyr::mutate(log_id = log_id, status = 0L)
+        dplyr::mutate(log_id = .log_id, status = 0L)
 
       if (db_table_name %in% .tables) {
 
@@ -286,15 +290,4 @@ save_current_logs <- function(
 
     }
   }
-
-  if (!exists("current_logs_id")) {
-    current_logs_id <- NULL
-  }
-  current_logs_id <- c(current_logs_id, log_id)
-
-  envir <- as.environment(1)
-  assign("current_logs_id", current_logs_id, envir = envir)
-
-  # attr(db_data_to_store, 'log_id') <- log_id
-  return(log_id)
 }
