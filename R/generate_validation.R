@@ -148,11 +148,21 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   save_to_db <- .config$validation$save_to_db
   if(is.null(save_to_db)) save_to_db <- TRUE
 
+  log_id <- uuid::UUIDgenerate()
+
   if(save_to_db) {
-    log_id <- save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
+
+    save_rcbms_logs(
+      output,
+      .log_id = log_id,
+      .input_data = input_data,
+      .cv_ref,
+      .config,
+      .section_ref
+    )
   }
 
   attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
-
   return(output)
+
 }
