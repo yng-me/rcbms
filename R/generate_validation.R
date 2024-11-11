@@ -65,12 +65,10 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   output <- NULL
 
   add_info <- .config$validation$include_additional_info
-  include_contact_info <- .config$validation$include_contact_info
-
-  if(is.null(include_contact_info)) {
-    include_contact_info <- TRUE
+  add_contact_info <- .config$validation$include_contact_info
+  if(is.null(add_contact_info)) {
+    add_contact_info <- TRUE
   }
-
   uid <- .config$project[[input_data]]$id
   if (is.null(uid)) uid <- "case_id"
 
@@ -125,7 +123,6 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   if(length(output_list)) {
 
     if(add_info) {
-
       output <- output_list |>
         dplyr::bind_rows() |>
         dplyr::mutate(info = purrr::map_chr(info, \(x) {
@@ -136,14 +133,13 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
             as.character() |>
             encrypt_info(.config)
         }))
-
     } else {
       output <- output_list |>
         dplyr::bind_rows()
 
     }
 
-    if(include_contact_info) {
+    if(add_contact_info) {
       output <- output |>
         join_contact_info(input_data, uid, .config, .config$parquet$encrypt)
     }
@@ -152,21 +148,11 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
   save_to_db <- .config$validation$save_to_db
   if(is.null(save_to_db)) save_to_db <- TRUE
 
-  log_id <- uuid::UUIDgenerate()
-
   if(save_to_db) {
-
-    save_rcbms_logs(
-      output,
-      .log_id = log_id,
-      .input_data = input_data,
-      .cv_ref,
-      .config,
-      .section_ref
-    )
+    log_id <- save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
   }
 
   attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
-  return(output)
 
+  return(output)
 }

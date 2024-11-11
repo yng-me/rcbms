@@ -250,7 +250,11 @@ write_aes_key <- function(dir, key = generate_aes_key()) {
     '\n',
     'AES_IV=', key$iv
   )
-  writeLines(text, con = file(file.path(dir, '.env')))
+  env <- file.path(dir, '.env')
+  if(file.exists(env)) {
+    unlink(env, force = T)
+  }
+  writeLines(text, con = file(env))
 }
 
 
