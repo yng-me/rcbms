@@ -150,9 +150,9 @@ generate_validation <- function(.cv, .cv_ref, .config, .section_ref = NULL) {
 
   if(save_to_db) {
     log_id <- save_rcbms_logs(output, input_data, .cv_ref, .config, .section_ref)
+    attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
   }
 
-  attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
 
   return(output)
 }

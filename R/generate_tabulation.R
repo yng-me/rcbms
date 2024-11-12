@@ -56,7 +56,14 @@ generate_tabulation <- function(
     }
   }
 
-  save_rcbms_logs(output, input_data, .ts_ref, .config, .section_ref, .summary_df)
+
+  save_to_db <- .config$validation$save_to_db
+  if(is.null(save_to_db)) save_to_db <- TRUE
+
+  if(save_to_db) {
+    log_id <- save_rcbms_logs(output, input_data, .ts_ref, .config, .section_ref, .summary_df)
+    attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
+  }
 
   return(output)
 }
