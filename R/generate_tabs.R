@@ -182,13 +182,13 @@ generate_tab <- function(.data, ..., .cols, .total_by_cols = FALSE, .sort = TRUE
 
 
 generate_tab_multiple <- function(
-    .data,
-    ...,
-    .agg_levels = NULL,
-    .valueset = NULL,
-    .extract_name_position = 5,
-    .include_overall = FALSE,
-    .config = getOption("rcbms.config")
+  .data,
+  ...,
+  .agg_levels = NULL,
+  .valueset = NULL,
+  .extract_name_position = 5,
+  .include_overall = FALSE,
+  .config = getOption("rcbms.config")
 ) {
   agg_labels <- c("region", "province", "city_mun", "barangay")
 

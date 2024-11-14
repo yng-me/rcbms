@@ -96,6 +96,7 @@ utils::globalVariables(
         partition = FALSE,
         delete_source = FALSE,
         create_lineage = TRUE,
+        read_from_chunk = FALSE,
         lineage_frequency = 'daily',
         partition_by = c("region_code", "province_code", "city_mun_code")
       ),

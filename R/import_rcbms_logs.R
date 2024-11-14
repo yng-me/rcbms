@@ -65,7 +65,7 @@ extract_rcbms_log <- function(.dir, db_log_i) {
 
       db_tables <- DBI::dbListTables(conn)
 
-      create_logs_table(conn, db_tables, input_data, uid)
+      create_logs_table(conn, db_tables, input_data, uid_cols)
       create_remarks_table(conn, db_tables)
 
       # import logs
