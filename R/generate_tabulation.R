@@ -62,6 +62,7 @@ generate_tabulation <- function(
 
   if(save_to_db) {
     log_id <- save_rcbms_logs(output, input_data, .ts_ref, .config, .section_ref, .summary_df)
+    if(is.null(output)) output <- list()
     attr(output, 'rcbms_log_id') <- paste0('rcbms_log_id: ', log_id)
   }
 

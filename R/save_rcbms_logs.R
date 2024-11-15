@@ -277,6 +277,35 @@ save_current_logs <- function(
         }
       }
 
+      log_path <- .config$cspro$logs_path
+
+      if(!is.null(log_path)) {
+
+        if(file.exists(log_path)) {
+
+          dps_logs <- jsonlite::read_json(log_path, simplifyVector = T)$dfLogs
+
+          if(length(dps_logs) > 0) {
+
+            dps_logs <- dps_logs |>
+              dplyr::tibble() |>
+              dplyr::mutate(status = as.integer(status)) |>
+              dplyr::mutate(old_uuid = id) |>
+              dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols)) |>
+              dplyr::rename(status_dps = status)
+
+
+            db_data_to_store <- db_data_to_store |>
+              dplyr::left_join(dps_logs, by = by_cv_cols, multiple = "first") |>
+              dplyr::mutate(
+                id = dplyr::if_else(is.na(old_uuid), id, old_uuid),
+                status = dplyr::if_else(!is.na(status_dps), status_dps, as.integer(status))
+              ) |>
+              dplyr::select(-dplyr::any_of(c("old_uuid", "status_dps")))
+          }
+        }
+      }
+
       DBI::dbWriteTable(
         conn = .conn,
         name = db_table_name,
@@ -295,6 +324,5 @@ save_current_logs <- function(
   envir <- as.environment(1)
   assign("current_logs_id", current_logs_id, envir = envir)
 
-  # attr(db_data_to_store, 'log_id') <- log_id
   return(log_id)
 }
