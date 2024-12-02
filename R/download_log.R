@@ -11,7 +11,7 @@
 download_log <- function(.data, .path, .dcf, .options = list()) {
 
   wb <- openxlsx::createWorkbook()
-  openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
+  openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 11)
 
   for(i in seq_len(nrow(.data))) {
 
@@ -37,7 +37,7 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
       style = openxlsx::createStyle(
         textDecoration = 'bold',
         valign = 'center',
-        fontSize = 14
+        fontSize = 13
       ),
       rows = 2,
       cols = start_col
@@ -80,7 +80,7 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
           style = openxlsx::createStyle(
             textDecoration = 'bold',
             valign = 'center',
-            fontSize = 14
+            fontSize = 13
           ),
           rows = subtitle_row,
           cols = start_col
@@ -242,6 +242,12 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
 
       if(length(total_rows) > 0) {
 
+        if(length(df_names) > 1) {
+          sub_offset <- 1
+        } else {
+          sub_offset <- 0
+        }
+
         openxlsx::addStyle(
           wb,
           sheet = sheet_name,
@@ -249,7 +255,7 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
             textDecoration = 'bold',
           ),
           cols = col_range,
-          rows = (start_row + add_offset - 1) + total_rows,
+          rows = (start_row + add_offset - sub_offset) + total_rows,
           gridExpand = T,
           stack = T
         )
@@ -305,17 +311,16 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
       openxlsx::setRowHeights(
         wb,
         sheet = sheet_name,
-        heights = 22,
+        heights = 20,
         rows = row_range + add_offset
       )
 
       openxlsx::setRowHeights(
         wb,
         sheet = sheet_name,
-        heights = 28,
+        heights = 25,
         rows = (start_row - (add_offset + 1)):start_row
       )
-
 
       openxlsx::addStyle(
         wb,
@@ -352,7 +357,7 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
             sheet = sheet_name,
             style = openxlsx::createStyle(
               indent = 0,
-              fontSize = 10,
+              fontSize = 9,
               valign = 'center',
               textDecoration = 'italic'
             ),
@@ -366,19 +371,21 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
         }
       }
 
-      openxlsx::addStyle(
-        wb,
-        sheet = sheet_name,
-        style = openxlsx::createStyle(
-          indent = 0,
-          valign = 'center',
-          textDecoration = 'bold'
-        ),
-        cols = start_col,
-        rows = subtitle_row,
-        gridExpand = T,
-        stack = T
-      )
+      if(length(df_names) > 1) {
+        openxlsx::addStyle(
+          wb,
+          sheet = sheet_name,
+          style = openxlsx::createStyle(
+            indent = 0,
+            valign = 'center',
+            textDecoration = 'bold'
+          ),
+          cols = start_col,
+          rows = subtitle_row,
+          gridExpand = T,
+          stack = T
+        )
+      }
     }
   }
 

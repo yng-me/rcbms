@@ -51,6 +51,7 @@ read_signature_files <- function(
       )
     ) |>
     dplyr::as_tibble(rownames = 'file') |>
+    dplyr::filter(!grepl('deleted', file,  ignore.case = T)) |>
     dplyr::mutate(
       case_id = stringr::str_remove_all(basename(file), format)
     ) |>
