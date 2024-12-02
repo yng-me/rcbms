@@ -16,8 +16,6 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
     ")$"
   )
 
-  # level_length <- c(2, 3, 5, 8)[config$project$shp$aggregation$level]
-
   shp_data_files <- list.files(
       shp_base_path,
       full.names = T,
@@ -101,13 +99,5 @@ save_shp_data <- function(.conn, .pq_folder, .references, .config) {
 
 
   return(df)
-#
-#
-#   arrow::write_parquet(
-#     df_temp,
-#     file.path(.pq_folder, 'shp_data.parquet')
-#   )
-#
-#   arrow::open_dataset(file.path(.pq_folder, 'shp_data.parquet'))
 
 }

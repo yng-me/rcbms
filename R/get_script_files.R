@@ -85,7 +85,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         )
       )
 
-  # Before- and after-edit checks
+  # Before- and after-edit checks // final checks
   }  else {
 
     section_ref <- .section[[.config$survey_round]][[.input_data]]
@@ -204,6 +204,20 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         dplyr::filter(
           grepl(
             "^_duplicate",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
+        ) |>
+        dplyr::bind_rows(script_files_final)
+    }
+
+    include_map_validation <- .config$validation$include_map_validation
+    if(is.null(include_map_validation)) include_map_validation <- FALSE
+
+    if(.config$mode$stage == 5 & .input_data == 'hp' & include_map_validation) {
+      script_files_final <- script_files_all |>
+        dplyr::filter(
+          grepl(
+            "^_map_validation",
             stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
           )
         ) |>

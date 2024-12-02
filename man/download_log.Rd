@@ -4,7 +4,7 @@
 \alias{download_log}
 \title{Title}
 \usage{
-download_log(.data, .path)
+download_log(.data, .path, .dcf, .options = list())
 }
 \arguments{
 \item{.path}{}
