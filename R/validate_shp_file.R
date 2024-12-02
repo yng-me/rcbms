@@ -117,8 +117,3 @@ import_shp_file <- function(.shp_files, .references, .config) {
   arrow::open_dataset(pq)
 
 }
-
-
-save_as_gpkg <- function(.data, .config) {
-  path_output <- .config$validation$path_output
-}
