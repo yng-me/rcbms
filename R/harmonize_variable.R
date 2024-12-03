@@ -34,7 +34,11 @@ harmonize_variable <- function(.data, .input_data, .survey_round, .dictionary, .
   .data |>
     dplyr::select(-dplyr::any_of(excluded)) |>
     convert_cols_from_dictionary(.dictionary, .config) |>
-    convert_col_names(.dictionary)
+    convert_col_names(.dictionary) |>
+    dplyr::mutate_if(
+      is.character,
+      ~ stringr::str_trim(stringr::str_squish(.))
+    )
 }
 
 

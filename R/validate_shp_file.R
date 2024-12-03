@@ -18,10 +18,6 @@ list_shp_files <- function(
   .formats = 'shp'
 ) {
 
-  match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
-  format <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
-  file_formats <- paste0(.area_code, '.*\\.(', paste0(.formats, collapse = '|'), ')$')
-
   path <- .dir
 
   if(!is.null(.area_code)) {
@@ -36,7 +32,7 @@ list_shp_files <- function(
   list.files(
       path,
       full.names = T,
-      pattern = file_formats,
+      pattern = .formats,
       ignore.case = T,
       recursive = T
     ) |>
