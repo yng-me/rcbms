@@ -38,7 +38,8 @@ harmonize_variable <- function(.data, .input_data, .survey_round, .dictionary, .
     dplyr::mutate_if(
       is.character,
       ~ stringr::str_trim(stringr::str_squish(.))
-    )
+    ) |>
+    convert_to_na()
 }
 
 
