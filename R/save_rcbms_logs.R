@@ -289,6 +289,8 @@ save_current_logs <- function(
 
             dps_logs <- dps_logs |>
               dplyr::tibble() |>
+              dplyr::mutate(tag_status = lubridate::as_datetime(tag_status)) |>
+              dplyr::arrange(dplyr::desc(tag_status)) |>
               dplyr::mutate(status = as.integer(status)) |>
               dplyr::mutate(old_uuid = id) |>
               dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols)) |>
