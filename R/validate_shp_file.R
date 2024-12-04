@@ -55,7 +55,7 @@ list_shp_files <- function(
 #' @examples
 #'
 
-import_shp_file <- function(.shp_files, .references, .config) {
+import_shp_file <- function(.shp_files, .references, .config, .file_formats = 'shp') {
 
   dcf <- .references$data_dictionary[["2024"]][["shp"]]
   if(tolower(.config$mode$stage[1]) > 3) {
@@ -67,7 +67,7 @@ import_shp_file <- function(.shp_files, .references, .config) {
   for(i in seq_along(.shp_files)) {
 
     shp_file <- .shp_files[i]
-    shp_layer <- stringr::str_remove_all(basename(shp_file), file_format)
+    shp_layer <- stringr::str_remove_all(basename(shp_file), .file_formats)
 
     df_temp <- sf::st_read(shp_file, layer = shp_layer) |>
       dplyr::tibble() |>

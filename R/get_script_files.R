@@ -217,7 +217,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
       script_files_final <- script_files_all |>
         dplyr::filter(
           grepl(
-            "^_map_validation",
+            "^_map.validation",
             stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
           )
         ) |>
