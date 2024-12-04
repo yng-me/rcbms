@@ -213,7 +213,7 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
     include_map_validation <- .config$validation$include_map_validation
     if(is.null(include_map_validation)) include_map_validation <- FALSE
 
-    if(.config$mode$edit == 5 & .input_data == 'hp' & include_map_validation) {
+    if(.input_data == 'hp' & include_map_validation) {
       script_files_final <- script_files_all |>
         dplyr::filter(
           grepl(

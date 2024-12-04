@@ -69,7 +69,7 @@ import_shp_file <- function(.shp_files, .references, .config, .file_formats = 's
     shp_file <- .shp_files[i]
     shp_layer <- stringr::str_remove_all(basename(shp_file), .file_formats)
 
-    df_temp <- sf::st_read(shp_file, layer = shp_layer) |>
+    df_temp <- sf::read_sf(shp_file) |>
       dplyr::tibble() |>
       janitor::clean_names() |>
       suppressWarnings()
