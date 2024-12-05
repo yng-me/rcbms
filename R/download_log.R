@@ -47,6 +47,32 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
     openxlsx::writeData(wb, x = .data$subtitle[i], sheet = sheet_name, startRow = 3, startCol = start_col)
 
     df <- jsonlite::fromJSON(.data$info[i])
+    df_is_not_a_list <- !inherits(df, 'list')
+
+    if(df_is_not_a_list) {
+
+      df_names <- names(df)
+
+      x_list <- list()
+      x_list[[sheet_name]] <- list(
+        df = df,
+        meta = list(),
+        header = data.frame(
+          order = 1:ncol(df),
+          field = df_names,
+          label = df_names
+        ),
+        attr = list(
+          agg_area_level = NULL,
+          is_logical_cols = FALSE,
+          retain_header = TRUE
+        )
+      )
+
+      df <- x_list
+
+    }
+
     df_names <- names(df)
 
 
@@ -89,18 +115,25 @@ download_log <- function(.data, .path, .dcf, .options = list()) {
         start_row <- start_row + 1
       }
 
-      df_wb <- df[[j]]$df |>
-        dplyr::left_join(
-          refs_tidy,
-          by = c('area_code', 'level')
-        ) |>
-        dplyr::select(-area_code) |>
-        dplyr::select(
-          Area = area_name,
-          level,
-          dplyr::everything()
-        ) |>
-        dplyr::select(-dplyr::matches('_coded_response$'))
+      if(df_is_not_a_list) {
+
+        df_wb <- df[[df_name]][['df']]
+
+      } else {
+
+        df_wb <- df[[df_name]]$df |>
+          dplyr::left_join(
+            refs_tidy,
+            by = c('area_code', 'level')
+          ) |>
+          dplyr::select(-area_code) |>
+          dplyr::select(
+            Area = area_name,
+            level,
+            dplyr::everything()
+          ) |>
+          dplyr::select(-dplyr::matches('_coded_response$'))
+      }
 
 
       end_row_offset <- 3
