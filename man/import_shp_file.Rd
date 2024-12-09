@@ -4,7 +4,7 @@
 \alias{import_shp_file}
 \title{Title}
 \usage{
-import_shp_file(.shp_files, .references, .config)
+import_shp_file(.shp_files, .references, .config, .file_formats = "shp")
 }
 \arguments{
 \item{.config}{}
