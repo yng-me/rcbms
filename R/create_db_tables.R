@@ -28,8 +28,6 @@ create_db_tables <- function(.conn, .input_data, .uid) {
 
   DBI::dbCommit(.conn)
 
-  print('asdfsadfsadf')
-
 }
 
 create_table_query <- function(.input_data, .uid, .suffix = '') {
