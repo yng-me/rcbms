@@ -40,7 +40,7 @@ import_rcbms_logs <- function(.dir, .user_id) {
   }
 
   # unlink(exdir, recursive = T, force = T)
-  # print('success')
+  print('success')
 
 }
 
@@ -79,28 +79,13 @@ extract_rcbms_log <- function(.conn, .dir) {
   DBI::dbWriteTable(
     conn,
     value = logs_diff |>
-      dplyr::mutate(id_int = nrow(logs_to) + (1:dplyr::n())),
+      dplyr::mutate(
+        id_int = nrow(logs_to) + (1:dplyr::n()),
+        source = 2L
+      ),
     name = 'logs',
     append = T
   )
-
-  # tabulation ---------------
-  ts_from <- DBI::dbReadTable(.conn, 'ts') |>
-    dplyr::filter(as.integer(status) > 0) |>
-    dplyr::filter(log_id %in% logs_diff$id)
-
-  if(nrow(ts_from) > 0) {
-
-    remarks_i <- import_rcbms_log(
-      .conn = conn,
-      .data = ts_from,
-      .remarks = remarks_i,
-      .input_data = input_data,
-      .name = 'ts'
-    )
-
-  }
-
 
   # validation ---------------
   input_cv <- paste0(input_data, '_cv')
@@ -109,28 +94,63 @@ extract_rcbms_log <- function(.conn, .dir) {
     dplyr::filter(as.integer(status) > 0) |>
     dplyr::filter(log_id %in% logs_diff$id)
 
-  if(nrow(cv_from) > 0) {
 
-    # remarks_i <- import_rcbms_log(
-    #   .conn = conn,
-    #   .data = cv_i,
-    #   .remarks = remarks_i,
-    #   .input_data = input_data,
-    #   .name = input_cv
-    # )
-  }
+  # tabulation ---------------
+  ts_from <- DBI::dbReadTable(.conn, 'ts') |>
+    dplyr::filter(as.integer(status) > 0) |>
+    dplyr::filter(log_id %in% logs_diff$id)
 
   # remarks ---------------
-  remarks_from <- DBI::dbReadTable(.conn, 'remarks') |>
+  remarks_diff <- DBI::dbReadTable(.conn, 'remarks') |>
     dplyr::filter(status > 0) |>
     dplyr::filter(uuid %in% ts_from$id | uuid %in% cv_from$id)
 
+  print('a---')
+  print(nrow(remarks_diff$uuid))
+
+  if(nrow(cv_from) > 0) {
+
+    remarks_diff <- import_rcbms_log(
+      .conn = conn,
+      .data = cv_from,
+      .remarks = remarks_diff,
+      .table_name = input_cv,
+      .by_cv_cols = uid_cols$by_cv_cols,
+      .uid = uid_cols$uid
+    )
+
+    print('b---')
+    print(nrow(remarks_diff$uuid))
+
+  }
+
+  if(nrow(ts_from) > 0) {
+
+    remarks_diff <- import_rcbms_log(
+      .conn = conn,
+      .data = ts_from,
+      .remarks = remarks_diff,
+      .table_name = 'ts',
+      .by_cv_cols = 'tabulation_id',
+      .uid = uid_cols$uid
+    )
+
+    print('c---')
+    print(nrow(remarks_diff))
+
+  }
+
+  print('ssss')
+
   # import remaining remarks ---------------
-  if(nrow(remarks_i) > 0) {
+  if(nrow(remarks_diff) > 0) {
+
+    print('d---')
+    print(nrow(remarks_diff))
 
     DBI::dbWriteTable(
       conn,
-      value = remarks_i |> dplyr::select(-id),
+      value = dplyr::select(remarks_diff, -id),
       name = 'remarks',
       append = T
     )
@@ -141,16 +161,17 @@ extract_rcbms_log <- function(.conn, .dir) {
 }
 
 
-get_uid_cols <- function(.input_data) {
+get_uid_cols <- function(.input_data, .type = 'validation') {
   uid <- 'case_id'
-  by_cv_cols <- c(uid, "validation_id", "line_number")
+  type <- paste0(.type, "_id")
+  by_cv_cols <- c(uid, type, "line_number")
 
   if(.input_data == 'shp') {
     uid <- 'cbms_geoid'
-    by_cv_cols <- c(uid, "validation_id")
+    by_cv_cols <- c(uid, type)
   } else if(.input_data == 'bp') {
     uid <- 'barangay_geo'
-    by_cv_cols <- c(uid, "validation_id")
+    by_cv_cols <- c(uid, type)
   }
   return(
     list(

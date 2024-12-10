@@ -2,37 +2,48 @@ import_rcbms_log <- function(
   .conn,
   .data,
   .remarks,
-  .input_data,
-  .name,
-  .type = 'cv'
+  .table_name,
+  .by_cv_cols,
+  .uid
 ) {
 
-  DBI::dbWriteTable(
-    .conn,
-    value = .data,
-    name = .name,
-    append = T
-  )
+  DBI::dbWriteTable(.conn, value = .data, name = .table_name, append = T)
 
+  # No remarks
   if(nrow(.remarks) == 0) return(.remarks)
-
-  uid_cols <- get_uid_cols(.input_data)
-  if(.type == 'ts') {
-    uid_cols$by_cv_cols <- 'tabulation_id'
-  }
 
   remarks_join <- .remarks |>
     dplyr::left_join(
       .data |>
-        dplyr::select(uuid = id, dplyr::any_of(uid_cols$by_cv_cols)),
+        dplyr::select(
+          uuid = id,
+          dplyr::any_of(.by_cv_cols)
+        ),
       by = 'uuid'
-    ) |>
-    dplyr::filter(!is.na(!!as.name(uid_cols$uid))) |>
-    dplyr::arrange(dplyr::desc(created_at))
+    )
 
+  if(.uid %in% names(remarks_join)) {
+    remarks_join <- remarks_join |>
+      dplyr::filter(!is.na(!!as.name(.uid)))
+  }
+
+  print('1------------')
+  print(remarks_join)
+
+  # No remarks joined
   if(nrow(remarks_join) == 0) return(.remarks)
 
-  df <- DBI::dbReadTable(.conn, .name)
+  remarks_join <- remarks_join |>
+    dplyr::mutate(date = lubridate::as_datetime(created_at)) |>
+    dplyr::arrange(dplyr::desc(date)) |>
+    dplyr::select(-date)
+
+  print('2------------')
+  print(remarks_join)
+
+  remarks_id <- remarks_join$uuid
+
+  df <- DBI::dbReadTable(.conn, .table_name)
 
   if(nrow(df) == 0) return(.remarks)
 
@@ -40,17 +51,21 @@ import_rcbms_log <- function(
     dplyr::select(-uuid) |>
     dplyr::left_join(
       df |>
-        dplyr::select(uuid = id, dplyr::any_of(uid_cols$by_cv_cols)),
-      by = uid_cols$by_cv_cols
+        dplyr::select(
+          uuid = id,
+          dplyr::any_of(.by_cv_cols)
+        ),
+      by = .by_cv_cols
     ) |>
-    dplyr::select(-dplyr::any_of(uid_cols$by_cv_cols)) |>
+    dplyr::select(-dplyr::any_of(.by_cv_cols)) |>
     dplyr::distinct(uuid, user_id, status, remarks, .keep_all = T)
 
+  print('3------------')
+  print(remarks_join)
+
   DBI::dbWriteTable(
-    .conn,
-    value = remarks_join |>
-      dplyr::arrange(id, created_at) |>
-      dplyr::select(-id),
+    conn = .conn,
+    value = remarks_join |> dplyr::select(-id),
     name = 'remarks',
     append = T
   )
@@ -59,12 +74,16 @@ import_rcbms_log <- function(
     dplyr::distinct(uuid, status) |>
     dplyr::rename(id = uuid, remarks_status = status)
 
+  print('4------------')
+  print(remarks)
+
   DBI::dbWriteTable(
-    .conn,
+    conn = .conn,
     value = df |>
       dplyr::left_join(
         remarks,
-        by = 'id'
+        by = 'id',
+        multiple = 'first'
       ) |>
       dplyr::mutate(
         status = dplyr::if_else(
@@ -74,11 +93,11 @@ import_rcbms_log <- function(
         )
       ) |>
       dplyr::select(-remarks_status),
-    name = .name,
+    name = .table_name,
     overwrite = T
   )
 
   .remarks |>
-    dplyr::filter(!(id %in% remarks_join$id))
+    dplyr::filter(!(id %in% remarks_id))
 
 }
