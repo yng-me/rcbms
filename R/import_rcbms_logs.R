@@ -16,7 +16,7 @@ import_rcbms_logs <- function(.dir, .user_id) {
     exdir,
     recursive = T,
     full.names = T,
-    pattern = '(hp|bp|ilq|shp)_rcbms_logs_v.*db$'
+    pattern = '(hp|bp|ilq)_rcbms_logs_v.*db$'
   )
 
   done <- NULL
@@ -24,122 +24,139 @@ import_rcbms_logs <- function(.dir, .user_id) {
 
   db_dir <- file.path(.dir, 'db', .user_id)
 
+  print(db_logs)
+
+
   for(i in seq_along(db_logs)) {
-    extract_rcbms_log(db_dir, db_logs[i])
+
+    db_log_i <- db_logs[i]
+    conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
+
+    if('logs' %in% DBI::dbListTables(conn_i)) {
+
+      extract_rcbms_log(conn_i, db_dir)
+
+    }
+
+    DBI::dbDisconnect(conn_i, force = T)
+
   }
 
-  unlink(exdir, recursive = T, force = T)
-  print('success')
+  # unlink(exdir, recursive = T, force = T)
+  # print('success')
 
 }
 
 
 
 
-
-extract_rcbms_log <- function(.dir, db_log_i) {
+extract_rcbms_log <- function(.conn, .dir) {
 
   # read logs from other user
-  db_i <- basename(db_log_i)
-  input_data <- stringr::str_extract(db_i, '^(hp|bp|ilq|shp)')
+  db_i <- basename(DBI::dbGetInfo(.conn)$dbname)
+  input_data <- stringr::str_extract(db_i, '^(hp|bp|ilq)')
+
   db_cv <- paste0(input_data, '_cv')
   uid_cols <- get_uid_cols(input_data)
+  # per db table
+  logs_i <- DBI::dbReadTable(.conn, 'logs') |>
+    dplyr::filter(status > 0)
 
-  conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
+  if(nrow(logs_i) > 0) {
 
-  if('logs' %in% DBI::dbListTables(conn_i)) {
+    # add logs to current user
+    db_dir <- rcbms::create_new_folder(.dir)
 
-    # per db table
-    logs_i <- DBI::dbReadTable(conn_i, 'logs') |>
-      dplyr::filter(status > 0)
+    conn <- DBI::dbConnect(
+      RSQLite::SQLite(),
+      dbname = file.path(db_dir, db_i)
+    )
 
-    if(nrow(logs_i) > 0) {
+    db_tables <- DBI::dbListTables(conn)
 
-      # add logs to current user
-      db_dir <- rcbms::create_new_folder(.dir)
 
-      conn <- DBI::dbConnect(
-        RSQLite::SQLite(),
-        dbname = file.path(db_dir, db_i)
+
+
+
+
+
+
+
+
+    create_logs_table(conn, db_tables, input_data, uid_cols)
+    create_remarks_table(conn, db_tables)
+
+    # import logs
+    o_logs <- DBI::dbReadTable(conn, 'logs') |>
+      dplyr::select(id)
+
+    s_logs_i <- logs_i |>
+      dplyr::filter(!(id %in% o_logs$id))
+
+    if(nrow(s_logs_i) > 0) {
+
+      ts_i <- DBI::dbReadTable(.conn, 'ts') |>
+        dplyr::filter(as.integer(status) > 0) |>
+        dplyr::filter(!(log_id %in% o_logs$id))
+
+      cv_i <- DBI::dbReadTable(.conn, db_cv) |>
+        dplyr::filter(as.integer(status) > 0) |>
+        dplyr::filter(!(log_id %in% o_logs$id))
+
+      remarks_i <- DBI::dbReadTable(.conn, 'remarks') |>
+        dplyr::filter(status > 0) |>
+        dplyr::filter(uuid %in% cv_i$id | uuid %in% ts_i$id)
+
+
+
+      DBI::dbWriteTable(
+        conn,
+        value = s_logs_i |>
+          dplyr::mutate(id_int = nrow(o_logs) + (1:dplyr::n())),
+        name = 'logs',
+        append = T
       )
 
-      db_tables <- DBI::dbListTables(conn)
+      # import cv
+      if(nrow(cv_i) > 0) {
 
-      create_logs_table(conn, db_tables, input_data, uid_cols)
-      create_remarks_table(conn, db_tables)
+        remarks_i <- import_rcbms_log(
+          .conn = conn,
+          .data = cv_i,
+          .remarks = remarks_i,
+          .input_data = input_data,
+          .name = db_cv
+        )
+      }
 
-      # import logs
-      o_logs <- DBI::dbReadTable(conn, 'logs') |>
-        dplyr::select(id)
+      # import ts
+      if(nrow(ts_i) > 0) {
 
-      s_logs_i <- logs_i |>
-        dplyr::filter(!(id %in% o_logs$id))
+        remarks_i <- import_rcbms_log(
+          .conn = conn,
+          .data = ts_i,
+          .remarks = remarks_i,
+          .input_data = input_data,
+          .name = 'ts'
+        )
+      }
 
-      if(nrow(s_logs_i) > 0) {
-
-        ts_i <- DBI::dbReadTable(conn_i, 'ts') |>
-          dplyr::filter(as.integer(status) > 0) |>
-          dplyr::filter(!(log_id %in% o_logs$id))
-
-        cv_i <- DBI::dbReadTable(conn_i, db_cv) |>
-          dplyr::filter(as.integer(status) > 0) |>
-          dplyr::filter(!(log_id %in% o_logs$id))
-
-        remarks_i <- DBI::dbReadTable(conn_i, 'remarks') |>
-          dplyr::filter(status > 0) |>
-          dplyr::filter(uuid %in% cv_i$id | uuid %in% ts_i$id)
-
-        DBI::dbDisconnect(conn_i)
+      # import remaining remarks
+      if(nrow(remarks_i) > 0) {
 
         DBI::dbWriteTable(
           conn,
-          value = s_logs_i |>
-            dplyr::mutate(id_int = nrow(o_logs) + (1:dplyr::n())),
-          name = 'logs',
+          value = remarks_i |> dplyr::select(-id),
+          name = 'remarks',
           append = T
         )
 
-        # import cv
-        if(nrow(cv_i) > 0) {
-
-          remarks_i <- import_rcbms_log(
-            .conn = conn,
-            .data = cv_i,
-            .remarks = remarks_i,
-            .input_data = input_data,
-            .name = db_cv
-          )
-        }
-
-        # import ts
-        if(nrow(ts_i) > 0) {
-
-          remarks_i <- import_rcbms_log(
-            .conn = conn,
-            .data = ts_i,
-            .remarks = remarks_i,
-            .input_data = input_data,
-            .name = 'ts'
-          )
-        }
-
-        # import remaining remarks
-        if(nrow(remarks_i) > 0) {
-
-          DBI::dbWriteTable(
-            conn,
-            value = remarks_i |> dplyr::select(-id),
-            name = 'remarks',
-            append = T
-          )
-
-        }
-
       }
 
-      DBI::dbDisconnect(conn)
-
     }
+
+    DBI::dbDisconnect(conn)
+
   }
 
 }

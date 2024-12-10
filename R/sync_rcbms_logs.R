@@ -14,7 +14,7 @@ sync_rcbms_logs <- function(db_dir, path = '//localhost/webdav') {
   rcbms_db_files <- list.files(
     path,
     recursive = T,
-    pattern = '(hp|shp|ilq|bp)_rcbms_logs_.*\\.db',
+    pattern = '(hp|ilq|bp)_rcbms_logs_.*\\.db',
     full.names = T
   )
 

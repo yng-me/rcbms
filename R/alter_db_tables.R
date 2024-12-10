@@ -1,4 +1,18 @@
-alter_db_tables <- function(.conn, .input_data, .uid) {
+alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms.config')) {
+
+  indexes <- DBI::dbGetQuery(.conn, "PRAGMA index_list('logs');")
+  if(nrow(indexes) > 1) return(invisible(NULL))
+
+  db_name <- DBI::dbGetInfo(.conn)$dbname
+
+  if(!is.null(.config$user_id) & !is.null(db_name)) {
+
+    if(file.exists(db_name)) {
+
+      dir_migration <- create_new_folder(file.path("..", "logs", "migration", .config$user_id))
+      file.copy(db_name, dir_migration, overwrite = T)
+    }
+  }
 
   query <- create_table_query(
     .input_data = 'hp',
