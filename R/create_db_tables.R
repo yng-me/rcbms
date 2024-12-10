@@ -8,6 +8,12 @@ create_db_tables <- function(.conn, .input_data, .uid) {
   DBI::dbExecute(.conn, query$ts)
   DBI::dbExecute(.conn, query$remarks)
 
+  indexes <- DBI::dbGetQuery(.conn, "PRAGMA index_list('logs');")
+  if(nrow(indexes) > 1) {
+    DBI::dbCommit(.conn)
+    return(0)
+  }
+
   DBI::dbExecute(.conn, 'CREATE INDEX remarks_uuid_index on remarks (uuid);')
   DBI::dbExecute(.conn, 'CREATE INDEX remarks_user_id_index on remarks (user_id);')
   DBI::dbExecute(.conn, 'CREATE INDEX remarks_status_index on remarks (status);')

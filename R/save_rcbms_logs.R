@@ -1,4 +1,11 @@
-save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_ref = NULL, .summary_df = NULL) {
+save_rcbms_logs <- function(
+  .data,
+  .input_data,
+  .references,
+  .config,
+  .section_ref = NULL,
+  .summary_df = NULL
+) {
 
   conn <- connect_to_db_log(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
@@ -7,6 +14,7 @@ save_rcbms_logs <- function(.data, .input_data, .references, .config, .section_r
   if(!('logs' %in% log_tables)) {
     create_db_tables(conn, .input_data, uid)
   }
+
   alter_db_tables(conn, .input_data, uid)
 
   log_id <- save_current_logs(

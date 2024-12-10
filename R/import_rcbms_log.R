@@ -1,6 +1,19 @@
-import_rcbms_log <- function(.conn, .data, .remarks, .input_data, .name, .type = 'cv') {
+import_rcbms_log <- function(
+  .conn,
+  .data,
+  .remarks,
+  .input_data,
+  .name,
+  .type = 'cv'
+) {
 
-  DBI::dbWriteTable(.conn, value = .data, name = .name, append = T)
+  DBI::dbWriteTable(
+    .conn,
+    value = .data,
+    name = .name,
+    append = T
+  )
+
   if(nrow(.remarks) == 0) return(.remarks)
 
   uid_cols <- get_uid_cols(.input_data)
@@ -42,13 +55,10 @@ import_rcbms_log <- function(.conn, .data, .remarks, .input_data, .name, .type =
     append = T
   )
 
-  print('here-1')
   remarks <- remarks_join |>
     dplyr::distinct(uuid, status) |>
     dplyr::rename(id = uuid, remarks_status = status)
 
-
-  print('here-2')
   DBI::dbWriteTable(
     .conn,
     value = df |>
@@ -67,29 +77,8 @@ import_rcbms_log <- function(.conn, .data, .remarks, .input_data, .name, .type =
     name = .name,
     overwrite = T
   )
-  print('here-3')
 
   .remarks |>
     dplyr::filter(!(id %in% remarks_join$id))
 
-}
-
-
-get_uid_cols <- function(.input_data) {
-  uid <- 'case_id'
-  by_cv_cols <- c(uid, "validation_id", "line_number")
-
-  if(.input_data == 'shp') {
-    uid <- 'cbms_geoid'
-    by_cv_cols <- c(uid, "validation_id")
-  } else if(.input_data == 'bp') {
-    uid <- 'barangay_geo'
-    by_cv_cols <- c(uid, "validation_id")
-  }
-  return(
-    list(
-      uid = uid,
-      by_cv_cols = by_cv_cols
-    )
-  )
 }
