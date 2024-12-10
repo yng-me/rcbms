@@ -23,7 +23,18 @@ sync_rcbms_logs <- function(db_dir, path = '//localhost/webdav') {
   }
 
   for(i in seq_along(rcbms_db_files)) {
-    extract_rcbms_log(db_dir, rcbms_db_files[i])
+
+    db_log_i <- rcbms_db_files[i]
+    conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
+
+    if('logs' %in% DBI::dbListTables(conn_i)) {
+
+      extract_rcbms_log(conn_i, db_dir)
+
+    }
+
+    DBI::dbDisconnect(conn_i, force = T)
+
   }
 
   unlink(rcbms_db_files, recursive = T, force = T)
@@ -31,3 +42,5 @@ sync_rcbms_logs <- function(db_dir, path = '//localhost/webdav') {
   cat('success')
 
 }
+
+

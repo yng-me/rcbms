@@ -39,11 +39,10 @@ import_rcbms_logs <- function(.dir, .user_id) {
 
   }
 
-  # unlink(exdir, recursive = T, force = T)
+  unlink(exdir, recursive = T, force = T)
   print('success')
 
 }
-
 
 
 
@@ -105,8 +104,8 @@ extract_rcbms_log <- function(.conn, .dir) {
     dplyr::filter(status > 0) |>
     dplyr::filter(uuid %in% ts_from$id | uuid %in% cv_from$id)
 
-  print('a---')
-  print(nrow(remarks_diff$uuid))
+  # print('a---')
+  # print(nrow(remarks_diff))
 
   if(nrow(cv_from) > 0) {
 
@@ -119,8 +118,8 @@ extract_rcbms_log <- function(.conn, .dir) {
       .uid = uid_cols$uid
     )
 
-    print('b---')
-    print(nrow(remarks_diff$uuid))
+    # print('b---')
+    # print(nrow(remarks_diff))
 
   }
 
@@ -134,19 +133,13 @@ extract_rcbms_log <- function(.conn, .dir) {
       .by_cv_cols = 'tabulation_id',
       .uid = uid_cols$uid
     )
-
-    print('c---')
-    print(nrow(remarks_diff))
-
   }
-
-  print('ssss')
 
   # import remaining remarks ---------------
   if(nrow(remarks_diff) > 0) {
 
-    print('d---')
-    print(nrow(remarks_diff))
+    # print('d---')
+    # print(nrow(remarks_diff))
 
     DBI::dbWriteTable(
       conn,
