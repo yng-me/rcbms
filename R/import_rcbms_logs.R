@@ -2,15 +2,18 @@
 #'
 #' @param .dir
 #' @param .user_id
+#' @param .dir_to
+#' @param .delete_source
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#'
 
-import_rcbms_logs <- function(.dir, .user_id) {
+import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_source = T) {
 
-  exdir <- file.path(.dir, 'db-temp')
+  exdir <- file.path(.dir, .dir_to)
 
   db_logs <- list.files(
     exdir,
@@ -24,6 +27,8 @@ import_rcbms_logs <- function(.dir, .user_id) {
 
   db_dir <- file.path(.dir, 'db', .user_id)
 
+  res <- list()
+
   for(i in seq_along(db_logs)) {
 
     db_log_i <- db_logs[i]
@@ -31,7 +36,11 @@ import_rcbms_logs <- function(.dir, .user_id) {
 
     if('logs' %in% DBI::dbListTables(conn_i)) {
 
-      extract_rcbms_log(conn_i, db_dir)
+      db_name <- basename(db_log_i) |>
+        fs::path_ext_remove() |>
+        stringr::str_extract('^(hp|bp|ilq)')
+
+      res[[db_name[[1]]]] <- extract_rcbms_log(conn_i, db_dir)
 
     }
 
@@ -39,21 +48,46 @@ import_rcbms_logs <- function(.dir, .user_id) {
 
   }
 
-  unlink(exdir, recursive = T, force = T)
-  print('success')
+  if(.delete_source) {
+    # unlink(exdir, recursive = T, force = T)
+  }
+
+  return(res)
 
 }
 
 
+
+#' Title
+#'
+#' @param .conn
+#' @param .dir
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
 
 extract_rcbms_log <- function(.conn, .dir) {
 
   logs_from <- DBI::dbReadTable(.conn, 'logs') |>
     dplyr::filter(status > 0)
 
-  if(nrow(logs_from) == 0) return(NULL)
+  print(logs_from)
+
+  if(nrow(logs_from) == 0) return(
+    list(
+      status_code = 0,
+      logs = 0,
+      cv = 0,
+      ts = 0,
+      remarks = 0
+    )
+  )
 
   db_i <- basename(DBI::dbGetInfo(.conn)$dbname)
+
   input_data <- stringr::str_extract(db_i, '^(hp|bp|ilq)')
 
   db_dir <- rcbms::create_new_folder(.dir)
@@ -71,8 +105,18 @@ extract_rcbms_log <- function(.conn, .dir) {
     dplyr::filter(!(id %in% logs_to$id))
 
   if(nrow(logs_diff) == 0) {
+
     DBI::dbDisconnect(conn, force = T)
-    return(NULL)
+
+    return(
+      list(
+        status_code = 2,
+        logs = 0,
+        cv = 0,
+        ts = 0,
+        remarks = 0
+      )
+    )
   }
 
   DBI::dbWriteTable(
@@ -101,11 +145,12 @@ extract_rcbms_log <- function(.conn, .dir) {
 
   # remarks ---------------
   remarks_diff <- DBI::dbReadTable(.conn, 'remarks') |>
-    dplyr::filter(status > 0) |>
+    dplyr::filter(status > 0, status < 9) |>
     dplyr::filter(uuid %in% ts_from$id | uuid %in% cv_from$id)
 
-  # print('a---')
-  # print(nrow(remarks_diff))
+
+  out_remarks_from <- remarks_diff
+  table_suffix = '_sync_temp'
 
   if(nrow(cv_from) > 0) {
 
@@ -115,12 +160,9 @@ extract_rcbms_log <- function(.conn, .dir) {
       .remarks = remarks_diff,
       .table_name = input_cv,
       .by_cv_cols = uid_cols$by_cv_cols,
-      .uid = uid_cols$uid
+      .uid = uid_cols$uid,
+      .table_suffix = table_suffix
     )
-
-    # print('b---')
-    # print(nrow(remarks_diff))
-
   }
 
   if(nrow(ts_from) > 0) {
@@ -131,15 +173,13 @@ extract_rcbms_log <- function(.conn, .dir) {
       .remarks = remarks_diff,
       .table_name = 'ts',
       .by_cv_cols = 'tabulation_id',
-      .uid = uid_cols$uid
+      .uid = uid_cols$uid,
+      .table_suffix = table_suffix
     )
   }
 
   # import remaining remarks ---------------
   if(nrow(remarks_diff) > 0) {
-
-    # print('d---')
-    # print(nrow(remarks_diff))
 
     DBI::dbWriteTable(
       conn,
@@ -151,6 +191,15 @@ extract_rcbms_log <- function(.conn, .dir) {
 
   DBI::dbDisconnect(conn, force = T)
 
+  return(
+    list(
+      status_code = 1,
+      logs = nrow(logs_diff),
+      cv = nrow(cv_from),
+      ts = nrow(ts_from),
+      remarks = nrow(out_remarks_from)
+    )
+  )
 }
 
 

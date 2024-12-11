@@ -1,7 +1,10 @@
 #' Title
 #'
-#' @param path
-#' @param db_dir
+#' @param .dir_to
+#' @param .user_id
+#' @param .dir_from
+#' @param .dir_temp
+#' @param .delete_source
 #'
 #' @return
 #' @export
@@ -9,37 +12,55 @@
 #' @examples
 #'
 
-sync_rcbms_logs <- function(db_dir, path = '//localhost/webdav') {
+sync_rcbms_logs <- function(
+  .dir_to,
+  .user_id,
+  .dir_from = '//localhost/webdav/RCBMS Logs',
+  .dir_temp = 'rclf-temp',
+  .delete_source = T
+) {
 
-  rcbms_db_files <- list.files(
-    path,
+  rcls_files <- list.files(
+    .dir_from,
     recursive = T,
-    pattern = '(hp|ilq|bp)_rcbms_logs_.*\\.db',
+    pattern = '\\.rclf',
     full.names = T
   )
 
-  if(length(rcbms_db_files) == 0) {
-    return(cat('empty'))
+  if(length(rcls_files) == 0) {
+    return(NULL)
   }
 
-  for(i in seq_along(rcbms_db_files)) {
+  users <- list()
 
-    db_log_i <- rcbms_db_files[i]
-    conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
+  for(i in seq_along(rcls_files)) {
 
-    if('logs' %in% DBI::dbListTables(conn_i)) {
+    rclf_i <- rcls_files[i]
+    user <- fs::path_ext_remove(basename(rclf_i))
 
-      extract_rcbms_log(conn_i, db_dir)
+    users <- c(users, user)
 
-    }
+    exdir <- file.path(.dir_to, .dir_temp)
+    zip::unzip(rclf_i, exdir = exdir, overwrite = T)
 
-    DBI::dbDisconnect(conn_i, force = T)
+    v <- import_rcbms_logs(
+      .dir = .dir_to,
+      .user_id = .user_id,
+      .dir_to = .dir_temp,
+      .delete_source = F
+    )
+
+    print(v)
+
+    # unlink(exdir, recursive = T, force = T)
 
   }
 
-  unlink(rcbms_db_files, recursive = T, force = T)
+  if(.delete_source) {
+    # unlink(rcls_files, recursive = T, force = T)
+  }
 
-  cat('success')
+  return(unlist(users))
 
 }
 

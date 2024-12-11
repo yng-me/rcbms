@@ -4,7 +4,8 @@ import_rcbms_log <- function(
   .remarks,
   .table_name,
   .by_cv_cols,
-  .uid
+  .uid,
+  .table_suffix
 ) {
 
   DBI::dbWriteTable(.conn, value = .data, name = .table_name, append = T)
@@ -27,9 +28,6 @@ import_rcbms_log <- function(
       dplyr::filter(!is.na(!!as.name(.uid)))
   }
 
-  # print('1------------')
-  # print(remarks_join)
-
   # No remarks joined
   if(nrow(remarks_join) == 0) return(.remarks)
 
@@ -38,11 +36,7 @@ import_rcbms_log <- function(
     dplyr::arrange(dplyr::desc(date)) |>
     dplyr::select(-date)
 
-  # print('2------------')
-  # print(remarks_join)
-
   remarks_id <- remarks_join$uuid
-  print(remarks_id)
 
   df <- DBI::dbReadTable(.conn, .table_name)
 
@@ -61,9 +55,6 @@ import_rcbms_log <- function(
     dplyr::select(-dplyr::any_of(.by_cv_cols)) |>
     dplyr::distinct(uuid, user_id, status, remarks, .keep_all = T)
 
-  # print('3------------')
-  # print(remarks_join)
-
   DBI::dbWriteTable(
     conn = .conn,
     value = remarks_join |> dplyr::select(-id),
@@ -74,29 +65,38 @@ import_rcbms_log <- function(
   remarks <- remarks_join |>
     dplyr::distinct(uuid, status) |>
     dplyr::rename(id = uuid, remarks_status = status)
-#
-#   print('4------------')
-#   print(remarks)
 
-  DBI::dbWriteTable(
-    conn = .conn,
-    value = df |>
-      dplyr::left_join(
-        remarks,
-        by = 'id',
-        multiple = 'first'
-      ) |>
-      dplyr::mutate(
-        status = dplyr::if_else(
-          !is.na(remarks_status),
-          remarks_status,
-          status
-        )
-      ) |>
-      dplyr::select(-remarks_status),
-    name = .table_name,
-    overwrite = T
-  )
+  if(nrow(df)) {
+
+    DBI::dbWriteTable(
+      conn = .conn,
+      value = df,
+      name = paste0(.table_name, .table_suffix),
+      overwrite = T
+    )
+
+    DBI::dbExecute(.conn, glue::glue("DELETE FROM {.table_name};"))
+
+    DBI::dbWriteTable(
+      conn = .conn,
+      value = df |>
+        dplyr::left_join(
+          remarks,
+          by = 'id',
+          multiple = 'first'
+        ) |>
+        dplyr::mutate(
+          status = dplyr::if_else(
+            !is.na(remarks_status),
+            remarks_status,
+            status
+          )
+        ) |>
+        dplyr::select(-remarks_status),
+      name = .table_name,
+      append = T
+    )
+  }
 
   .remarks |>
     dplyr::filter(!(uuid %in% remarks_id))

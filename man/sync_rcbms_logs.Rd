@@ -4,10 +4,16 @@
 \alias{sync_rcbms_logs}
 \title{Title}
 \usage{
-sync_rcbms_logs(db_dir, path = "//localhost/webdav")
+sync_rcbms_logs(
+  .dir_to,
+  .user_id,
+  .dir_from = "//localhost/webdav/RCBMS Logs",
+  .dir_temp = "rclf-temp",
+  .delete_source = T
+)
 }
 \arguments{
-\item{db_dir}{}
+\item{.delete_source}{}
 }
 \description{
 Title
