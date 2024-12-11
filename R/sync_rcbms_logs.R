@@ -20,22 +20,22 @@ sync_rcbms_logs <- function(
   .delete_source = T
 ) {
 
-  rcls_files <- list.files(
+  rclf_files <- list.files(
     .dir_from,
     recursive = T,
     pattern = '\\.rclf',
     full.names = T
   )
 
-  if(length(rcls_files) == 0) {
+  if(length(rclf_files) == 0) {
     return(NULL)
   }
 
   users <- list()
 
-  for(i in seq_along(rcls_files)) {
+  for(i in seq_along(rclf_files)) {
 
-    rclf_i <- rcls_files[i]
+    rclf_i <- rclf_files[i]
     user <- fs::path_ext_remove(basename(rclf_i))
 
     users <- c(users, user)
@@ -43,21 +43,19 @@ sync_rcbms_logs <- function(
     exdir <- file.path(.dir_to, .dir_temp)
     zip::unzip(rclf_i, exdir = exdir, overwrite = T)
 
-    v <- import_rcbms_logs(
+    import_rcbms_logs(
       .dir = .dir_to,
       .user_id = .user_id,
       .dir_to = .dir_temp,
-      .delete_source = F
+      .delete_source = T
     )
 
-    print(v)
-
-    # unlink(exdir, recursive = T, force = T)
+    unlink(exdir, recursive = T, force = T)
 
   }
 
   if(.delete_source) {
-    # unlink(rcls_files, recursive = T, force = T)
+    unlink(rclf_files, recursive = T, force = T)
   }
 
   return(unlist(users))

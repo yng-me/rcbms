@@ -49,7 +49,7 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
   }
 
   if(.delete_source) {
-    # unlink(exdir, recursive = T, force = T)
+    unlink(exdir, recursive = T, force = T)
   }
 
   return(res)
@@ -73,8 +73,6 @@ extract_rcbms_log <- function(.conn, .dir) {
 
   logs_from <- DBI::dbReadTable(.conn, 'logs') |>
     dplyr::filter(status > 0)
-
-  print(logs_from)
 
   if(nrow(logs_from) == 0) return(
     list(
