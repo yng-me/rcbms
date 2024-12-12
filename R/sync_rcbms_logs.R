@@ -27,28 +27,30 @@ sync_rcbms_logs <- function(
     full.names = T
   )
 
-  if(length(rclf_files) == 0) {
-    return(NULL)
-  }
-
   users <- list()
+
+  if(length(rclf_files) == 0) {
+    return(users)
+  }
 
   for(i in seq_along(rclf_files)) {
 
     rclf_i <- rclf_files[i]
     user <- fs::path_ext_remove(basename(rclf_i))
 
-    users <- c(users, user)
-
     exdir <- file.path(.dir_to, .dir_temp)
     zip::unzip(rclf_i, exdir = exdir, overwrite = T)
 
-    import_rcbms_logs(
+    res <- import_rcbms_logs(
       .dir = .dir_to,
       .user_id = .user_id,
       .dir_to = .dir_temp,
       .delete_source = T
     )
+
+    if(length(res) > 0) {
+      users <- c(users, user)
+    }
 
     unlink(exdir, recursive = T, force = T)
 

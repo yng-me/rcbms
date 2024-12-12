@@ -22,11 +22,7 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
     pattern = '(hp|bp|ilq)_rcbms_logs_v.*db$'
   )
 
-  done <- NULL
-  status <- 'empty'
-
   db_dir <- file.path(.dir, 'db', .user_id)
-
   res <- list()
 
   for(i in seq_along(db_logs)) {

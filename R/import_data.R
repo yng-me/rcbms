@@ -39,7 +39,6 @@ import_txt <- function(.path, ...) {
     convert_to_na(.pattern = "^DEFAULT$")
 }
 
-
 import_csv <- function(.path, ...) {
   suppressMessages(
     readr::read_csv(
