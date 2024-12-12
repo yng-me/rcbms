@@ -52,9 +52,3 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
 
 }
 
-
-alter_cv_table <- function() {
-
-}
-
-

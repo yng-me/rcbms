@@ -22,7 +22,20 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
     pattern = '(hp|bp|ilq)_rcbms_logs_v.*db$'
   )
 
+  done <- NULL
+  status <- 'empty'
+
   db_dir <- file.path(.dir, 'db', .user_id)
+
+  backup_dir <- create_new_folder(file.path(.dir, 'backup'))
+
+  file.copy(
+    from = db_dir,
+    to = backup_dir,
+    overwrite = T,
+    recursive = T
+  )
+
   res <- list()
 
   for(i in seq_along(db_logs)) {
@@ -30,14 +43,23 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
     db_log_i <- db_logs[i]
     conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
 
-    if('logs' %in% DBI::dbListTables(conn_i)) {
+    db_name <- basename(db_log_i) |>
+      fs::path_ext_remove() |>
+      stringr::str_extract('^(hp|bp|ilq)')
 
-      db_name <- basename(db_log_i) |>
-        fs::path_ext_remove() |>
-        stringr::str_extract('^(hp|bp|ilq)')
+    if('logs' %in% DBI::dbListTables(conn_i)) {
 
       res[[db_name[[1]]]] <- extract_rcbms_log(conn_i, db_dir)
 
+    } else {
+
+      res[[db_name[[1]]]] <- list(
+        status_code = 0,
+        logs = 0,
+        cv = 0,
+        ts = 0,
+        remarks = 0
+      )
     }
 
     DBI::dbDisconnect(conn_i, force = T)
@@ -48,7 +70,7 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
     unlink(exdir, recursive = T, force = T)
   }
 
-  return(res)
+  return(res |> purrr::discard(is.null))
 
 }
 
@@ -81,26 +103,26 @@ extract_rcbms_log <- function(.conn, .dir) {
   )
 
   db_i <- basename(DBI::dbGetInfo(.conn)$dbname)
-
   input_data <- stringr::str_extract(db_i, '^(hp|bp|ilq)')
 
   db_dir <- rcbms::create_new_folder(.dir)
 
-  conn <- DBI::dbConnect(RSQLite::SQLite(), file.path(db_dir, db_i))
+  conn_to <- DBI::dbConnect(RSQLite::SQLite(), file.path(db_dir, db_i))
 
   uid_cols <- get_uid_cols(input_data)
-  create_db_tables(conn, input_data, uid_cols$uid)
+  create_db_tables(conn_to, input_data, uid_cols$uid)
 
   # logs ---------------
-  logs_to <- DBI::dbReadTable(conn, 'logs') |>
-    dplyr::select(id)
+  logs_to <- DBI::dbReadTable(conn_to, 'logs') |>
+    dplyr::select(id) |>
+    dplyr::tibble()
 
   logs_diff <- logs_from |>
     dplyr::filter(!(id %in% logs_to$id))
 
   if(nrow(logs_diff) == 0) {
 
-    DBI::dbDisconnect(conn, force = T)
+    DBI::dbDisconnect(conn_to, force = T)
 
     return(
       list(
@@ -114,7 +136,7 @@ extract_rcbms_log <- function(.conn, .dir) {
   }
 
   DBI::dbWriteTable(
-    conn,
+    conn_to,
     value = logs_diff |>
       dplyr::mutate(
         id_int = nrow(logs_to) + (1:dplyr::n()),
@@ -140,50 +162,62 @@ extract_rcbms_log <- function(.conn, .dir) {
   # remarks ---------------
   remarks_diff <- DBI::dbReadTable(.conn, 'remarks') |>
     dplyr::filter(status > 0, status < 9) |>
-    dplyr::filter(uuid %in% ts_from$id | uuid %in% cv_from$id)
-
+    dplyr::filter(
+      uuid %in% cv_from$id |
+        uuid %in% ts_from$id |
+        grepl('^[0-9]+$', uuid)
+    )
 
   out_remarks_from <- remarks_diff
-  table_suffix = '_sync_temp'
 
-  if(nrow(cv_from) > 0) {
+  if(nrow(cv_from) > 0 & nrow(remarks_diff) > 0) {
 
     remarks_diff <- import_rcbms_log(
-      .conn = conn,
+      .conn = conn_to,
       .data = cv_from,
-      .remarks = remarks_diff,
+      .remarks = remarks_diff |>
+        dplyr::filter(uuid %in% cv_from$id),
       .table_name = input_cv,
       .by_cv_cols = uid_cols$by_cv_cols,
       .uid = uid_cols$uid,
-      .table_suffix = table_suffix
+      .table_suffix = '_sync'
     )
   }
 
-  if(nrow(ts_from) > 0) {
+  if(nrow(ts_from) > 0 & nrow(remarks_diff) > 0) {
 
     remarks_diff <- import_rcbms_log(
-      .conn = conn,
+      .conn = conn_to,
       .data = ts_from,
-      .remarks = remarks_diff,
+      .remarks = remarks_diff |>
+        dplyr::filter(uuid %in% ts_from$id | grepl('^[0-9]+$', uuid)),
       .table_name = 'ts',
       .by_cv_cols = 'tabulation_id',
       .uid = uid_cols$uid,
-      .table_suffix = table_suffix
+      .table_suffix = '_sync'
     )
   }
 
   # import remaining remarks ---------------
   if(nrow(remarks_diff) > 0) {
 
+    RSQLite::initExtension(con, "regexp")
+    q <- "SELECT * FROM remarks WHERE status > 1 AND status < 9 AND uuid REGEXP '^[0-9]+$';"
+
     DBI::dbWriteTable(
-      conn,
-      value = dplyr::select(remarks_diff, -id),
+      conn_to,
+      value = remarks_diff |>
+        dplyr::anti_join(
+          DBI::dbFetch(DBI::dbSendQuery(conn_to, q)),
+          by = names(remarks_diff)
+        ) |>
+        dplyr::select(-id),
       name = 'remarks',
       append = T
     )
   }
 
-  DBI::dbDisconnect(conn, force = T)
+  DBI::dbDisconnect(conn_to, force = T)
 
   return(
     list(
