@@ -33,7 +33,20 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
   DBI::dbExecute(.conn, glue::glue('ALTER TABLE {.input_data}_cv_temp RENAME TO {.input_data}_cv;'))
 
   DBI::dbExecute(.conn, query$ts)
-  DBI::dbExecute(.conn, 'INSERT OR IGNORE INTO ts_temp SELECT * FROM ts;')
+  DBI::dbExecute(
+    .conn,
+    'INSERT OR IGNORE INTO ts_temp
+    SELECT
+      id,
+      log_id,
+      tabulation_id,
+      summary,
+      info,
+      status,
+      tag_status,
+      updated_at
+    FROM ts;'
+  )
   DBI::dbExecute(.conn, 'DROP TABLE ts;')
   DBI::dbExecute(.conn, 'ALTER TABLE ts_temp RENAME TO ts;')
 
