@@ -7,7 +7,7 @@
 sync_rcbms_logs(
   .dir_to,
   .user_id,
-  .dir_from = "//localhost/webdav/RCBMS Logs",
+  .dir_from,
   .dir_temp = "rclf-temp",
   .delete_source = T
 )

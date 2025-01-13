@@ -54,11 +54,17 @@ list_data_files <- function(.input_data, .references, .config) {
       )
 
     } else {
+
+      recursive <- .config$convert$recursive
+      if(is.null(recursive)) {
+        recursive <- TRUE
+      }
+
       file_list <- list(
         unique = list.files(
           input_data_path,
           pattern = "\\.parquet$",
-          recursive = T
+          recursive = recursive
         ) |>
         dplyr::as_tibble() |>
         dplyr::filter(grepl("\\.parquet$", value, ignore.case = T)) |>

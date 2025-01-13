@@ -1,3 +1,15 @@
+#' Title
+#'
+#' @param .conn
+#' @param .input_data
+#' @param .uid
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
 create_db_tables <- function(.conn, .input_data, .uid) {
 
   query <- create_table_query(.input_data, .uid)
