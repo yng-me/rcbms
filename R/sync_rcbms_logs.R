@@ -21,11 +21,14 @@ sync_rcbms_logs <- function(
 ) {
 
   rclf_files <- list.files(
-    .dir_from,
-    recursive = T,
-    pattern = '\\.rclf',
-    full.names = T
-  )
+      .dir_from,
+      recursive = T,
+      pattern = '\\.rclf',
+      full.names = T
+    ) |>
+    dplyr::as_tibble() |>
+    dplyr::filter(!grepl(.user_id, value)) |>
+    dplyr::pull(value)
 
   files_sync <- list()
 
