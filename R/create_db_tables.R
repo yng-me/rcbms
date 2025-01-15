@@ -43,10 +43,10 @@ create_cv_table <- function(.input_data, .uid, .suffix = '') {
   contact <- ''
   q_unique <- glue::glue("UNIQUE('id', 'log_id', '{.uid}', 'validation_id')")
   q_primary <- glue::glue("PRIMARY KEY('id', 'log_id', '{.uid}', 'validation_id')")
+  contact <- 'contact TEXT,'
 
   if(.input_data == 'hp' | .input_data == 'ilq') {
     line_number <- 'line_number VARCHAR(4),'
-    contact <- 'contact TEXT,'
     q_unique <- glue::glue("UNIQUE('id', 'log_id', '{.uid}', 'validation_id', 'line_number')")
     q_primary <- glue::glue("PRIMARY KEY('id', 'log_id', '{.uid}', 'validation_id', 'line_number')")
   }

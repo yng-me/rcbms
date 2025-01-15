@@ -10,10 +10,46 @@
 #' @examples
 #'
 
-sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
+sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
 
   conn_src <- DBI::dbConnect(RSQLite::SQLite(), db_src)
   conn_des <- DBI::dbConnect(RSQLite::SQLite(), db_des)
+
+
+  log_tables <- DBI::dbListTables(conn_des)
+
+  if(!('logs' %in% log_tables)) {
+    create_db_tables(conn_des, input_data, uid)
+  }
+
+  remarks_fields <- DBI::dbListFields(conn_src, 'remarks')
+
+  if(!('bulk_id' %in% remarks_fields)) {
+    res <- DBI::dbExecute(
+      conn_src,
+      "ALTER TABLE remarks ADD COLUMN bulk_id integer DEFAULT 0;"
+    )
+
+    res <- DBI::dbExecute(
+      conn_src,
+      "UPDATE remarks SET bulk_id = -1 WHERE remarks LIKE '%(bulk update)%' OR remarks LIKE '%(buld update)%';"
+    )
+  }
+
+  remarks_fields <- DBI::dbListFields(conn_des, 'remarks')
+
+  if(!('bulk_id' %in% remarks_fields)) {
+    res <- DBI::dbExecute(
+      conn_des,
+      "ALTER TABLE remarks ADD COLUMN bulk_id integer DEFAULT 0;"
+    )
+
+    res <- DBI::dbExecute(
+      conn_des,
+      "UPDATE remarks SET bulk_id = -1 WHERE remarks LIKE '%(bulk update)%' OR remarks LIKE '%(buld update)%';"
+    )
+  }
+
 
   # logs table ----------------------
   logs_src <- dplyr::tbl(conn_src, 'logs')
@@ -24,12 +60,19 @@ sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
 
   logs_n <- logs_to_copy |>
     dplyr::count() |>
+    dplyr::collect() |>
     dplyr::pull(n)
 
   if(logs_n > 0) {
+
     max_id <- logs_des |>
       dplyr::summarise(max = max(id_int, na.rm = T)) |>
+      dplyr::collect() |>
       dplyr::pull(max)
+
+    if(is.na(max_id)) {
+      max_id <- 0
+    }
 
     DBI::dbAppendTable(
       conn_des,
@@ -84,6 +127,7 @@ sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
 
   ts_n <- ts_to_copy |>
     dplyr::count() |>
+    dplyr::collect() |>
     dplyr::pull(n)
 
   if(ts_n > 0) {
@@ -96,6 +140,7 @@ sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
 
   # remarks table ----------------------
   remarks_src <- dplyr::tbl(conn_src, 'remarks')
+
   remarks_des <- dplyr::tbl(conn_des, 'remarks')
 
   remarks_to_copy <- remarks_src |>
@@ -106,8 +151,9 @@ sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
         'user_id',
         'remarks',
         'status',
+        'role',
+        'tag_status',
         'created_at',
-        'updated_at',
         'bulk_id'
       ),
       copy = TRUE
@@ -115,6 +161,7 @@ sync_logs_from_src_to_des <- function(input_data, db_src, db_des) {
 
   remarks_n <- remarks_to_copy |>
     dplyr::count() |>
+    dplyr::collect() |>
     dplyr::pull(n)
 
   if(remarks_n > 0) {

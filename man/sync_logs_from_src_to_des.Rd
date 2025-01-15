@@ -4,7 +4,7 @@
 \alias{sync_logs_from_src_to_des}
 \title{Title}
 \usage{
-sync_logs_from_src_to_des(input_data, db_src, db_des)
+sync_logs_from_src_to_des(input_data, uid, db_src, db_des)
 }
 \arguments{
 \item{db_des}{}
