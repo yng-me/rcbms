@@ -265,22 +265,46 @@ save_current_logs <- function(
     if(!is.null(.data)) {
 
       db_data_to_store <- db_data_to_store |>
-        dplyr::mutate(log_id = log_id, status = 0L)
+        dplyr::mutate(
+          log_id = log_id,
+          status = 0L
+        )
 
       if (db_table_name %in% .tables) {
 
         cv_logs_with_remarks <- dplyr::tbl(.conn, db_table_name) |>
           dplyr::filter(status != 0L, status != -1L) |>
-          dplyr::mutate(old_uuid = id) |>
           dplyr::select(
-            old_uuid,
-            status,
+            uuid = id,
+            last_status = status,
             dplyr::any_of(by_cv_cols)
           ) |>
-          dplyr::distinct() |>
-          dplyr::collect()
+          dplyr::full_join(
+            dplyr::tbl(.conn, 'remarks') |>
+              dplyr::filter(status != 0L, status != -1L) |>
+              dplyr::select(
+                uuid,
+                created_at,
+                status
+              ),
+            by = 'uuid'
+          ) |>
+          dplyr::filter(status != 0 & is.na(status))
 
         if (nrow(cv_logs_with_remarks) > 0) {
+
+          cv_logs_with_remarks <- cv_logs_with_remarks |>
+            dplyr::arrange(uuid, dplyr::desc(created_at)) |>
+            dplyr::collect() |>
+            dplyr::group_by(dplyr::pick(dplyr::any_of(by_cv_cols))) |>
+            tidyr::nest() |>
+            dplyr::mutate(
+              data = purrr::map(data, function(x) {
+                x |> head(1) |> dplyr::select(status, old_uuid = uuid)
+              })
+            ) |>
+            tidyr::unnest(data)
+
           db_data_to_store <- db_data_to_store |>
             dplyr::select(-status) |>
             dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
@@ -289,6 +313,90 @@ save_current_logs <- function(
               status = dplyr::if_else(is.na(status), 0L, as.integer(status))
             ) |>
             dplyr::select(-dplyr::any_of("old_uuid"))
+
+          if(.config$db$harmonize_tables & (mode == 'validation' | mode == 'cv')) {
+
+            harmonize_table <- function(.df) {
+
+              if(.input_data != 'bp') {
+
+                .df |>
+                  dplyr::add_count(validation_id, case_id, line_number, name = 'm') |>
+                  dplyr::add_count(validation_id, case_id, line_number, uuid) |>
+                  dplyr::filter(n != m) |>
+                  dplyr::arrange(uuid, dplyr::desc(created_at)) |>
+                  dplyr::collect() |>
+                  dplyr::select(-created_at) |>
+                  dplyr::group_by(validation_id, case_id, line_number)
+
+              } else {
+
+                .df |>
+                  dplyr::add_count(validation_id, barangay_geo, name = 'm') |>
+                  dplyr::add_count(validation_id, barangay_geo, uuid) |>
+                  dplyr::filter(n != m) |>
+                  dplyr::arrange(uuid, dplyr::desc(created_at)) |>
+                  dplyr::collect() |>
+                  dplyr::select(-created_at) |>
+                  dplyr::group_by(validation_id, barangay_geo)
+
+              }
+            }
+
+            uuid_to_update <- dplyr::tbl(.conn, db_table_name) |>
+              dplyr::filter(status != 0L, status != -1L) |>
+              dplyr::select(
+                uuid = id,
+                last_status = status,
+                dplyr::any_of(by_cv_cols)
+              ) |>
+              dplyr::full_join(
+                dplyr::tbl(.conn, 'remarks') |>
+                  dplyr::filter(status != 0L, status != -1L) |>
+                  dplyr::select(
+                    uuid,
+                    created_at,
+                    status
+                  ),
+                by = 'uuid'
+              ) |>
+              dplyr::filter(status != 0) |>
+              harmonize_table() |>
+              tidyr::nest() |>
+              dplyr::mutate(
+                data = purrr::map(data, function(x) {
+                  first_id <- x$uuid[1]
+                  x |>
+                    dplyr::transmute(
+                      uuid_old = uuid,
+                      uuid_new = first_id,
+                      status,
+                      last_status
+                    )
+                })
+              ) |>
+              tidyr::unnest(data) |>
+              dplyr::filter(last_status != status & uuid_new != uuid_old)
+
+
+            for(k in seq_along(uuid_to_update$uuid_old)) {
+
+              updated_status <- uuid_to_update$status[k]
+              uuid_new <- uuid_to_update$uuid_new[k]
+              uuid_old <- uuid_to_update$uuid_old[k]
+
+              DBI::dbExecute(
+                .conn,
+                glue::glue("UPDATE {db_table_name} SET id = '{uuid_new}', status = {updated_status} WHERE id = '{uuid_old}';")
+              )
+
+              DBI::dbExecute(
+                .conn,
+                glue::glue("UPDATE remarks SET id = '{uuid_new}' WHERE id = '{uuid_old}';")
+              )
+            }
+          }
+
         }
       }
 
