@@ -289,13 +289,16 @@ save_current_logs <- function(
               ),
             by = 'uuid'
           ) |>
-          dplyr::filter(status != 0 & is.na(status))
+          dplyr::filter(status != 0 & !is.na(status)) |>
+          dplyr::arrange(uuid, dplyr::desc(created_at)) |>
+          dplyr::collect()
+
+        print('1 -----------')
+        print(cv_logs_with_remarks)
 
         if (nrow(cv_logs_with_remarks) > 0) {
 
           cv_logs_with_remarks <- cv_logs_with_remarks |>
-            dplyr::arrange(uuid, dplyr::desc(created_at)) |>
-            dplyr::collect() |>
             dplyr::group_by(dplyr::pick(dplyr::any_of(by_cv_cols))) |>
             tidyr::nest() |>
             dplyr::mutate(
@@ -305,6 +308,9 @@ save_current_logs <- function(
             ) |>
             tidyr::unnest(data)
 
+          print('2 -----------')
+          print(cv_logs_with_remarks)
+
           db_data_to_store <- db_data_to_store |>
             dplyr::select(-status) |>
             dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
@@ -313,6 +319,10 @@ save_current_logs <- function(
               status = dplyr::if_else(is.na(status), 0L, as.integer(status))
             ) |>
             dplyr::select(-dplyr::any_of("old_uuid"))
+
+
+          print('3 -----------')
+          print(db_data_to_store)
 
           if(.config$db$harmonize_tables & (mode == 'validation' | mode == 'cv')) {
 
@@ -374,29 +384,33 @@ save_current_logs <- function(
                       last_status
                     )
                 })
-              ) |>
-              tidyr::unnest(data) |>
-              dplyr::filter(last_status != status & uuid_new != uuid_old)
-
-
-            for(k in seq_along(uuid_to_update$uuid_old)) {
-
-              updated_status <- uuid_to_update$status[k]
-              uuid_new <- uuid_to_update$uuid_new[k]
-              uuid_old <- uuid_to_update$uuid_old[k]
-
-              DBI::dbExecute(
-                .conn,
-                glue::glue("UPDATE {db_table_name} SET id = '{uuid_new}', status = {updated_status} WHERE id = '{uuid_old}';")
               )
 
-              DBI::dbExecute(
-                .conn,
-                glue::glue("UPDATE remarks SET id = '{uuid_new}' WHERE id = '{uuid_old}';")
-              )
+            if(nrow(uuid_to_update) > 0) {
+
+              uuid_to_update <- uuid_to_update |>
+                tidyr::unnest(data) |>
+                dplyr::ungroup() |>
+                dplyr::filter(last_status != status, uuid_new != uuid_old)
+
+                for(k in seq_along(uuid_to_update$uuid_old)) {
+
+                  updated_status <- uuid_to_update$status[k]
+                  uuid_new <- uuid_to_update$uuid_new[k]
+                  uuid_old <- uuid_to_update$uuid_old[k]
+
+                  DBI::dbExecute(
+                    .conn,
+                    glue::glue("UPDATE {db_table_name} SET id = '{uuid_new}', status = {updated_status} WHERE id = '{uuid_old}';")
+                  )
+
+                  DBI::dbExecute(
+                    .conn,
+                    glue::glue("UPDATE remarks SET id = '{uuid_new}' WHERE id = '{uuid_old}';")
+                  )
+                }
+              }
             }
-          }
-
         }
       }
 
