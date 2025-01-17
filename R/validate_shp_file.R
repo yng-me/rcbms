@@ -94,8 +94,17 @@ import_shp_file <- function(.shp_files, .references, .config, .file_formats = 's
     ) |>
     dplyr::left_join(
       .references$area_name_new |>
-        dplyr::distinct(region_code, province_code),
-      by = 'province_code',
+        dplyr::distinct(
+          province_code,
+          city_mun_code,
+          barangay_code,
+          region_code,
+          region,
+          province,
+          city_mun,
+          barangay
+        ),
+      by = c('province_code', 'city_mun_code', 'barangay_code'),
       multiple = 'first'
     ) |>
     sort_variable_names('shp', .config) |>

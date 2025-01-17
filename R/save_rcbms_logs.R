@@ -269,12 +269,16 @@ save_current_logs <- function(
 
       if (db_table_name %in% .tables) {
 
-        cv_logs_with_remarks <- DBI::dbReadTable(.conn, db_table_name) |>
-          dplyr::tibble() |>
-          dplyr::filter(as.integer(status) != 0) |>
-          dplyr::mutate(status = as.integer(status)) |>
+        cv_logs_with_remarks <- dplyr::tbl(.conn, db_table_name) |>
+          dplyr::filter(status != 0L, status != -1L) |>
           dplyr::mutate(old_uuid = id) |>
-          dplyr::select(old_uuid, status, dplyr::any_of(by_cv_cols))
+          dplyr::select(
+            old_uuid,
+            status,
+            dplyr::any_of(by_cv_cols)
+          ) |>
+          dplyr::distinct() |>
+          dplyr::collect()
 
         if (nrow(cv_logs_with_remarks) > 0) {
           db_data_to_store <- db_data_to_store |>
@@ -288,11 +292,10 @@ save_current_logs <- function(
         }
       }
 
-      DBI::dbWriteTable(
+      DBI::dbAppendTable(
         conn = .conn,
         name = db_table_name,
-        value = db_data_to_store,
-        append = TRUE
+        value = db_data_to_store
       )
     }
   }
