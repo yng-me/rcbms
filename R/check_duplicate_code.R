@@ -68,6 +68,7 @@ check_duplicate_code <- function(
       dplyr::any_of(c("line_number", line_number_var, .included_cols)),
       {{.var}}
     ) |>
+    dplyr::collect() |>
     dplyr::add_count(case_id, ...) |>
     dplyr::filter(n > 1) |>
     dplyr::select(-n) |>
