@@ -270,33 +270,35 @@ save_current_logs <- function(
           status = 0L
         )
 
-      if (db_table_name %in% .tables) {
+      if(db_table_name %in% .tables) {
 
         cv_logs_with_remarks <- dplyr::tbl(.conn, db_table_name) |>
-          dplyr::filter(status != 0L, status != -1L) |>
+          dplyr::filter(status > 1 & status < 9) |>
           dplyr::select(
             uuid = id,
             last_status = status,
             dplyr::any_of(by_cv_cols)
           ) |>
+          dplyr::collect() |>
           dplyr::full_join(
             dplyr::tbl(.conn, 'remarks') |>
-              dplyr::filter(status != 0L, status != -1L) |>
+              dplyr::filter(status > 1 & status < 9) |>
               dplyr::select(
                 uuid,
                 created_at,
                 status
-              ),
-            by = 'uuid'
+              ) |>
+              dplyr::collect(),
+            by = 'uuid',
+            relationship = "many-to-many"
           ) |>
           dplyr::filter(status != 0 & !is.na(status)) |>
-          dplyr::arrange(uuid, dplyr::desc(created_at)) |>
-          dplyr::collect()
+          dplyr::arrange(uuid, dplyr::desc(created_at))
 
         print('1 -----------')
         print(cv_logs_with_remarks)
 
-        if (nrow(cv_logs_with_remarks) > 0) {
+        if(nrow(cv_logs_with_remarks) > 0) {
 
           cv_logs_with_remarks <- cv_logs_with_remarks |>
             dplyr::group_by(dplyr::pick(dplyr::any_of(by_cv_cols))) |>
@@ -335,7 +337,6 @@ save_current_logs <- function(
                   dplyr::add_count(validation_id, case_id, line_number, uuid) |>
                   dplyr::filter(n != m) |>
                   dplyr::arrange(uuid, dplyr::desc(created_at)) |>
-                  dplyr::collect() |>
                   dplyr::select(-created_at) |>
                   dplyr::group_by(validation_id, case_id, line_number)
 
@@ -346,7 +347,6 @@ save_current_logs <- function(
                   dplyr::add_count(validation_id, barangay_geo, uuid) |>
                   dplyr::filter(n != m) |>
                   dplyr::arrange(uuid, dplyr::desc(created_at)) |>
-                  dplyr::collect() |>
                   dplyr::select(-created_at) |>
                   dplyr::group_by(validation_id, barangay_geo)
 
@@ -354,25 +354,29 @@ save_current_logs <- function(
             }
 
             uuid_to_update <- dplyr::tbl(.conn, db_table_name) |>
-              dplyr::filter(status != 0L, status != -1L) |>
+              dplyr::filter(status > 1 & status < 9) |>
               dplyr::select(
                 uuid = id,
                 last_status = status,
                 dplyr::any_of(by_cv_cols)
               ) |>
+              dplyr::collect() |>
               dplyr::full_join(
                 dplyr::tbl(.conn, 'remarks') |>
-                  dplyr::filter(status != 0L, status != -1L) |>
+                  dplyr::filter(status > 1 & status < 9) |>
                   dplyr::select(
                     uuid,
                     created_at,
                     status
-                  ),
-                by = 'uuid'
+                  ) |>
+                  dplyr::collect(),
+                by = 'uuid',
+                relationship = "many-to-many"
               ) |>
-              dplyr::filter(status != 0) |>
+              dplyr::filter(status != 0 & !is.na(status)) |>
               harmonize_table() |>
               tidyr::nest() |>
+              dplyr::filter(!is.na(!!as.name(uid))) |>
               dplyr::mutate(
                 data = purrr::map(data, function(x) {
                   first_id <- x$uuid[1]

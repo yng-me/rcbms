@@ -59,8 +59,8 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
     dplyr::anti_join(logs_des, by = 'id', copy = TRUE)
 
   logs_n <- logs_to_copy |>
-    dplyr::count() |>
     dplyr::collect() |>
+    dplyr::count() |>
     dplyr::pull(n)
 
   if(logs_n > 0) {
@@ -81,98 +81,97 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
         dplyr::mutate(id_int = dplyr::row_number() + max_id) |>
         dplyr::collect()
     )
-  }
 
-  # cv table ----------------------
-  cv_table <- glue::glue('{input_data}_cv')
-  cv_src <- dplyr::tbl(conn_src, cv_table)
-  cv_des <- dplyr::tbl(conn_des, cv_table)
-  log_ids <- c()
+    # cv table ----------------------
+    cv_table <- glue::glue('{input_data}_cv')
+    cv_src <- dplyr::tbl(conn_src, cv_table)
+    cv_des <- dplyr::tbl(conn_des, cv_table)
+    log_ids <- c()
 
-  if(logs_n > 0) {
     log_ids <- dplyr::pull(logs_to_copy, id)
-    if(length(log_ids) > 0) {
-      cv_src <- cv_src |>
+
+    cv_src <- cv_src |>
+      dplyr::filter(log_id %in% log_ids)
+
+    cv_to_copy <- cv_src |>
+      dplyr::collect() |>
+      dplyr::anti_join(cv_des |> dplyr::collect(), by = 'id', copy = TRUE)
+
+    cv_n <- cv_to_copy |>
+      dplyr::count() |>
+      dplyr::pull(n)
+
+    if(cv_n > 0) {
+      DBI::dbAppendTable(
+        conn_des,
+        name = cv_table,
+        value = dplyr::collect(cv_to_copy)
+      )
+    }
+
+    # ts table --------------------------
+    ts_src <- dplyr::tbl(conn_src, 'ts')
+    ts_des <- dplyr::tbl(conn_des, 'ts')
+
+    if(logs_n > 0 & length(log_ids) > 0) {
+      ts_src <- ts_src |>
         dplyr::filter(log_id %in% log_ids)
     }
-  }
 
-  cv_to_copy <- cv_src |>
-    dplyr::anti_join(cv_des, by = 'id', copy = TRUE)
+    ts_to_copy <- ts_src |>
+      dplyr::collect() |>
+      dplyr::anti_join(ts_des |> dplyr::collect(), by = 'id', copy = TRUE)
 
-  cv_n <- cv_to_copy |>
-    dplyr::count() |>
-    dplyr::pull(n)
+    ts_n <- ts_to_copy |>
+      dplyr::collect() |>
+      dplyr::count() |>
+      dplyr::pull(n)
 
-  if(cv_n > 0) {
-    DBI::dbAppendTable(
-      conn_des,
-      name = cv_table,
-      value = dplyr::collect(cv_to_copy)
-    )
-  }
+    if(ts_n > 0) {
+      DBI::dbAppendTable(
+        conn_des,
+        name = 'ts',
+        value = dplyr::collect(ts_to_copy)
+      )
+    }
 
+    # remarks table ----------------------
+    remarks_src <- dplyr::tbl(conn_src, 'remarks')
+    remarks_des <- dplyr::tbl(conn_des, 'remarks')
 
-  # ts table --------------------------
-  ts_src <- dplyr::tbl(conn_src, 'ts')
-  ts_des <- dplyr::tbl(conn_des, 'ts')
+    remarks_to_copy <- remarks_src |>
+      dplyr::collect() |>
+      dplyr::anti_join(
+        remarks_des |> dplyr::collect(),
+        by = c(
+          'uuid',
+          'user_id',
+          'remarks',
+          'status',
+          'role',
+          'tag_status',
+          'created_at',
+          'bulk_id'
+        ),
+        copy = TRUE
+      )
 
-  if(logs_n > 0 & length(log_ids) > 0) {
-    ts_src <- ts_src |>
-      dplyr::filter(log_id %in% log_ids)
-  }
+    remarks_n <- remarks_to_copy |>
+      dplyr::collect() |>
+      dplyr::count() |>
+      dplyr::pull(n)
 
-  ts_to_copy <- ts_src |>
-    dplyr::anti_join(ts_des, by = 'id', copy = TRUE)
+    if(remarks_n > 0) {
 
-  ts_n <- ts_to_copy |>
-    dplyr::count() |>
-    dplyr::collect() |>
-    dplyr::pull(n)
+      DBI::dbAppendTable(
+        conn_des,
+        name = 'remarks',
+        value = remarks_to_copy |>
+          dplyr::select(-id) |>
+          dplyr::collect()
+      )
+    }
 
-  if(ts_n > 0) {
-    DBI::dbAppendTable(
-      conn_des,
-      name = 'ts',
-      value = dplyr::collect(ts_to_copy)
-    )
-  }
-
-  # remarks table ----------------------
-  remarks_src <- dplyr::tbl(conn_src, 'remarks')
-
-  remarks_des <- dplyr::tbl(conn_des, 'remarks')
-
-  remarks_to_copy <- remarks_src |>
-    dplyr::anti_join(
-      remarks_des,
-      by = c(
-        'uuid',
-        'user_id',
-        'remarks',
-        'status',
-        'role',
-        'tag_status',
-        'created_at',
-        'bulk_id'
-      ),
-      copy = TRUE
-    )
-
-  remarks_n <- remarks_to_copy |>
-    dplyr::count() |>
-    dplyr::collect() |>
-    dplyr::pull(n)
-
-  if(remarks_n > 0) {
-
-    DBI::dbAppendTable(
-      conn_des,
-      name = 'remarks',
-      value = remarks_to_copy |>
-        dplyr::select(-id) |>
-        dplyr::collect()
-    )
   }
 
   DBI::dbDisconnect(conn_src, force = T)
