@@ -50,18 +50,72 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
     )
   }
 
+  logs_n <- 0
+  cv_n <- 0
+  ts_n <- 0
+  remarks_n <- 0
 
   # logs table ----------------------
   logs_src <- dplyr::tbl(conn_src, 'logs')
   logs_des <- dplyr::tbl(conn_des, 'logs')
 
   logs_to_copy <- logs_src |>
-    dplyr::anti_join(logs_des, by = 'id', copy = TRUE)
-
-  logs_n <- logs_to_copy |>
     dplyr::collect() |>
-    dplyr::count() |>
-    dplyr::pull(n)
+    dplyr::mutate(
+      created_at = created_at |>
+        lubridate::as_datetime() |>
+        as.character(),
+      updated_at = updated_at |>
+        lubridate::as_datetime() |>
+        as.character(),
+      verified_at = dplyr::if_else(
+        grepl('[a-zA-Z]', verified_at),
+        verified_at |>
+          stringr::str_remove('.*[a-zA-Z]{3}') |>
+          stringr::str_remove('GTM.*$') |>
+          stringr::str_trim() |>
+          lubridate::mdy_hms() |>
+          as.character(),
+        verified_at |>
+          lubridate::as_datetime() |>
+          as.character()
+      ),
+      validated_at = validated_at |>
+        lubridate::as_datetime() |>
+        as.character()
+    ) |>
+    dplyr::anti_join(
+      logs_des |>
+        dplyr::collect() |>
+        dplyr::mutate(
+          created_at = created_at |>
+            lubridate::as_datetime() |>
+            as.character(),
+          updated_at = updated_at |>
+            lubridate::as_datetime() |>
+            as.character(),
+          verified_at = dplyr::if_else(
+            grepl('[a-zA-Z]', verified_at),
+            verified_at |>
+              stringr::str_remove('.*[a-zA-Z]{3}') |>
+              stringr::str_remove('GTM.*$') |>
+              stringr::str_trim() |>
+              lubridate::mdy_hms() |>
+              as.character(),
+            verified_at |>
+              lubridate::as_datetime() |>
+              as.character()
+          ),
+          validated_at = validated_at |>
+            lubridate::as_datetime() |>
+            as.character()
+        ),
+      by = 'id',
+      copy = TRUE
+    ) |>
+    suppressWarnings()
+
+  logs_n <- nrow(logs_to_copy)
 
   if(logs_n > 0) {
 
@@ -78,15 +132,13 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
       conn_des,
       name = 'logs',
       value = logs_to_copy |>
-        dplyr::mutate(id_int = dplyr::row_number() + max_id) |>
-        dplyr::collect()
+        dplyr::mutate(id_int = dplyr::row_number() + max_id)
     )
 
     # cv table ----------------------
     cv_table <- glue::glue('{input_data}_cv')
     cv_src <- dplyr::tbl(conn_src, cv_table)
     cv_des <- dplyr::tbl(conn_des, cv_table)
-    log_ids <- c()
 
     log_ids <- dplyr::pull(logs_to_copy, id)
 
@@ -95,17 +147,37 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
 
     cv_to_copy <- cv_src |>
       dplyr::collect() |>
-      dplyr::anti_join(cv_des |> dplyr::collect(), by = 'id', copy = TRUE)
+      dplyr::mutate(
+        tag_status = tag_status |>
+          lubridate::as_datetime() |>
+          as.character(),
+        updated_at = updated_at |>
+          lubridate::as_datetime() |>
+          as.character()
+      ) |>
+      dplyr::anti_join(
+        cv_des |>
+          dplyr::collect() |>
+          dplyr::mutate(
+            tag_status = tag_status |>
+              lubridate::as_datetime() |>
+              as.character(),
+            updated_at = updated_at |>
+              lubridate::as_datetime() |>
+              as.character()
+          ),
+        by = 'id',
+        copy = TRUE
+      ) |>
+      suppressWarnings()
 
-    cv_n <- cv_to_copy |>
-      dplyr::count() |>
-      dplyr::pull(n)
+    cv_n <- nrow(cv_to_copy)
 
     if(cv_n > 0) {
       DBI::dbAppendTable(
         conn_des,
         name = cv_table,
-        value = dplyr::collect(cv_to_copy)
+        value = cv_to_copy
       )
     }
 
@@ -113,25 +185,41 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
     ts_src <- dplyr::tbl(conn_src, 'ts')
     ts_des <- dplyr::tbl(conn_des, 'ts')
 
-    if(logs_n > 0 & length(log_ids) > 0) {
-      ts_src <- ts_src |>
-        dplyr::filter(log_id %in% log_ids)
-    }
+    ts_src <- ts_src |>
+      dplyr::filter(log_id %in% log_ids)
 
     ts_to_copy <- ts_src |>
       dplyr::collect() |>
-      dplyr::anti_join(ts_des |> dplyr::collect(), by = 'id', copy = TRUE)
+      dplyr::mutate(
+        tag_status = tag_status |>
+          lubridate::as_datetime() |>
+          as.character(),
+        updated_at = updated_at |>
+          lubridate::as_datetime() |>
+          as.character()
+      ) |>
+      dplyr::anti_join(
+        ts_des |>
+          dplyr::collect() |>
+          dplyr::mutate(
+            tag_status = tag_status |>
+              lubridate::as_datetime() |>
+              as.character(),
+            updated_at = updated_at |>
+              lubridate::as_datetime() |>
+              as.character()
+          ),
+        by = 'id',
+        copy = TRUE
+      )
 
-    ts_n <- ts_to_copy |>
-      dplyr::collect() |>
-      dplyr::count() |>
-      dplyr::pull(n)
+    ts_n <- nrow(ts_to_copy)
 
     if(ts_n > 0) {
       DBI::dbAppendTable(
         conn_des,
         name = 'ts',
-        value = dplyr::collect(ts_to_copy)
+        value = ts_to_copy
       )
     }
 
@@ -141,8 +229,31 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
 
     remarks_to_copy <- remarks_src |>
       dplyr::collect() |>
+      dplyr::mutate(
+        tag_status = tag_status |>
+          lubridate::as_datetime() |>
+          as.character(),
+        updated_at = updated_at |>
+          lubridate::as_datetime() |>
+          as.character(),
+        created_at = created_at |>
+          lubridate::as_datetime() |>
+          as.character()
+      ) |>
       dplyr::anti_join(
-        remarks_des |> dplyr::collect(),
+        remarks_des |>
+          dplyr::collect() |>
+          dplyr::mutate(
+            tag_status = tag_status |>
+              lubridate::as_datetime() |>
+              as.character(),
+            updated_at = updated_at |>
+              lubridate::as_datetime() |>
+              as.character(),
+            created_at = created_at |>
+              lubridate::as_datetime() |>
+              as.character()
+          ),
         by = c(
           'uuid',
           'user_id',
@@ -156,10 +267,7 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
         copy = TRUE
       )
 
-    remarks_n <- remarks_to_copy |>
-      dplyr::collect() |>
-      dplyr::count() |>
-      dplyr::pull(n)
+    remarks_n <- nrow(remarks_to_copy)
 
     if(remarks_n > 0) {
 

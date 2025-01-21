@@ -22,10 +22,13 @@ create_rcbms_db <- function(path, input_data_list = c('hp', 'bp', 'ilq'), versio
 
     rcbms::create_db_tables(conn, input_data, uid)
 
-    res <- DBI::dbExecute(
-      conn,
-      "ALTER TABLE remarks ADD COLUMN bulk_id integer DEFAULT 0;"
-    )
+
+    if(!('bulk_id' %in% DBI::dbListFields(conn, 'remarks'))) {
+      DBI::dbExecute(
+        conn,
+        "ALTER TABLE remarks ADD COLUMN bulk_id integer DEFAULT 0;"
+      )
+    }
 
     DBI::dbDisconnect(conn, force = T)
 
