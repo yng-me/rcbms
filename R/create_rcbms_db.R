@@ -14,6 +14,8 @@ create_rcbms_db <- function(path, input_data_list = c('hp', 'bp', 'ilq'), versio
 
   for(i in seq_along(input_data_list)) {
 
+    create_new_folder(path)
+
     input_data <- input_data_list[i]
     db <- file.path(path, glue::glue("{input_data}_rcbms_logs_v{version}.db"))
     conn <- DBI::dbConnect(RSQLite::SQLite(), db)
