@@ -25,9 +25,7 @@ read_signature_files <- function(
   )
 ) {
 
-  match_file_name <- paste0('^\\d{', nchar(.area_code), '}')
   format <- paste0('\\.(', paste0(.formats, collapse = '|'), ')$')
-  file_formats <- paste0(.area_code, '.*\\.(', paste0(.formats, collapse = '|'), ')$')
 
   path <- .dir
 
@@ -45,7 +43,7 @@ read_signature_files <- function(
       list.files(
         path,
         full.names = T,
-        pattern = file_formats,
+        pattern = format,
         ignore.case = T,
         recursive = T
       )
