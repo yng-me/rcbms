@@ -15,7 +15,12 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
   conn_src <- DBI::dbConnect(RSQLite::SQLite(), db_src)
   conn_des <- DBI::dbConnect(RSQLite::SQLite(), db_des)
 
+  log_tables_src <- DBI::dbListTables(conn_src)
   log_tables <- DBI::dbListTables(conn_des)
+
+  if(!('logs' %in% log_tables_src)) {
+    create_db_tables(conn_src, input_data, uid)
+  }
 
   if(!('logs' %in% log_tables)) {
     create_db_tables(conn_des, input_data, uid)
