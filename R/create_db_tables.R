@@ -164,6 +164,7 @@ create_table_query <- function(.input_data, .uid, .suffix = '') {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       tag_status DATETIME DEFAULT NULL,
       updated_at DATETIME DEFAULT NULL,
+      bulk_id INTEGER DEFAULT 0,
       FOREIGN KEY('uuid') REFERENCES {.input_data}_cv('id'),
       FOREIGN KEY('uuid') REFERENCES ts('id')
     );
