@@ -41,8 +41,10 @@ check_age_gap <- function(
     dplyr::mutate(line_number = as.integer(line_number)) |>
     dplyr::left_join(
       .data |>
+        dplyr::mutate(line_number = as.integer(line_number)) |>
         dplyr::filter(!!as.name(rel_var) == .relation_to_primary_member) |>
-        dplyr::select(case_id, dplyr::any_of(cols)),
+        dplyr::select(case_id, dplyr::any_of(cols)) |>
+        dplyr::collect(),
       by = 'case_id',
       suffix = c(primary_member, relation_to_primary_member)
     ) |>
