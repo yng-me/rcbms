@@ -1,7 +1,13 @@
 alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms.config')) {
 
   indexes <- DBI::dbGetQuery(.conn, "PRAGMA index_list('logs');")
-  if(nrow(indexes) > 1) return(invisible(NULL))
+  if(nrow(indexes) > 1 & 'name' %in% names(indexes)) {
+
+    log_id_index <- indexes$name[indexes$name == 'log_id_index']
+    if(length(log_id_index) > 0) {
+      return(invisible(NULL))
+    }
+  }
 
   db_name <- DBI::dbGetInfo(.conn)$dbname
 

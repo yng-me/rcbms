@@ -205,7 +205,7 @@ save_current_logs <- function(
     number_of_ea_processed <- 1
   }
 
-  log_saved <- DBI::dbWriteTable(
+  log_saved <- DBI::dbAppendTable(
     conn = .conn,
     name = "logs",
     value = dplyr::tibble(
@@ -244,8 +244,7 @@ save_current_logs <- function(
       pc_hardware = pc[["machine"]],
       pc_pid = Sys.getpid(),
       duration = 0
-    ),
-    append = TRUE
+    )
   )
 
   if (log_saved) {
@@ -295,9 +294,6 @@ save_current_logs <- function(
           dplyr::filter(status != 0 & !is.na(status)) |>
           dplyr::arrange(uuid, dplyr::desc(created_at))
 
-        print('1 -----------')
-        print(cv_logs_with_remarks)
-
         if(nrow(cv_logs_with_remarks) > 0) {
 
           cv_logs_with_remarks <- cv_logs_with_remarks |>
@@ -310,9 +306,6 @@ save_current_logs <- function(
             ) |>
             tidyr::unnest(data)
 
-          print('2 -----------')
-          print(cv_logs_with_remarks)
-
           db_data_to_store <- db_data_to_store |>
             dplyr::select(-status) |>
             dplyr::left_join(cv_logs_with_remarks, by = by_cv_cols, multiple = "first") |>
@@ -322,9 +315,6 @@ save_current_logs <- function(
             ) |>
             dplyr::select(-dplyr::any_of("old_uuid"))
 
-
-          print('3 -----------')
-          print(db_data_to_store)
 
           if(.config$db$harmonize_tables & (mode == 'validation' | mode == 'cv')) {
 
