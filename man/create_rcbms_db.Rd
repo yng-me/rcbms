@@ -4,10 +4,10 @@
 \alias{create_rcbms_db}
 \title{Title}
 \usage{
-create_rcbms_db(path)
+create_rcbms_db(path, input_data_list = c("hp", "bp", "ilq"), version = 3)
 }
 \arguments{
-\item{path}{}
+\item{version}{}
 }
 \description{
 Title

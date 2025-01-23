@@ -41,29 +41,21 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
   for(i in seq_along(db_logs)) {
 
     db_log_i <- db_logs[i]
-    conn_i <- DBI::dbConnect(RSQLite::SQLite(), dbname = db_log_i)
 
     db_name <- basename(db_log_i) |>
       fs::path_ext_remove() |>
       stringr::str_extract('^(hp|bp|ilq)')
 
-    if('logs' %in% DBI::dbListTables(conn_i)) {
+    input_data <- db_name[[1]]
+    uid <- 'case_id'
+    if(input_data == 'bp') { uid <- 'barangay_geo' }
 
-      res[[db_name[[1]]]] <- extract_rcbms_log(conn_i, db_dir)
-
-    } else {
-
-      res[[db_name[[1]]]] <- list(
-        status_code = 0,
-        logs = 0,
-        cv = 0,
-        ts = 0,
-        remarks = 0
-      )
-    }
-
-    DBI::dbDisconnect(conn_i, force = T)
-
+    res[[input_data]] <- sync_logs_from_src_to_des(
+      input_data = input_data,
+      uid = uid,
+      db_src = db_log_i,
+      db_des = file.path(db_dir, basename(db_log_i))
+    )
   }
 
   if(.delete_source) {
