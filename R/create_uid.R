@@ -11,7 +11,7 @@
 #' @examples
 create_case_id <- function(
   .data,
-  .filter_completed = TRUE,
+  .filter_completed = FALSE,
   .config = getOption("rcbms.config"),
   .input_data = NULL
 ) {

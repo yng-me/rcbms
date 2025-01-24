@@ -299,3 +299,18 @@ generate_env <- function(mode = 'test') {
     }
   }
 }
+
+
+#' Title
+#'
+#' @param db
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+connect_to_sqlite <- function(db) {
+  DBI::dbConnect(RSQLite::SQLite(), db)
+}

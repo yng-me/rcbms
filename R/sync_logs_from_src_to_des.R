@@ -261,8 +261,11 @@ sync_logs_from_src_to_des <- function(input_data, uid, db_src, db_des) {
   }
 
   # remarks table ----------------------
-  remarks_src <- dplyr::tbl(conn_src, 'remarks')
-  remarks_des <- dplyr::tbl(conn_des, 'remarks')
+  remarks_src <- dplyr::tbl(conn_src, 'remarks') |>
+    dplyr::filter(status >= 1L & status < 9L)
+
+  remarks_des <- dplyr::tbl(conn_des, 'remarks') |>
+    dplyr::filter(status >= 1L & status < 9L)
 
   remarks_to_copy <- remarks_src |>
     dplyr::collect() |>

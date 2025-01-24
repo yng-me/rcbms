@@ -6,7 +6,7 @@
 \usage{
 create_case_id(
   .data,
-  .filter_completed = TRUE,
+  .filter_completed = FALSE,
   .config = getOption("rcbms.config"),
   .input_data = NULL
 )
