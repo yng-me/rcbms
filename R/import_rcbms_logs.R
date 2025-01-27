@@ -46,7 +46,10 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
       fs::path_ext_remove() |>
       stringr::str_extract('^(hp|bp|ilq)')
 
+    if(is.na(db_name)) next
+
     input_data <- db_name[[1]]
+
     uid <- 'case_id'
     if(input_data == 'bp') { uid <- 'barangay_geo' }
 

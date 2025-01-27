@@ -160,7 +160,6 @@ create_table_query <- function(.input_data, .uid, .suffix = '') {
       role VARCHAR(36),
       status TINYINT,
       remarks TEXT,
-      bulk_id INTEGER DEFAULT 0,
       uploaded TINYINT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       tag_status DATETIME DEFAULT NULL,

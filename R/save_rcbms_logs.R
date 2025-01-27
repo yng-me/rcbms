@@ -309,8 +309,18 @@ save_current_logs <- function(
             status >= included_status,
             status < 9L
           ) |>
-          dplyr::select( uuid, created_at, status)
+          dplyr::select(uuid, created_at, status)
 
+        filter_not_missing <- function(.df) {
+
+          if(mode == 'tabulation' | mode == 'ts') {
+            .df |>
+              dplyr::filter(!is.na(status))
+          } else if (uid %in% names(.df)) {
+            .df |>
+              dplyr::filter(!is.na(status), !is.na(!!as.name(uid)))
+          }
+        }
 
         cv_logs_with_remarks_join <- cv_logs_with_remarks_join |>
           dplyr::full_join(
@@ -319,7 +329,7 @@ save_current_logs <- function(
             by = 'uuid',
             relationship = "many-to-many"
           ) |>
-          dplyr::filter(!is.na(status), !is.na(!!as.name(uid))) |>
+          filter_not_missing() |>
           dplyr::arrange(uuid, dplyr::desc(created_at))
 
 
