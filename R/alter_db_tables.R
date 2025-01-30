@@ -22,7 +22,7 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
 
   query <- create_table_query(
     .input_data = .input_data,
-    .uid = 'case_id',
+    .uid = .uid,
     .suffix = '_temp'
   )
 
