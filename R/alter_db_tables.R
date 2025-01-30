@@ -21,7 +21,7 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
   }
 
   query <- create_table_query(
-    .input_data = 'hp',
+    .input_data = .input_data,
     .uid = 'case_id',
     .suffix = '_temp'
   )
