@@ -17,6 +17,7 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
 
       dir_migration <- create_new_folder(file.path("..", "logs", "migration", .config$user_id))
       file.copy(db_name, dir_migration, overwrite = T)
+
     }
   }
 
@@ -32,6 +33,17 @@ alter_db_tables <- function(.conn, .input_data, .uid, .config = getOption('rcbms
   DBI::dbExecute(.conn, 'INSERT INTO logs_temp SELECT * FROM logs;')
   DBI::dbExecute(.conn, 'DROP TABLE logs;')
   DBI::dbExecute(.conn, 'ALTER TABLE logs_temp RENAME TO logs;')
+
+  if(.input_data == 'bp') {
+    bp_cv_fields <- DBI::dbListFields(.conn, glue::glue('{.input_data}_cv'))
+
+    if(!('tag_status' %in% bp_cv_fields)) {
+      DBI::dbExecute(.conn, glue::glue('ALTER TABLE {.input_data}_cv ADD COLUMN tag_status DATETIME DEFAULT NULL'))
+    }
+    if(!('updated_at' %in% bp_cv_fields)) {
+      DBI::dbExecute(.conn, glue::glue('ALTER TABLE {.input_data}_cv ADD COLUMN updated_at DATETIME DEFAULT NULL'))
+    }
+  }
 
   DBI::dbExecute(.conn, query$cv)
   DBI::dbExecute(.conn, glue::glue('INSERT OR IGNORE INTO {.input_data}_cv_temp SELECT * FROM {.input_data}_cv;'))
