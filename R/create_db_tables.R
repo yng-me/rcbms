@@ -46,13 +46,13 @@ create_cv_table <- function(.input_data, .uid, .suffix = '') {
   contact <- 'contact TEXT,'
 
   if(.input_data == 'hp' | .input_data == 'ilq') {
+
     line_number <- 'line_number VARCHAR(4),'
     q_unique <- glue::glue("UNIQUE('id', 'log_id', '{.uid}', 'validation_id', 'line_number')")
     q_primary <- glue::glue("PRIMARY KEY('id', 'log_id', '{.uid}', 'validation_id', 'line_number')")
-  }
 
-  glue::glue(
-    "CREATE TABLE IF NOT EXISTS {.input_data}_cv{.suffix} (
+    glue::glue(
+      "CREATE TABLE IF NOT EXISTS {.input_data}_cv{.suffix} (
         id VARCHAR(36),
         log_id VARCHAR(36),
         {.uid} VARCHAR(36),
@@ -66,7 +66,26 @@ create_cv_table <- function(.input_data, .uid, .suffix = '') {
         FOREIGN KEY('log_id') REFERENCES logs('id'),
         {q_primary}
       );"
-  )
+    )
+
+  } else {
+
+    glue::glue(
+      "CREATE TABLE IF NOT EXISTS {.input_data}_cv{.suffix} (
+          id VARCHAR(36),
+          {.uid} VARCHAR(36),
+          validation_id VARCHAR(128),
+          info TEXT,
+          {contact}
+          log_id VARCHAR(36),
+          status TINYINT,
+          updated_at DATETIME DEFAULT NULL,
+          tag_status DATETIME DEFAULT NULL,
+          FOREIGN KEY('log_id') REFERENCES logs('id'),
+          {q_primary}
+        );"
+    )
+  }
 
 }
 

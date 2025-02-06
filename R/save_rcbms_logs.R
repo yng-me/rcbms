@@ -332,9 +332,8 @@ save_current_logs <- function(
           filter_not_missing() |>
           dplyr::arrange(uuid, dplyr::desc(created_at))
 
-        print('----------')
-        print(cv_logs_with_remarks_join)
 
+        print(cv_logs_with_remarks_join)
 
         if(nrow(cv_logs_with_remarks_join) > 0) {
 
@@ -359,8 +358,6 @@ save_current_logs <- function(
             ) |>
             dplyr::select(-dplyr::any_of("old_uuid"))
 
-          print('----------')
-          print(db_data_to_store)
 
           if(.config$db$harmonize_tables & (mode == 'validation' | mode == 'cv')) {
 
