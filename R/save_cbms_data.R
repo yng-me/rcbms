@@ -85,7 +85,7 @@ save_cbms_data <- function(
     df_temp <- df_temp |>
       dplyr::select(-dplyr::any_of(geo_cols_name)) |>
       create_case_id(.input_data = .input_data) |>
-      create_barangay_geo() |>
+      create_barangay_geo(.add_length = .config$project$add_length) |>
       dplyr::select(
         dplyr::any_of(c(uid, geo_cols, "barangay_geo", final_status_vars)),
         dplyr::everything()
