@@ -223,6 +223,23 @@ get_script_files <- function(.input_data, .section = NULL, .config = getOption("
         ) |>
         dplyr::bind_rows(script_files_final)
     }
+
+
+    include_additional_checks <- .config$validation$include_additional_checks
+    if(is.null(include_additional_checks)) include_additional_checks <- FALSE
+
+    if(.input_data == 'hp' & include_additional_checks) {
+      script_files_final <- script_files_all |>
+        dplyr::filter(
+          grepl(
+            "^_additional",
+            stringr::str_remove(basename(tolower(file)), '\\.(r|R)$')
+          )
+        ) |>
+        dplyr::bind_rows(script_files_final)
+    }
+
+
   }
 
   script_files_final |>

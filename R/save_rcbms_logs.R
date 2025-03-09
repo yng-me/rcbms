@@ -332,9 +332,6 @@ save_current_logs <- function(
           filter_not_missing() |>
           dplyr::arrange(uuid, dplyr::desc(created_at))
 
-
-        print(cv_logs_with_remarks_join)
-
         if(nrow(cv_logs_with_remarks_join) > 0) {
 
           db_data_to_store <- db_data_to_store |>
@@ -398,8 +395,6 @@ save_current_logs <- function(
                     )
                 })
               )
-
-            print(uuid_to_update)
 
             if(nrow(uuid_to_update) > 0) {
 

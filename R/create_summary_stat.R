@@ -94,8 +94,7 @@ create_summary_stat <- function(.input_data, .config) {
                 dplyr::select(age, sex_fct, count, percent) |>
                 tidyr::pivot_wider(
                   names_from = sex_fct,
-                  values_from = c(count, percent),
-                  values_fill = 0
+                  values_from = c(count, percent)
                 ) |>
                 dplyr::left_join(
                   data.frame(

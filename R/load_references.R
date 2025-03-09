@@ -308,10 +308,12 @@ load_validation_refs <- function(.gid) {
     "section",
     "priority_level",
     "status",
-    "date_introduced"
+    "date_introduced",
+    "pmt",
+    "priority_level_sub"
   )
 
-  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccic') |>
+  df <- load_refs_from_gsheet(.gid, required_cols, col_types = 'ccccccicii') |>
     dplyr::filter(status == 1) |>
     dplyr::mutate(type = 1) |>
     dplyr::rename(in_use = status)

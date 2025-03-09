@@ -68,7 +68,7 @@ create_cv_table <- function(.input_data, .uid, .suffix = '') {
       );"
     )
 
-  } else {
+  } else if (.input_data == 'bp') {
 
     glue::glue(
       "CREATE TABLE IF NOT EXISTS {.input_data}_cv{.suffix} (
