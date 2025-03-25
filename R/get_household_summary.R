@@ -23,6 +23,7 @@ get_household_summary <- function(
     .include_overall = T,
     .include_survey_round = T,
     .include_individuals = T,
+    .add_length = 0,
     .config = getOption("rcbms.config")) {
 
   hh_demog_list <- list()
@@ -31,6 +32,8 @@ get_household_summary <- function(
   if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
+
+  pad_width <- 9 + .add_length
 
   compute_hhm_summary <- function(.df, ...) {
     .df |>
@@ -80,6 +83,7 @@ get_household_summary <- function(
     agg_geo <- paste0(agg_labels[level_i], "_geo")
     agg_name <- agg_labels[level_i]
 
+
     df <- .data |>
       compute_hh_summary(!!as.name(agg_geo), !!as.name(agg_name))
 
@@ -93,7 +97,7 @@ get_household_summary <- function(
 
     hh_demog_list[[i]] <- df |>
       rename(area_code = 1, area_name = 2) |>
-      dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0")) |>
+      dplyr::mutate(area_code = stringr::str_pad(area_code, width = pad_width, side = "right", pad = "0")) |>
       dplyr::mutate(level = as.integer(level_i), .after = 2)
   }
 
@@ -106,7 +110,7 @@ get_household_summary <- function(
 
     hh_demog_list[["overall"]] <- df |>
       dplyr::mutate(area_code = "0", area_name = ":GRAND_SUMMARY:", level = 0L, .before = 1) |>
-      dplyr::mutate(area_code = stringr::str_pad(area_code, width = 9, side = "right", pad = "0"))
+      dplyr::mutate(area_code = stringr::str_pad(area_code, width = pad_width, side = "right", pad = "0"))
   }
 
   df_final <- hh_demog_list |>
