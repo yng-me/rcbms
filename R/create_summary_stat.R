@@ -91,6 +91,7 @@ create_summary_stat <- function(.input_data, .config) {
               summary_info$age_group_pivot <- summary_info$age_group |>
                 dplyr::arrange(age) |>
                 dplyr::ungroup() |>
+                dplyr::filter(!is.na(age), !is.na(sex_fct)) |>
                 dplyr::select(age, sex_fct, count, percent) |>
                 tidyr::pivot_wider(
                   names_from = sex_fct,
