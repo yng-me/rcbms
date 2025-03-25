@@ -21,6 +21,7 @@ compute_food_insecurity <- function(
   .valueset = get_config("references")$valueset,
   .extract_name_position = 5,
   .include_overall = FALSE,
+  .add_length = 0,
   .config = getOption("rcbms.config")
 ) {
 
@@ -29,6 +30,8 @@ compute_food_insecurity <- function(
   if (is.null(.agg_levels)) {
     .agg_levels <- c(3, 4)
   }
+
+  pad_width <- 9 + .add_length
 
   rm_by_item_all <- list()
   rm_by_score_all <- list()
@@ -52,13 +55,13 @@ compute_food_insecurity <- function(
         compute_food_insecurity_prevalence()
 
       rm_by_item[[k]] <- rm$item |>
-        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = 9, side = "right", pad = "0"))
+        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = pad_width, side = "right", pad = "0"))
 
       rm_by_score[[k]] <- rm$score |>
-        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = 9, side = "right", pad = "0"))
+        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = pad_width, side = "right", pad = "0"))
 
       rm_by_prevalence[[k]] <- rm$prevalence |>
-        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = 9, side = "right", pad = "0"))
+        dplyr::mutate(area_code = stringr::str_pad(area_codes[k], width = pad_width, side = "right", pad = "0"))
     }
 
     rm_by_item_all[[i]] <- dplyr::bind_rows(rm_by_item) |>
@@ -79,19 +82,19 @@ compute_food_insecurity <- function(
 
     rm_by_prevalence_all$overall <- rm_all$prevalence |>
       dplyr::mutate(
-        area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
+        area_code = stringr::str_pad("0", width = pad_width, side = "right", pad = "0"),
         level = 0L
       )
 
     rm_by_score_all$overall <- rm_all$score |>
       dplyr::mutate(
-        area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
+        area_code = stringr::str_pad("0", width = pad_width, side = "right", pad = "0"),
         level = 0L
       )
 
     rm_by_item_all$overall <- rm_all$item |>
       dplyr::mutate(
-        area_code = stringr::str_pad("0", width = 9, side = "right", pad = "0"),
+        area_code = stringr::str_pad("0", width = pad_width, side = "right", pad = "0"),
         level = 0L
       )
   }
