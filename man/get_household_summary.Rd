@@ -13,6 +13,7 @@ get_household_summary(
   .include_overall = T,
   .include_survey_round = T,
   .include_individuals = T,
+  .add_length = 0,
   .config = getOption("rcbms.config")
 )
 }

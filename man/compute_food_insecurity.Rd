@@ -13,6 +13,7 @@ compute_food_insecurity(
   .valueset = get_config("references")$valueset,
   .extract_name_position = 5,
   .include_overall = FALSE,
+  .add_length = 0,
   .config = getOption("rcbms.config")
 )
 }

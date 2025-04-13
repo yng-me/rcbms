@@ -10,12 +10,7 @@ save_rcbms_logs <- function(
   conn <- connect_to_db_log(.config, .input_data)
   log_tables <- DBI::dbListTables(conn)
 
-  uid <- .config$project[[.input_data]]$id
-  if(!('logs' %in% log_tables)) {
-    create_db_tables(conn, .input_data, uid)
-  }
-
-  alter_db_tables(conn, .input_data, uid)
+  if(!('rcbms_logs' %in% log_tables)) { migrate_db_tables(conn) }
 
   log_id <- save_current_logs(
     conn,
@@ -27,7 +22,6 @@ save_rcbms_logs <- function(
     .section_ref,
     .summary_df
   )
-
 
   DBI::dbDisconnect(conn)
 
@@ -74,11 +68,6 @@ save_current_logs <- function(
     current_area_code <- CURRENT_AREA_CODE
   } else {
     current_area_code <- .config$aggregation$area
-  }
-
-  if(!is.null(.data)) {
-    db_data_to_store <- .data |>
-      add_uuid(.id_name = "id")
   }
 
   if((mode == "validation" | mode == "cv") & !is.null(.data))  {
@@ -191,7 +180,7 @@ save_current_logs <- function(
   }
 
 
-  id_int <- DBI::dbReadTable(.conn, 'logs') |>
+  id_int <- DBI::dbReadTable(.conn, 'rcbms_logs') |>
     nrow()
 
   area_codes <- .config$aggregation$areas  |>
@@ -207,10 +196,9 @@ save_current_logs <- function(
 
   log_saved <- DBI::dbAppendTable(
     conn = .conn,
-    name = "logs",
+    name = "rcbms_logs",
     value = dplyr::tibble(
-      id = log_id,
-      id_int = as.integer(id_int + 1),
+      log_id = log_id,
       survey_round = as.character(.config$survey_round),
       mode = mode,
       edit = edit,
@@ -256,7 +244,7 @@ save_current_logs <- function(
           "UPDATE logs SET
             verified_at = CURRENT_TIMESTAMP,
             validated_at = CURRENT_TIMESTAMP
-          WHERE id = '", log_id, "';"
+          WHERE log_id = '", log_id, "';"
         )
       )
     }

@@ -19,7 +19,7 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
 
   if(is.null(summary_df)) return(.data)
 
-  cases <- .data[[.uid]]
+  cases <- .data$input_data_id
 
   contact_info <- summary_df |>
     dplyr::select(dplyr::any_of(c(.uid, contact_info_vars)))
@@ -53,32 +53,24 @@ join_contact_info <- function(.data, .input_data, .uid, .config, .encrypt = T) {
     }
   }
 
-  # if(.encrypt & .config$validation$stringify_info) {
+  contact_info <- contact_info |>
+    dplyr::group_by(!!as.name(.uid)) |>
+    tidyr::nest(.key = 'contact') |>
+    dplyr::ungroup() |>
+    dplyr::tibble() |>
+    dplyr::mutate(
+      contact = purrr::map_chr(contact, \(x) {
+        x |>
+          dplyr::mutate_all(as.character) |>
+          jsonlite::toJSON() |>
+          as.character() |>
+          encrypt_info(.config)
+      })
+    ) |>
+    dplyr::rename(input_data_id = !!as.name(.uid))
 
-    contact_info <- contact_info |>
-      dplyr::group_by(!!as.name(.uid)) |>
-      tidyr::nest(.key = 'contact') |>
-      dplyr::ungroup() |>
-      dplyr::tibble() |>
-      dplyr::mutate(
-        contact = purrr::map_chr(contact, \(x) {
-          x |>
-            dplyr::mutate_all(as.character) |>
-            jsonlite::toJSON() |>
-            as.character() |>
-            encrypt_info(.config)
-        })
-      )
-#
-  # }
-  # else {
-  #   contact_info <- contact_info |>
-  #     dplyr::group_by(!!as.name(.uid)) |>
-  #     dplyr::collect() |>
-  #     tidyr::nest(.key = 'contact')
-  # }
 
   .data |>
-    dplyr::left_join(contact_info, by = .uid)
+    dplyr::left_join(contact_info, by = 'input_data_id')
 
 }
