@@ -4,18 +4,10 @@
 \alias{generate_tabulation}
 \title{Title}
 \usage{
-generate_tabulation(
-  .ts,
-  .ts_ref,
-  .config,
-  .save_as_excel = FALSE,
-  .save_as_json = TRUE,
-  .section_ref = NULL,
-  .summary_df = NULL
-)
+generate_tabulation(.ts, .config, .refs)
 }
 \arguments{
-\item{.summary_df}{}
+\item{.refs}{}
 }
 \description{
 Title

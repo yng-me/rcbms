@@ -29,7 +29,6 @@ save_rcbms_log <- function(.data, .config, .metadata) {
     number_of_ea_processed <- 1
   }
 
-
   log_saved <- DBI::dbAppendTable(
     conn = conn,
     name = "rcbms_logs",

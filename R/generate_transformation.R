@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param .ts
+#' @param .tr
 #' @param .config
 #' @param .refs
 #'
@@ -8,8 +8,8 @@
 #' @export
 #'
 #' @examples
-
-generate_tabulation <- function(.ts, .config, .refs) {
+#'
+generate_transformation <- function(.tr, .config, .refs) {
 
   if(exists("CURRENT_INPUT_DATA")) {
     input_data <- CURRENT_INPUT_DATA
@@ -17,22 +17,32 @@ generate_tabulation <- function(.ts, .config, .refs) {
     input_data <- .config$input_data[1]
   }
 
-  ts_names <- names(.ts)
-  ts_names <- ts_names[ts_names %in% .refs$ref_ts$tabulation_id]
+  tr_levels <- names(.tr)
+  tr_names <- names(.tr[[1]])
+  tr_names <- tr_names[tr_names %in% .refs$ref_tr$table_id]
 
   output <- NULL
 
-  for (i in seq_along(ts_names)) {
+  for (i in seq_along(tr_names)) {
 
-    ts_name <- ts_names[i]
+    tr_name <- tr_names[i]
+    tr_info <- list()
 
-    if(.config$verbose) {
-      cat(paste0(str_pad(formatC(nrow(.ts[[ts_name]]), big.mark = ','), width = 7), ': ', ts_name, '\n'))
+    for(j in seq_along(tr_levels)) {
+
+      tr_level <- tr_levels[j]
+
+      if(.config$verbose) {
+        cat(paste0(str_pad(formatC(nrow(tr_df), big.mark = ','), width = 7), ': ', tr_name, '\n'))
+      }
+
+      tr_info[[tr_level]] <- .tr[[tr_level]][[tr_name]]
+
     }
 
     output_temp <- dplyr::tibble(
-      mode_id = ts_name,
-      info = as.character(jsonlite::toJSON(.ts[[ts_name]], auto_unbox = T))
+      mode_id = tr_name,
+      info = as.character(jsonlite::toJSON(tr_info, auto_unbox = T))
     )
 
     if (i == 1) {
@@ -75,7 +85,7 @@ generate_tabulation <- function(.ts, .config, .refs) {
         status = 0L,
         verified_at = NA_character_,
         validated_at = NA_character_,
-        category = .refs$ref_summary$category,
+        category = NA_character_,
         summary_info = .refs$ref_summary
       )
     )
@@ -85,12 +95,4 @@ generate_tabulation <- function(.ts, .config, .refs) {
   }
 
   return(output)
-
 }
-
-
-
-
-
-
-
