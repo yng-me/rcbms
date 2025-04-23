@@ -31,7 +31,7 @@ read_rcdf <- function(path, encryption_key, metadata = NULL) {
 
         pq_temp <-add_metadata(
           .data = pq_temp,
-          .dictionary = metadata$data_dictionary,
+          .dictionary = metadata$data_dictionary[[meta$input_data]],
           .valueset = metadata$valueset
         )
       }
@@ -57,8 +57,9 @@ read_rcdf <- function(path, encryption_key, metadata = NULL) {
 #' @examples
 #'
 import_rcdf <- function(path) {
+
   temp_dir <-  tempdir()
-  temp_dir_to <- file.path(temp_dir, 'rcdf_temp')
+  temp_dir_to <- file.path(temp_dir, 'rcdf_temp', fs::path_ext_remove(basename(path)))
 
   unzip(path, exdir = temp_dir_to, junkpaths = T)
   unzip(file.path(temp_dir_to, 'lineage.zip'), exdir = temp_dir_to)
