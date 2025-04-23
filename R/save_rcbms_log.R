@@ -29,6 +29,7 @@ save_rcbms_log <- function(.data, .config, .metadata) {
     number_of_ea_processed <- 1
   }
 
+
   log_saved <- DBI::dbAppendTable(
     conn = conn,
     name = "rcbms_logs",
@@ -58,6 +59,10 @@ save_rcbms_log <- function(.data, .config, .metadata) {
       version_package = .config$version$package,
       version_script = .config$version$script,
       status = .metadata$status,
+      key_app = .metadata$aes$key_app[1],
+      key_admin = .metadata$aes$key_admin[1],
+      iv_app = .metadata$aes$iv_app[1],
+      iv_admin = .metadata$aes$iv_admin[1],
       pc_os = get_pc_metadata('pc_os'),
       pc_user = get_pc_metadata('pc_user'),
       pc_effective_user = get_pc_metadata('pc_effective_user'),
@@ -70,6 +75,8 @@ save_rcbms_log <- function(.data, .config, .metadata) {
       validated_at = .metadata$validated_at
     )
   )
+
+  cli::cli_text('LOG: {log_saved}')
 
   if(!is.null(.data) & log_saved) {
     DBI::dbAppendTable(

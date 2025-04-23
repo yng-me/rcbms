@@ -28,6 +28,8 @@ generate_transformation <- function(.tr, .config, .refs) {
     tr_name <- tr_names[i]
     tr_info <- list()
 
+    cli::cli_text('table_id: {tr_name}')
+
     for(j in seq_along(tr_levels)) {
 
       tr_level <- tr_levels[j]
@@ -86,7 +88,8 @@ generate_transformation <- function(.tr, .config, .refs) {
         verified_at = NA_character_,
         validated_at = NA_character_,
         category = NA_character_,
-        summary_info = .refs$ref_summary
+        summary_info = .refs$ref_summary,
+        aes = .refs$ref_meta
       )
     )
 
