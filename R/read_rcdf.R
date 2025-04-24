@@ -17,6 +17,7 @@ read_rcdf <- function(path, encryption_key, metadata = NULL) {
 
   pq_path <- file.path(meta$dir, 'lineage')
   pq_files <- list.files(pq_path, pattern = '\\.parquet', full.names = T)
+  pq_files <- pq_files[!grepl('adtl_qtn', pq_files)]
   pq <- list()
 
   for(i in seq_along(pq_files)) {
@@ -134,6 +135,7 @@ read_encryped_parquet_list <- function(path, input_data = NULL, aes_key = NULL, 
 
   pq <- list()
   pq_files <- list.files(path, pattern = '\\.parquet', full.names = T)
+  pq_files <- pq_files[!grepl('adtl_qtn', pq_files)]
 
   for(i in seq_along(pq_files)) {
 
