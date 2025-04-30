@@ -245,7 +245,7 @@ str_split_n <- function(text, n = 3) {
 #'
 #' @examples
 
-get_dataset_summary <- function(parquet_list) {
+get_dataset_summary <- function(parquet_list, dictionary = NULL) {
 
   stat_refs <- c(
     "Max." = "Maximum",
@@ -272,7 +272,30 @@ get_dataset_summary <- function(parquet_list) {
     df <- parquet_list[[pq_name]] |>
       dplyr::collect()
 
-    df_list[[pq_name]] <- as.data.frame(summary(df)) |>
+
+    if(!is.null(dictionary)) {
+
+      df_names <- names(df)
+
+      for(i in seq_along(df_names)) {
+
+        df_name <- df_names[i]
+
+        vs <- dictionary |>
+          dplyr::filter(variable_name == df_name)
+
+        if(nrow(vs) == 0) next
+        if(is.null(vs$valueset)) next
+        if(is.null(vs$valueset[[1]])) next
+
+        vs_i <- vs$valueset[[1]]
+
+        df[[df_name]] <- factor(df[[df_name]], vs_i$value, vs_i$label)
+
+      }
+    }
+
+    df_temp <- as.data.frame(summary(df)) |>
       janitor::clean_names() |>
       dplyr::filter(!is.na(freq)) |>
       dplyr::as_tibble() |>
@@ -286,8 +309,12 @@ get_dataset_summary <- function(parquet_list) {
           v1 <- stat_refs[stringr::str_trim(y[1])]
           v2 <- stringr::str_trim(y[2])
 
-          if(v1 == "Frequency" | v1 == "NA / Missing") {
-            v2 <- prettyNum(as.integer(v2), big.mark = ",")
+          if(!is.na(v1)) {
+            if(v1 == "Frequency" | v1 == "NA / Missing") {
+              v2 <- prettyNum(as.integer(v2), big.mark = ",")
+            }
+          } else {
+            v1 <- stringr::str_trim(y[1])
           }
 
           tibble::tibble(
@@ -298,7 +325,82 @@ get_dataset_summary <- function(parquet_list) {
       ) |>
       tidyr::unnest(stat) |>
       dplyr::group_by(variable_name) |>
-      tidyr::nest()
+      tidyr::nest(.key = 'stats') |>
+      dplyr::mutate(
+        missing = purrr::map_dbl(variable_name, function(x) {
+          y <- df[[x]]
+          100 * (length(y[is.na(y)]) / length(y))
+        }),
+        count = purrr::map_int(variable_name, function(x) {
+          length(df[[x]])
+        }),
+        distinct = purrr::map_int(variable_name, function(x) {
+          length(unique(df[[x]]))
+        })
+      )
+
+    if(!is.null(dictionary)) {
+
+      df_temp <- df_temp |>
+        dplyr::left_join(
+          dictionary,
+          by = 'variable_name'
+        ) |>
+        dplyr::mutate(
+          extremes = purrr::map2(variable_name, type, function(x, y) {
+
+            z <- df[[x]]
+            z_u <- unique(z)
+            cutoff <- 5
+            z_length <- length(z_u)
+            if(z_length < 5) {
+              cutoff <- 2
+            }
+
+            if(is.na(y)) { return(list()) }
+
+            if(y == 'i' | y == 'n' | y == 'd') {
+
+              lower_5 <- sort(unique(z))[1:cutoff]
+              upper_5 <- sort(rev(sort(unique(z)))[1:cutoff])
+
+              list(
+                lower_5 = lower_5,
+                upper_5 = upper_5
+              )
+
+            } else if (y == 'D') {
+
+              z <- as.POSIXct(z)
+
+              lower_5 <- sort(unique(z))[1:cutoff]
+              upper_5 <- sort(rev(sort(unique(z)))[1:cutoff])
+
+              list(
+                lower_5 = lower_5,
+                upper_5 = upper_5
+              )
+
+            } else {
+              list()
+            }
+
+          })
+        ) |>
+        dplyr::select(
+          variable_name,
+          label,
+          type,
+          valueset,
+          missing,
+          count,
+          distinct,
+          extremes,
+          stats
+        )
+    }
+
+    df_list[[pq_name]] <- df_temp
 
 
   }
@@ -306,4 +408,3 @@ get_dataset_summary <- function(parquet_list) {
   df_list
 
 }
-
