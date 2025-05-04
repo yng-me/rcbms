@@ -18,6 +18,7 @@ read_rcdf <- function(path, encryption_key, metadata = NULL) {
   pq_path <- file.path(meta$dir, 'lineage')
   pq_files <- list.files(pq_path, pattern = '\\.parquet', full.names = T)
   pq_files <- pq_files[!grepl('adtl_qtn', pq_files)]
+
   pq <- list()
 
   for(i in seq_along(pq_files)) {
@@ -57,13 +58,15 @@ read_rcdf <- function(path, encryption_key, metadata = NULL) {
 #'
 #' @examples
 #'
-import_rcdf <- function(path) {
+import_rcdf <- function(path, meta_only = FALSE) {
 
   temp_dir <-  tempdir()
   temp_dir_to <- file.path(temp_dir, 'rcdf_temp', fs::path_ext_remove(basename(path)))
 
   unzip(path, exdir = temp_dir_to, junkpaths = T)
-  unzip(file.path(temp_dir_to, 'lineage.zip'), exdir = temp_dir_to)
+  if(!meta_only) {
+    unzip(file.path(temp_dir_to, 'lineage.zip'), exdir = temp_dir_to)
+  }
   unlink(file.path(temp_dir_to, 'lineage.zip'), recursive = T, force = T)
 
   meta <- jsonlite::read_json(file.path(temp_dir_to, 'metadata.json'), simplifyVector = T)
@@ -71,6 +74,7 @@ import_rcdf <- function(path) {
   meta$dir <- temp_dir_to
   meta
 }
+
 
 #' Title
 #'
@@ -232,6 +236,92 @@ str_split_n <- function(text, n = 3) {
   }
 
   value
+}
+
+
+
+
+#' Title
+#'
+#' @param paths
+#' @param level
+#' @param add_length
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+get_complete_rcdf <- function(paths, level = 3, add_length = 1) {
+
+  agg_level_length <- c(2, 4 + add_length, 6 + add_length)[level]
+
+  ref_counter <- list(
+    validation = list(
+      hp = 14,
+      bp = 1,
+      ilq = 1,
+      shp = 1
+    ),
+    transformation = list(
+      hp = 6,
+      bp = 1,
+      ilq = 1,
+      shp = 1
+    )
+  )
+
+  x <- list()
+
+  for(i in seq_along(paths)) {
+
+    meta <- rcbms::import_rcdf(paths[i], meta_only = T)
+
+    if(file.exists(meta$dir)) {
+      unlink(meta$dir, recursive = T, force = T)
+    }
+
+    if(grepl('[^0-9]', meta$area_code)) next
+
+    mode <- meta$mode
+    input_data <- meta$input_data
+    meta_counter <- nrow(meta$checksum) >= ref_counter[[mode]][[input_data]]
+    if(!meta_counter) next
+
+    if(nchar(meta$area_code) < add_length + 6) {
+
+
+
+
+    } else {
+
+      area_code <- meta$area_code |>
+        stringr::str_sub(1, agg_level_length) |>
+        stringr::str_pad(width = 9 + add_length, side = 'right', pad = '0')
+
+      x[[i]] <- list(
+        area_code = area_code,
+        region_code = stringr::str_sub(area_code, 1, 2),
+        province_code = stringr::str_sub(area_code, 3, 4 + add_length),
+        city_mun_code = stringr::str_sub(area_code, 5 + add_length, 6 + add_length)
+      )
+    }
+
+  }
+
+  df <- dplyr::bind_rows(x)
+
+  if(nrow(df) == 0) {
+    df <- tibble::tibble(
+      area_code = character(),
+      region_code = character(),
+      province_code = character(),
+      city_mun_code = character()
+    )
+  }
+
+  dplyr::distinct(df, area_code, .keep_all = T)
+
 }
 
 

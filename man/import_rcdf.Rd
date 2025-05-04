@@ -4,7 +4,7 @@
 \alias{import_rcdf}
 \title{Title}
 \usage{
-import_rcdf(path)
+import_rcdf(path, meta_only = FALSE)
 }
 \arguments{
 \item{path}{}

@@ -30,18 +30,28 @@ save_rcbms_log <- function(.data, .config, .metadata) {
   }
 
 
+  key_app <- .metadata$aes$key_app[1]
+  iv_app <- .metadata$aes$iv_app[1]
+  key_admin <- .metadata$aes$key_admin[1]
+  iv_admin <- .metadata$aes$iv_admin[1]
+
+  if(is.null(key_app)) { key_app <- NA_character_ }
+  if(is.null(iv_app)) { iv_app <- NA_character_ }
+  if(is.null(key_admin)) { key_admin <- NA_character_ }
+  if(is.null(iv_admin)) { iv_admin <- NA_character_ }
+
   log_saved <- DBI::dbAppendTable(
     conn = conn,
     name = "rcbms_logs",
-    value = dplyr::tibble(
+    value = tibble::tibble(
       log_id = generated_log_id,
-      survey_round = as.character(.config$survey_round),
-      mode = .config$mode$type,
-      edit = .config$mode$edit,
-      level = .config$aggregation$level,
-      stage = .config$mode$stage,
+      survey_round = as.character(.config$survey_round[1]),
+      mode = .config$mode$type[1],
+      edit = .config$mode$edit[1],
+      level = .config$aggregation$level[1],
+      stage = .config$mode$stage[1],
       category = .metadata$category,
-      station = toupper(.config$mode$station),
+      station = toupper(.config$mode$station[1]),
       partial = .metadata$partial,
       input_data = input_data,
       area_code = current_area_code,
@@ -59,10 +69,10 @@ save_rcbms_log <- function(.data, .config, .metadata) {
       version_package = .config$version$package,
       version_script = .config$version$script,
       status = .metadata$status,
-      key_app = .metadata$aes$key_app[1],
-      key_admin = .metadata$aes$key_admin[1],
-      iv_app = .metadata$aes$iv_app[1],
-      iv_admin = .metadata$aes$iv_admin[1],
+      key_app = key_app,
+      key_admin = key_admin,
+      iv_app = iv_app,
+      iv_admin = iv_admin,
       pc_os = get_pc_metadata('pc_os'),
       pc_user = get_pc_metadata('pc_user'),
       pc_effective_user = get_pc_metadata('pc_effective_user'),
