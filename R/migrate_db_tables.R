@@ -8,15 +8,17 @@
 #'
 #' @examples
 
-migrate_rcbms_db <- function(db_des, db_src, db_backup, input_data) {
+migrate_rcbms_db <- function(db_des, db_src, input_data, db_backup = NULL) {
 
   conn_des <- DBI::dbConnect(RSQLite::SQLite(), db_des)
   migrate_db_tables(conn_des)
 
   if(!file.exists(db_src)) return(NULL)
 
-  rcbms::create_new_folder(db_backup)
-  file.copy(db_src, db_backup, recursive = T)
+  if(!is.null(db_backup)) {
+    rcbms::create_new_folder(db_backup)
+    file.copy(db_src, db_backup, recursive = T)
+  }
 
   conn_src <- DBI::dbConnect(RSQLite::SQLite(), db_src)
 

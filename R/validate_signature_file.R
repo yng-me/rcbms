@@ -29,6 +29,8 @@ read_signature_files <- function(
 
   path <- .dir
 
+  if(.area_code == 'all') { .area_code <- NULL }
+
   if(!is.null(.area_code)) {
 
     path <- file.path(.dir, .area_code)
