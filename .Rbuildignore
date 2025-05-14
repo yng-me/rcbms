@@ -1,0 +1,8 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+.DS_Store
+^playground\.R$
+^config\.yml$
+playground/*
+^LICENSE\.md$
+^.*\.pem$

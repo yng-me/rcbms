@@ -1,0 +1,190 @@
+# Global config default values
+
+survey_round: '2024'
+
+parquet:
+  # whether to convert raw data files to Parquet
+  convert: true
+
+  # whether to apply encryption to Parquet
+  encrypt: true
+
+  # whether to overwrite and clear all Parquet
+  overwrite: true
+
+  # whether to apply partitions during conversion
+  # useful for dealing with large data files
+  partition: false
+
+  # whether to create Parquet files based on built-in relations
+  # src/{survey_round}/relations
+  create_relation: true
+
+  # whether to delete source data (raw) after conversion
+  delete_source: false
+
+  read_from_chunk: false
+  create_lineage: true
+  lineage_frequency: 'daily'
+
+  # partitioning option
+  partition_by:
+    - region_code
+    - province_code
+    - city_mun_code
+
+# whether to check if you have internet connection
+check_if_online: true
+
+# whether to reload reference files from the source
+reload_references:
+  area_name: true
+  area_name_new: true
+  valueset: true
+  validation: true
+  tabulation: true
+  data_dictionary: true
+  macrodata: true
+  score_card: true
+  record: true
+  section: true
+
+working_directory: ~ # experimental
+complete_cases: true # experimental
+read_as_chunk: false # experimental
+chunk_threshold: 5000 # experimental
+
+# whether to apply harmonization of variable names
+harmonize_variable: true
+
+# input data file which could be multiple values
+# accepts: hp, bp, ilq, shp, bs, cph
+
+input_data: hp
+
+execute_script: true #
+
+# execution mode
+mode:
+  # accepts: validation, tabulation, portal
+  type: validation
+
+  # accepts:
+  ## 0 - prelim
+  ## 1 - before-edit
+  ## 2 - after-edit
+  ## 3 - signature
+  ## 4 - duplicate checks
+  ## 5 - post-eval
+  edit: 1
+
+  source: 2 # deprecated
+
+  # accepts:
+  ## 1 - data collection
+  ## 2 - data processing
+  ## 3 - data evaluation
+  ## 4 - data review
+  ## 6 - data turnover
+  stage: 1
+
+  # accepts: CO, RO, PO, LGU (not case sensitive)
+  station: co
+
+# aggregration level
+aggregation:
+  # accepts:
+  ## 0 - country-level
+  ## 1 - regional
+  ## 2 - provincial/HUC
+  ## 3 - city/mun
+  ## 4 - barangay
+  ## 5 - EA
+  level: 5
+
+  # Use in conjuction with `filter_by_area()` function
+  areas: all
+
+  # if `true`, `filter_by_area()` will be invoked
+  by_area: false
+
+# will be used if `mode.type` is set to `validation`
+validation:
+  # whether to include signature validation
+  include_signature: false
+
+  # whether to include custom validation (extension)
+  include_extension: false
+
+  # whether to include prelim checks
+  include_prelim: false
+
+  # whether to generate output (Excel)
+  generate_output: false
+
+  # whether to include `info` column in `cv`
+  detailed_output: false
+
+  # whether to include duplicate checks
+  check_duplicate_members: false
+
+  # whether to include addition info of household head and/or respondent
+  include_contact_info: false
+
+  # whether to include addition info of household head and/or respondent
+  include_additional_info: false
+
+  # whether to generate UUID
+  add_uuid: true
+
+  # whether to save the output as Excel
+  save_as_excel: false
+
+  save_to_db: true
+
+  # deprecated
+  save_as_json: true
+
+  # signature validation options
+  signature:
+    crop_threshold: 1000
+    filename_length: 31
+    ink_threshold: 375
+    img_threshold: 100000
+    path: ~
+    valid:
+      path: ~
+      action: ~
+    invalid:
+      path: ~
+      action: ~
+
+# will be used if `mode.type` is set to `tabulation`
+tabulation:
+  category: 'CBMS'
+
+# will be used if `mode.type` is set to `portal`
+portal:
+  stage: dev
+  db_migration:
+    overwrite: true
+    append: false
+
+# for internal use (partially deprecatd);
+# this will be removed in the succeeding versions
+version:
+  app: 3.0.0
+  script: 0.0.1
+  package: 0.1.4
+  db: 1
+
+# simple object/memory management
+clear_objects: true
+
+# verbose output
+verbose: true
+
+# whether to show progres
+progress: false
+
+user_id: ~

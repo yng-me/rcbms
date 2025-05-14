@@ -1,0 +1,183 @@
+# Project config default values
+'2024':
+  reference_period: '2024-07-01'
+  source_note: 2024 Census of Population and Community-Based Monitoring System, Philippine
+    Statistics Authority
+  add_length: 1
+  bp:
+    id: barangay_geo
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
+    directory: ~
+    sub_directory: ~
+    file_format: xlsx
+    summary_record: bpq_data
+    final_status:
+      variable: verified
+      value: 'YES'
+      index: 1
+    aggregation:
+      level: 4
+      areas: all
+    variable:
+      contact:
+        - barangay_chairperson
+        - contact_address
+        - barangay_email_address
+        - barangay_mobile_number
+  hp:
+    id: case_id
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
+    directory: ~
+    sub_directory: ~
+    file_format: txt
+    summary_record: cover_page
+    roster_record: section_a_e
+    final_status:
+      variable:
+        - result_of_final_visit_popcen
+        - result_of_final_visit_cbms
+      value: 1
+      index: 1
+    result_of_visit_value: 1
+    aggregation:
+      level: 1
+      areas: all
+    unfiltered_records:
+    - cover_page
+    - interview_record
+    variable:
+      line_number: line_number
+      relation_to_hh_head: a02_relation_to_hh_head
+      sex: a03_sex
+      age: a05_age
+      age_computed: age
+      contact:
+        - contact_hh_head
+        - contact_address
+        - contact_respondent
+        - contact_number
+        - email_address
+        - enumerator
+  ilq:
+    id: case_id
+    dir:
+      input_data: ~
+      input_data_sub: ~
+      csdbe_data: ~
+      output: ~
+    directory: ~
+    sub_directory: ~
+    file_format: txt
+    summary_record: cover_page
+    roster_record: pop_qtn
+    final_status:
+      variable:
+        result_of_final_visit
+      value: 1
+      index: 1
+    aggregation:
+      level: 2
+      areas: all
+    unfiltered_records: ~
+    variable:
+      line_number: line_number
+      sex: p03_sex
+      age: p05_age
+      contact:
+        - ilq_name
+        - contact_respondent
+        - contact_address
+        - contact_number
+        - email_address
+  shp:
+    id: cbms_geoid
+    file_format: gpkg
+    dir:
+     input_data: ~
+     input_data_sub: ~
+     csdbe_data: ~
+     output: ~
+    directory: ~
+    sub_directory: ~
+    out_directory: ~
+    summary_record: shp_data
+    aggregation:
+      level: 3
+      areas: all
+'2022':
+  reference_period: '2022-06-30'
+  source_note: 2022 Community-Based Monitoring System, Philippine Statistics Authority
+  add_length: 0
+  bp:
+    id: uuid
+    sub_directory: ~
+    file_format: xlsx
+    final_status:
+      variable: verified
+      value: 'YES'
+      index: 1
+    aggregation:
+      level: 2
+      areas: all
+  hp:
+    id: case_id
+    directory: ~
+    sub_directory: ~
+    file_format: txt
+    summary_record: summary_of_visit
+    roster_record: section_a_to_e
+    final_status:
+      variable: result_of_visit
+      value: 1
+      index: 1
+    unfiltered_records:
+    - summary_of_visit
+    - geo_info
+    variable:
+      line_number: lno
+      relation_to_hh_head: a02_relation_to_hh_head
+      sex: a05_sex
+      age: a07_age
+'2021':
+  reference_period: '2021-09-30'
+  source_note: 2021 Pilot Community-Based Monitoring System, Philippine Statistics
+    Authority
+  add_length: 0
+  bp:
+    id: uuid
+    sub_directory: ~
+    file_format: csv
+  hp:
+    id: case_id
+    file_format: txt
+    summary_record: interview_record
+    roster_record: section_a_to_e
+    unfiltered_records: interview_record
+    final_status:
+      variable: result_of_visit
+      value: 1
+      index: 1
+    variable:
+      line_number: lineno
+      relation_to_hh_head: a02_relation_to_hh_head
+      sex: a05_sex
+      age: a07_age
+'2020':
+  reference_period: '2020-05-01'
+  add_length: 0
+  bs:
+    id: barangay_geo
+    file_format: txt
+  cph:
+    id: case_id
+    file_format: txt
+    summary_record: f3rt1
+    roster_record: f3rt2
