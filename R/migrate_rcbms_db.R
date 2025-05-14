@@ -13,7 +13,7 @@
 
 migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL, wal_mode = FALSE) {
 
-  migrate_db_tables(db_des, wal_mode = wal_mode)
+  migration_status <- migrate_db_tables(db_des, wal_mode = wal_mode)
 
   if(is.null(db_src)) return(NULL)
   if(!file.exists(db_src)) return(NULL)
@@ -27,6 +27,7 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
 
   if(!DBI::dbExistsTable(conn_src, 'logs')) {
     DBI::dbDisconnect(conn_src, force = T)
+    unlink(db_src, force = T, recursive = T)
     return(NULL)
   }
 
@@ -63,6 +64,7 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
 
   if(nrow(rcbms_logs) == 0) {
     DBI::dbDisconnect(conn_src, force = T)
+    unlink(db_src, force = T, recursive = T)
     return(NULL)
   }
 
@@ -186,8 +188,6 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
 
   DBI::dbDisconnect(conn_src, force = T)
 
-  unlink(db_src, force = T, recursive = T)
-
   conn_des <- DBI::dbConnect(RSQLite::SQLite(), db_des)
   DBI::dbBegin(conn_des)
   DBI::dbAppendTable(conn_des, name = 'rcbms_logs', value = rcbms_logs)
@@ -224,6 +224,9 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
   DBI::dbCommit(conn_des)
   DBI::dbDisconnect(conn_des, force = T)
 
+  if(file.exists(db_src)) {
+    unlink(db_src, force = T, recursive = T)
+  }
 
 }
 
@@ -234,7 +237,7 @@ migrate_db_tables <- function(db, wal_mode = FALSE) {
 
   if(DBI::dbExistsTable(conn, 'rcbms_logs')) {
     DBI::dbDisconnect(conn, force = T)
-    return(NULL)
+    return(0)
   }
 
   rcbms_logs <- glue::glue(
@@ -383,6 +386,8 @@ migrate_db_tables <- function(db, wal_mode = FALSE) {
   DBI::dbCommit(conn)
 
   DBI::dbDisconnect(conn, force = T)
+
+  return(1)
 
 }
 
