@@ -179,7 +179,7 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
     }
 
     remarks <- remarks |>
-      dplyr::distinct() |>
+      dplyr::distinct(.keep_all = T) |>
       dplyr::group_by(uuid) |>
       tidyr::nest(.key = 'remarks_info')
 
@@ -216,7 +216,18 @@ migrate_rcbms_db <- function(input_data, db_des, db_src = NULL, db_backup = NULL
           line_number,
           remarks_info
         ) |>
-        tidyr::unnest(remarks_info)
+        tidyr::unnest(remarks_info) |>
+        dplyr::distinct(
+          bulk_id,
+          input_data_id,
+          mode_id,
+          line_number,
+          user_id,
+          remarks,
+          status,
+          created_at,
+          .keep_all = T
+        )
     )
   }
 

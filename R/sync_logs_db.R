@@ -94,7 +94,17 @@ sync_logs_db <- function(db_src, db_des, input_data) {
         'created_at'
       )
     ) |>
-    dplyr::distinct()
+    dplyr::distinct(
+      bulk_id,
+      input_data_id,
+      mode_id,
+      line_number,
+      user_id,
+      remarks,
+      status,
+      created_at,
+      .keep_all = T
+    )
 
   private_keys_id <- dplyr::tbl(conn_des, 'rcbms_private_keys') |>
     dplyr::select(key_id) |>
