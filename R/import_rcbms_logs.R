@@ -29,7 +29,7 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
   )
 
   db_dir <- file.path(.dir, 'db', .user_id)
-  backup_dir <- create_new_folder(file.path(.dir, 'backup-v3'))
+  backup_dir <- create_new_folder(file.path(.dir, 'backup'))
 
   file.copy(
     from = db_dir,
@@ -48,7 +48,7 @@ import_rcbms_logs <- function(.dir, .user_id, .dir_to = 'db-temp', .delete_sourc
 
     if(grepl('^(hp|ilq|bp)$', input_data)) {
 
-      db_src_path <- file.path(exdir, db_name_i)
+      db_src_path <- db_log_i
       db_name <- stringr::str_replace(db_name_i, '_v3.db$', '_v4.db')
 
       if(grepl('_v3.db$', db_name_i)) {
