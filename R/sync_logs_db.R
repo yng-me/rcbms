@@ -14,6 +14,17 @@ sync_logs_db <- function(db_src, db_des, input_data) {
   conn_src <- DBI::dbConnect(RSQLite::SQLite(), db_src)
   conn_des <- DBI::dbConnect(RSQLite::SQLite(), db_des)
 
+  if(!DBI::dbExistsTable(conn_src, 'rcbms_logs') | !DBI::dbExistsTable(conn_des, 'rcbms_logs')) {
+    return(
+      list(
+        status_code = 0,
+        logs = 0,
+        results = 0,
+        remarks = 0
+      )
+    )
+  }
+
   logs_src <- dplyr::tbl(conn_src, 'rcbms_logs') |>
     dplyr::filter(status > 0L) |>
     dplyr::select(-dplyr::any_of('id'))

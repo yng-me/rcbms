@@ -20,7 +20,7 @@ read_signature_files <- function(
   .options = list(
     ink_threshold = 375,
     img_threshold = 100000,
-    crop_threshold = 500,
+    crop_threshold = 1000,
     filename_length = 31
   )
 ) {
