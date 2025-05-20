@@ -90,7 +90,6 @@ sync_logs_db <- function(db_src, db_des, input_data) {
         'user_id',
         'remarks',
         'status',
-        'tag_status',
         'created_at'
       )
     ) |>
