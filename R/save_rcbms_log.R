@@ -82,6 +82,7 @@ save_rcbms_log <- function(.data, .config, .metadata) {
       pc_hardware = get_pc_metadata('pc_hardware'),
       pc_pid = get_pc_metadata('pc_pid'),
       duration = 0,
+      data_as_of = .metadata$data_as_of,
       verified_at = .metadata$verified_at,
       validated_at = .metadata$validated_at
     )

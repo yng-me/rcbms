@@ -294,6 +294,7 @@ migrate_db_tables <- function(db, wal_mode = FALSE) {
       key_admin TEXT,
       iv_app TEXT,
       iv_admin TEXT,
+      data_as_of DATE DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT NULL,
       verified_at DATETIME DEFAULT NULL,

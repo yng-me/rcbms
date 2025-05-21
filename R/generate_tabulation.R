@@ -73,6 +73,7 @@ generate_tabulation <- function(.ts, .config, .refs) {
         total_priority_d = 0L,
         partial = 0L,
         status = 0L,
+        data_as_of = NA_character_,
         verified_at = NA_character_,
         validated_at = NA_character_,
         category = .refs$ref_summary$category,

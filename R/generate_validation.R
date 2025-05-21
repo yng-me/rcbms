@@ -155,6 +155,11 @@ get_cv_metadata <- function(.output, .config, .refs) {
 
   current_time <- stringr::str_sub(as.POSIXct(Sys.time()) - (3600 * 8), 1, 19)
 
+  data_as_of <- .refs$ref_data_as_of
+  if(is.null(data_as_of)) {
+    data_as_of <- NA_character_
+  }
+
   values <- list(
     area_code = .refs$ref_current_area,
     total_cases = 0L,
@@ -167,7 +172,8 @@ get_cv_metadata <- function(.output, .config, .refs) {
     status = 2L,
     category = NA_character_,
     verified_at = current_time,
-    validated_at = current_time
+    validated_at = current_time,
+    data_as_of = data_as_of
   )
 
   if(!is.null(.output)) {
